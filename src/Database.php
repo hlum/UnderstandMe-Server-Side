@@ -12,15 +12,25 @@ class Database {
     }
 
 
-    public function query(string $query): mysqli_result {
-        $result = $this->connection->query($query);
-        $error_message = $query.'で失敗しました。'.'\n 詳細 \n'.$this->connection->error;
-        if (!$result) {
-            Response::send('error', $error_message, 500);
+    public function insert_new_user(string $email, ?string $fcm_token): void {
+        // Generate a unique ID (UUID v4 alternative)
+        $id = bin2hex(random_bytes(16));
+        
+        $stmt = $this->connection->prepare("INSERT INTO users (id, email, fcm_token) VALUES (?, ?, ?)");
+        
+        if ($stmt === false) {
+            Response::send('error', 'ステートメントの準備に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
         }
+        $stmt->bind_param('sss', $id, $email, $fcm_token);
 
-        return $result;
+        if ($stmt === false) {
+            Response::send('error', 'パラメータのバインドに失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
+        }
+        if ($stmt->execute() === false) {
+            Response::send('error', 'クエリの実行に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
+        }
     }
+
 
     public function close(): void {
     if ($this->connection && $this->connection->ping()) {
