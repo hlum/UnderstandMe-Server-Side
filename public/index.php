@@ -40,9 +40,9 @@ ApiKeyValidator::check($clientApiKey);
 // DB operations
 try {
     $db = new Database();
-    $result = $db->query("DESC answers");  // just an example
+
 } catch (Exception $e) {
-    Response::send('error',  'Database operation failed. See server logs.', 500, $e->getMessage());
+    Response::send('error',  'Database operation failed. See server logs.\n'.$e->getMessage(), 500);
 }
 
 Response::send('success', 'Database connection successful');
