@@ -1,0 +1,13 @@
+<?php
+
+class ApiKeyValidator {
+    public static function check(?string $clientApiKey) {
+        if (empty($clientApiKey)) {
+            Response::send('error', 'APIキーが提供されていません。', 400);
+        }
+
+        if (!hash_equals($clientApiKey, API_KEY)) {
+            Response::send('error', 'アクセスが拒否されました。無効なAPIキーです。', 403);
+        }
+    }
+}
