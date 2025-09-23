@@ -12,10 +12,7 @@ class Database {
     }
 
 
-    public function insert_new_user(string $email, ?string $fcm_token): void {
-        // Generate a unique ID (UUID v4 alternative)
-        $id = bin2hex(random_bytes(16));
-        
+    public function insert_new_user(string $id, string $email, ?string $fcm_token): void {        
         $stmt = $this->connection->prepare("INSERT INTO users (id, email, fcm_token) VALUES (?, ?, ?)");
         
         if ($stmt === false) {

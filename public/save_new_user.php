@@ -43,18 +43,32 @@ $fcm_token = $input['fcm_token'] ?? null;
 if (empty($email)) {
     Response::send('error', 'メールアドレスは必須です。', 400);
 }
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+if (!isValidEmail($email)) {
     Response::send('error', '無効なメールアドレス形式です。', 400);
 }
-if ($fcm_token !== null && !is_string($fcm_token)) {
+if (!isNullORValidFcmToken($fcm_token)) {
     Response::send('error', '無効なFCMトークン形式です。', 400);
 }
+
+
 
 // DB operations
 try {
     $db = new Database();
-    $db->insert_new_user($email, $fcm_token);
+
+    $id = bin2hex(random_bytes(16));
+
+    $db->insert_new_user($id, $email, $fcm_token);
     Response::send('success', 'ユーザーが正常に保存されました。', 200);
 } catch (Exception $e) {
     Response::send('error',  "Database operation failed. See server logs.\n" . $e->getMessage(), 500);
+}
+
+
+function isValidEmail(string $email): bool {
+    return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+}
+
+function isNullORValidFcmToken(?string $token): bool {
+    return $token === null || (is_string($token) && strlen($token) > 10);
 }
