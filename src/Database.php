@@ -85,6 +85,33 @@ class Database {
 
     }
 
+    public function insert_answer(
+        string $id,
+        string $user_id,
+        string $job_id,
+        string $result_id,
+        int $question_index,
+        string $user_answer,
+        string $correct_answer,
+        int $score
+    ): void {
+        // INSERT INTO answers (id, user_id, job_id, result_id, question_index, user_answer, correct_answer, score) VALUES ("adfasfsdfasfeowfwoiwfas","d858cee2c818abd178cae16a4559c444","123e4567-e89b-12d3-a456-426614174000", "result-dummy-id", 1, 1, 1, 10)
+        $stmt = $this->connection->prepare("INSERT INTO answers (id, user_id, job_id, result_id, question_index, user_answer, correct_answer, score) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        
+        if ($stmt === false) {
+            Response::send('error', 'ステートメントの準備に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
+        }
+        $stmt->bind_param('sssssssi', $id, $user_id, $job_id, $result_id, $question_index, $user_answer, $correct_answer, $score);
+
+        if ($stmt === false) {
+            Response::send('error', 'パラメータのバインドに失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
+        }
+        if ($stmt->execute() === false) {
+            Response::send('error', 'クエリの実行に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
+        }
+    }
+
+
     public function change_job_status(
         string $job_id,
         string $new_status
