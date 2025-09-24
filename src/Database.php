@@ -62,6 +62,29 @@ class Database {
     }
 
 
+    public function insert_job(
+        string $id,
+        string $user_id,
+        string $project_id,
+        string $prompt,
+        string $status
+    ) {
+        $stmt = $this->connection->prepare("INSERT INTO jobs (id, user_id, project_id, prompt, status) VALUES (?, ?, ?, ?, ?)");
+        
+        if ($stmt === false) {
+            Response::send('error', 'ステートメントの準備に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
+        }
+        $stmt->bind_param('sssss', $id, $user_id, $project_id, $prompt, $status);
+
+        if ($stmt === false) {
+            Response::send('error', 'パラメータのバインドに失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
+        }
+        if ($stmt->execute() === false) {
+            Response::send('error', 'クエリの実行に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
+        }
+
+    }
+
     public function change_job_status(
         string $job_id,
         string $new_status
