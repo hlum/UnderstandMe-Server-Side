@@ -26,8 +26,10 @@ ApiKeyValidator::check($clientApiKey);
 
 // Expected JSON structure
 // {
-//     email: String,
-//     fcm_token: String nullable,
+    // email: String,
+    // role: String('student' or 'teacher'),
+    // student_code: String not nullable,
+    // fcm_token: String nullable,
 // }
 
 
@@ -39,16 +41,26 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 }
 
 $email = $input['email'] ?? null;
+$role = $input['role'] ?? 'student';
 $fcm_token = $input['fcm_token'] ?? null;
+
 if (empty($email)) {
     Response::send('error', 'メールアドレスは必須です。', 400);
 }
 if (!isValidEmail($email)) {
-    Response::send('error', '無効なメールアドレス形式です。', 400);
+    Response::send('error', '無効なメールアドレス形式です。@jec.ac.jp以外のメールはご利用できません。', 400);
 }
 if (!isNullORValidFcmToken($fcm_token)) {
     Response::send('error', '無効なFCMトークン形式です。', 400);
 }
+
+$student_code = mb_substr($email, 0, strpos($email, '@'));
+$grade = $student_code.trim(mb_substr($student_code, 0, 2), '0');
+if((int)$grade != 0){
+    $grade = (int)$grade;
+}
+$class_name = mb_substr($student_code, 2, 2);
+
 
 
 
@@ -58,16 +70,18 @@ try {
 
     $id = bin2hex(random_bytes(16));
 
-    $db->insert_new_user($id, $email, $fcm_token);
+    $db->insert_new_user($id, $email, $role, $student_code, $grade, $class_name, $fcm_token);
     Response::send('success', 'ユーザーが正常に保存されました。', 200);
 } catch (Exception $e) {
-    Response::send('error',  "Database operation failed. See server logs.\n" . $e->getMessage(), 500);
+    Response::send('error',  'Database operation failed. See server logs. \n ' . $e->getMessage(), 500);
 }
 
 
 function isValidEmail(string $email): bool {
-    return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+    $email = trim($email);
+    return filter_var($email, FILTER_VALIDATE_EMAIL) && str_ends_with($email, '@jec.ac.jp') && strlen($email) === 18;
 }
+
 
 function isNullORValidFcmToken(?string $token): bool {
     return $token === null || (is_string($token) && strlen($token) > 10);

@@ -8,3 +8,5 @@ db/
 .DS_Store
 
 config/
+
+curltest.txt

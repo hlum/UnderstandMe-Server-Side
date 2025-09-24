@@ -12,13 +12,46 @@ class Database {
     }
 
 
-    public function insert_new_user(string $id, string $email, ?string $fcm_token): void {        
-        $stmt = $this->connection->prepare("INSERT INTO users (id, email, fcm_token) VALUES (?, ?, ?)");
+    public function insert_new_user(
+        string $id,
+        string $email,
+        string $role,
+        string $student_code,
+        string $grade,
+        string $class_name,
+        ?string $fcm_token
+
+    ): void {
+
+        $stmt = $this->connection->prepare("INSERT INTO users (id, email, role, student_code, grade, class_name, fcm_token) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                
+        if ($stmt === false) {
+            Response::send('error', 'ステートメントの準備に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
+        }
+        $stmt->bind_param('sssssss', $id, $email, $role, $student_code, $grade, $class_name, $fcm_token);
+
+        if ($stmt === false) {
+            Response::send('error', 'パラメータのバインドに失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
+        }
+        if ($stmt->execute() === false) {
+            Response::send('error', 'クエリの実行に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
+        }
+    }
+
+
+    public function insert_project(
+        string $id,
+        string $job_id,
+        string $user_id,
+        string $github_url
+        ): void {
+
+        $stmt = $this->connection->prepare("INSERT INTO projects (id, job_id, user_id, github_url) VALUES (?, ?, ?, ?)");
         
         if ($stmt === false) {
             Response::send('error', 'ステートメントの準備に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
         }
-        $stmt->bind_param('sss', $id, $email, $fcm_token);
+        $stmt->bind_param('ssss', $id, $job_id, $user_id, $github_url);
 
         if ($stmt === false) {
             Response::send('error', 'パラメータのバインドに失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
