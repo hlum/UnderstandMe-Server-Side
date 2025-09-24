@@ -61,6 +61,26 @@ class Database {
         }
     }
 
+    public function get_processing_job_count(): int {
+        $result = $this->run_query("SELECT COUNT(*) as count FROM jobs WHERE status = 'processing'");
+
+        if ($result === false) {
+            Response::send('error', 'クエリの実行に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
+        }
+        $row = $result->fetch_assoc();
+
+        if($row === null || !isset($row['count'])) {
+            Response::send('error', 'processingのJob数取得に失敗' . '\n 詳細 \n' . $this->connection->error, 500);
+        }
+
+        return (int)$row['count'];
+    }
+
+
+    private function run_query(string $query): mysqli_result|false {
+        return $this->connection->query($query);
+    }
+
 
     public function close(): void {
     if ($this->connection && $this->connection->ping()) {
