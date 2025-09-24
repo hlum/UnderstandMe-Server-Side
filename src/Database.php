@@ -61,6 +61,27 @@ class Database {
         }
     }
 
+
+    public function change_job_status(
+        string $job_id,
+        string $new_status
+    ): void {
+        $stmt = $this->connection->prepare("UPDATE jobs SET status = ? WHERE id = ?");
+        
+        if ($stmt === false) {
+            Response::send('error', 'ステートメントの準備に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
+        }
+        $stmt->bind_param('ss', $new_status, $job_id);
+
+        if ($stmt === false) {
+            Response::send('error', 'パラメータのバインドに失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
+        }
+        if ($stmt->execute() === false) {
+            Response::send('error', 'クエリの実行に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
+        }
+    }
+
+
     public function get_processing_job_count(): int {
         $result = $this->run_query("SELECT COUNT(*) as count FROM jobs WHERE status = 'processing'");
 
