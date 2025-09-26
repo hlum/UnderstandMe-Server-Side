@@ -22,20 +22,11 @@ class Database {
         ?string $fcm_token
 
     ): void {
-
-        $stmt = $this->connection->prepare("INSERT INTO users (id, email, role, student_code, grade, class_name, fcm_token) VALUES (?, ?, ?, ?, ?, ?, ?)");
-                
-        if ($stmt === false) {
-            Response::send('error', 'ステートメントの準備に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
-        }
-        $stmt->bind_param('sssssss', $id, $email, $role, $student_code, $grade, $class_name, $fcm_token);
-
-        if ($stmt === false) {
-            Response::send('error', 'パラメータのバインドに失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
-        }
-        if ($stmt->execute() === false) {
-            Response::send('error', 'クエリの実行に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
-        }
+        $query = "INSERT INTO users (id, email, role, student_code, grade, class_name, fcm_token) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $types = 'sssssss';
+        $params = [$id, $email, $role, $student_code, $grade, $class_name, $fcm_token];
+        $error_message = 'ユーザーの保存に失敗しました';
+        $this->execute($query, $types, $params, $error_message);
     }
 
 
@@ -45,19 +36,11 @@ class Database {
         string $github_file_link
         ): void {
 
-        $stmt = $this->connection->prepare("INSERT INTO projects (id, user_id, github_file_link) VALUES (?, ?, ?)");
-
-        if ($stmt === false) {
-            Response::send('error', 'ステートメントの準備に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
-        }
-        $stmt->bind_param('sss', $id, $user_id, $github_url);
-
-        if ($stmt === false) {
-            Response::send('error', 'パラメータのバインドに失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
-        }
-        if ($stmt->execute() === false) {
-            Response::send('error', 'クエリの実行に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
-        }
+        $query = "INSERT INTO projects (id, user_id, github_file_link) VALUES (?, ?, ?)";
+        $types = 'sss';
+        $params = [$id, $user_id, $github_file_link];
+        $error_message = 'プロジェクトの保存に失敗しました';
+        $this->execute($query, $types, $params, $error_message);    
     }
 
     public function insert_job(
@@ -67,19 +50,11 @@ class Database {
         string $prompt,
         string $status
     ) {
-        $stmt = $this->connection->prepare("INSERT INTO jobs (id, user_id, project_id, prompt, status) VALUES (?, ?, ?, ?, ?)");
-        
-        if ($stmt === false) {
-            Response::send('error', 'ステートメントの準備に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
-        }
-        $stmt->bind_param('sssss', $id, $user_id, $project_id, $prompt, $status);
-
-        if ($stmt === false) {
-            Response::send('error', 'パラメータのバインドに失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
-        }
-        if ($stmt->execute() === false) {
-            Response::send('error', 'クエリの実行に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
-        }
+        $query = "INSERT INTO jobs (id, user_id, project_id, prompt, status) VALUES (?, ?, ?, ?, ?)";
+        $types = 'sssss';
+        $params = [$id, $user_id, $project_id, $prompt, $status];
+        $error_message = 'ジョブの保存に失敗しました';
+        $this->execute($query, $types, $params, $error_message);
     }
 
 
@@ -87,38 +62,22 @@ class Database {
         string $id,
         string $questions
     ) {
-        $stmt = $this->connection->prepare("INSERT INTO results (id, questions) VALUES (?, ?)");
-        
-        if ($stmt === false) {
-            Response::send('error', 'ステートメントの準備に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
-        }
-        $stmt->bind_param('ss', $id, $questions);
-
-        if ($stmt === false) {
-            Response::send('error', 'パラメータのバインドに失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
-        }
-        if ($stmt->execute() === false) {
-            Response::send('error', 'クエリの実行に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
-        }
+        $query = "INSERT INTO results (id, questions) VALUES (?, ?)";
+        $types = 'ss';
+        $params = [$id, $questions];
+        $error_message = '結果の保存に失敗しました';
+        $this->execute($query, $types, $params, $error_message);
     }
 
     public function update_result_id_in_job(
         string $job_id,
         string $result_id
     ): void {
-        $stmt = $this->connection->prepare("UPDATE jobs SET result_id = ? WHERE id = ?");
-        
-        if ($stmt === false) {
-            Response::send('error', 'ステートメントの準備に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
-        }
-        $stmt->bind_param('ss', $result_id, $job_id);
-
-        if ($stmt === false) {
-            Response::send('error', 'パラメータのバインドに失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
-        }
-        if ($stmt->execute() === false) {
-            Response::send('error', 'クエリの実行に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
-        }
+        $query = "UPDATE jobs SET result_id = ? WHERE id = ?";
+        $types = 'ss';
+        $params = [$result_id, $job_id];
+        $error_message = 'ジョブの結果IDの更新に失敗しました';
+        $this->execute($query, $types, $params, $error_message);
     }
 
     public function insert_answer(
@@ -131,20 +90,11 @@ class Database {
         string $correct_answer,
         int $score
     ): void {
-        // INSERT INTO answers (id, user_id, job_id, result_id, question_index, user_answer, correct_answer, score) VALUES ("adfasfsdfasfeowfwoiwfas","d858cee2c818abd178cae16a4559c444","123e4567-e89b-12d3-a456-426614174000", "result-dummy-id", 1, 1, 1, 10)
-        $stmt = $this->connection->prepare("INSERT INTO answers (id, user_id, job_id, result_id, question_index, user_answer, correct_answer, score) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        
-        if ($stmt === false) {
-            Response::send('error', 'ステートメントの準備に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
-        }
-        $stmt->bind_param('sssssssi', $id, $user_id, $job_id, $result_id, $question_index, $user_answer, $correct_answer, $score);
-
-        if ($stmt === false) {
-            Response::send('error', 'パラメータのバインドに失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
-        }
-        if ($stmt->execute() === false) {
-            Response::send('error', 'クエリの実行に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
-        }
+        $query = "INSERT INTO answers (id, user_id, job_id, result_id, question_index, user_answer, correct_answer, score) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $types = 'sssssssi';
+        $params = [$id, $user_id, $job_id, $result_id, $question_index, $user_answer, $correct_answer, $score];
+        $error_message = '回答の保存に失敗しました';
+        $this->execute($query, $types, $params, $error_message);
     }
 
 
@@ -154,19 +104,11 @@ class Database {
         string $job_id,
         string $new_status
     ): void {
-        $stmt = $this->connection->prepare("UPDATE jobs SET status = ? WHERE id = ?");
-        
-        if ($stmt === false) {
-            Response::send('error', 'ステートメントの準備に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
-        }
-        $stmt->bind_param('ss', $new_status, $job_id);
-
-        if ($stmt === false) {
-            Response::send('error', 'パラメータのバインドに失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
-        }
-        if ($stmt->execute() === false) {
-            Response::send('error', 'クエリの実行に失敗しました。' . '\n 詳細 \n' . $this->connection->error, 500);
-        }
+        $query = "UPDATE jobs SET status = ? WHERE id = ?";
+        $types = 'ss';
+        $params = [$new_status, $job_id];
+        $error_message = 'ジョブのステータス更新に失敗しました';
+        $this->execute($query, $types, $params, $error_message);
     }
 
 
