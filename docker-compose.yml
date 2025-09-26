@@ -23,6 +23,8 @@ services:
       MYSQL_DATABASE: understand_me
       MYSQL_USER: user
       MYSQL_PASSWORD: password
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
     ports:
       - "13306:3306"
     volumes:
