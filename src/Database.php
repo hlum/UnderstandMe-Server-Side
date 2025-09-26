@@ -186,6 +186,27 @@ class Database {
     }
 
 
+    private function execute(string $query, string $types, array $params, string $error_message): void {
+        $stmt = $this->connection->prepare($query);
+
+        if ($stmt === false) {
+            Response::send('error', 'ステートメントの準備に失敗しました。詳細: ' . $this->connection->error, 500);
+        }
+
+        // Unpack array into references for bind_param
+        $stmt->bind_param($types, ...$params);
+
+        if ($stmt === false) {
+            Response::send('error', 'パラメータのバインドに失敗しました。詳細: ' . $this->connection->error, 500);
+        }
+
+        if ($stmt->execute() === false) {
+            Response::send('error', $error_message . '。詳細: ' . $this->connection->error, 500);
+        }
+
+        $stmt->close();
+    }
+
     private function run_query(string $query): mysqli_result|false {
         return $this->connection->query($query);
     }
