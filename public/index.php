@@ -18,8 +18,7 @@ set_error_handler(function ($severity, $message, $file, $line) {
     Response::send(
         'error',
         'Internal server error. Please try again later.',
-        500,
-        "PHP Error: $message in $file on line $line"
+        500
     );
 });
 
