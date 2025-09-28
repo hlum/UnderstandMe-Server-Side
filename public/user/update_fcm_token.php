@@ -36,7 +36,7 @@ ApiKeyValidator::check($clientApiKey);
 
 // Expected JSON structure
 // {
-    // id: String,
+    // user_id: String,
     // fcm_token: String nullable,
 // }
 
@@ -46,14 +46,14 @@ if (json_last_error() !== JSON_ERROR_NONE) {
     Response::send('error', '無効なJSONデータです。', 400);
 }
 
-$id = $input['id'] ?? null;
+$user_id = $input['user_id'] ?? null;
 $fcm_token = $input['fcm_token'] ?? null;
 
-if (empty($id)) {
+if (empty($user_id)) {
     Response::send('error', 'ユーザーIDは必須です。', 400);
 }
 
-if($id == null || !is_string($id)){
+if($user_id == null || !is_string($user_id)){
     Response::send('error', '無効なユーザーID形式です。', 400);
 }
 
@@ -66,7 +66,7 @@ try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $userRepository = new MySQLUserRepository($connection);
     $userUseCase = new UserUseCase($userRepository);
-    $userUseCase->updateFcmToken($id, $fcm_token);
+    $userUseCase->updateFcmToken($$user_id, $fcm_token);
     Response::send('success', 'FCMトークンの更新が成功しました。', 200);
 } catch (Throwable $e) {
     Response::send('error',  $e->getMessage(), 500);

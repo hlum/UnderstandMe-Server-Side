@@ -35,7 +35,7 @@ ApiKeyValidator::check($clientApiKey);
 
 // Expected JSON structure
 // {
-    // id: String,
+    // user_id: String,
     // email: String,
     // role: String('student' or 'teacher'),
     // student_code: String not nullable,
@@ -50,16 +50,16 @@ if (json_last_error() !== JSON_ERROR_NONE) {
     Response::send('error', '無効なJSONデータです。', 400);
 }
 
-$id = $input['id'] ?? null;
+$user_id = $input['user_id'] ?? null;
 $email = $input['email'] ?? null;
 $role = Role::from($input['role'] ?? 'student');
 $fcm_token = $input['fcm_token'] ?? null;
 
-if (empty($id)) {
+if (empty($user_id)) {
     Response::send('error', 'ユーザーIDは必須です。', 400);
 }
 
-if($id == null || !is_string($id)){
+if($user_id == null || !is_string($user_id)){
     Response::send('error', '無効なユーザーID形式です。', 400);
 }
 
@@ -85,7 +85,7 @@ try {
     $userRepository = new MySQLUserRepository($connection);
     $userUseCase = new UserUseCase($userRepository);
 
-    $userUseCase->registerUser($id, $email, $role, $student_code, $grade, $class_name, $fcm_token);
+    $userUseCase->registerUser($user_id, $email, $role, $student_code, $grade, $class_name, $fcm_token);
 
     Response::send('success', 'ユーザー登録が成功しました。', 200);
 } catch (Throwable $e) {
