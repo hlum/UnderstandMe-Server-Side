@@ -55,6 +55,11 @@ class UserUseCase {
             throw new \InvalidArgumentException("指定されたユーザーIDのユーザーが存在しません");
         }
 
+
+        if($fcmToken == null) {
+            throw new \InvalidArgumentException("無効なfcm_tokenです。");
+        }
+
         // FCMトークンを更新
         $this->userRepository->updateFcmToken($userId, $fcmToken);
     }
