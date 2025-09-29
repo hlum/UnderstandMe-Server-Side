@@ -18,8 +18,7 @@ set_error_handler(function ($severity, $message, $file, $line) {
     Response::send(
         'error',
         'Internal server error. Please try again later.',
-        500,
-        "PHP Error: $message in $file on line $line"
+        500
     );
 });
 
@@ -40,9 +39,9 @@ ApiKeyValidator::check($clientApiKey);
 // DB operations
 try {
     $db = new Database();
-    $result = $db->query("DESC answers");  // just an example
+
 } catch (Exception $e) {
-    Response::send('error',  'Database operation failed. See server logs.', 500, $e->getMessage());
+    Response::send('error',  'Database operation failed. See server logs.\n'.$e->getMessage(), 500);
 }
 
 Response::send('success', 'Database connection successful');

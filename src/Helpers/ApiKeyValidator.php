@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../../config/config.php';
+
 class ApiKeyValidator {
     public static function check(?string $clientApiKey) {
         if (empty($clientApiKey)) {
