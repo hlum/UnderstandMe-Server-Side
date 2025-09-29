@@ -1,6 +1,7 @@
 <?php
 // src/Domain/Entities/User.php
 namespace Domain\Entities;
+use JsonSerializable;
 
 // DBに保存　-> $user->role->value.
 // DBから取得しUserに変換 -> Role::from($row['role']).
@@ -26,7 +27,7 @@ class Role {
     }
 }
 
-class User {
+class User implements JsonSerializable {
     public string $id;
     public string $email;
     public Role $role;
@@ -63,6 +64,21 @@ class User {
         $this->fcmToken = $fcmToken;
         $this->createdAt = $createdAt;
     }
+
+
+    public function jsonSerialize(): array {
+        return [
+            'id' => $this->id,
+            'email' => $this->email,
+            'role' => $this->role instanceof Role ? $this->role->getValue() : $this->role,
+            'student_code' => $this->studentCode,
+            'admission_year' => $this->admissionYear,
+            'class_name' => $this->className,
+            'fcm_token' => $this->fcmToken,
+            'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
+        ];
+    }
+
 
     // ファクトリーメソッド：新規ユーザー用（created_at = now）
     public static function createNew(
