@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if(!in_array($_SERVER['REQUEST_METHOD'], ['UPDATE'])) {
+if(!in_array($_SERVER['REQUEST_METHOD'], ['PATCH'])) {
     Response::send('error', 'Method not allowed. Use UPDATE', 405);
 }
 
@@ -49,7 +49,8 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 $user_id = $input['user_id'] ?? null;
 $fcm_token = $input['fcm_token'] ?? null;
 
-if (empty($user_id)) {
+
+if (!isset($user_id)) {
     Response::send('error', 'ユーザーIDは必須です。', 400);
 }
 
@@ -57,7 +58,7 @@ if($user_id == null || !is_string($user_id)){
     Response::send('error', '無効なユーザーID形式です。', 400);
 }
 
-if($fcm_token == null) {
+if(!isset($fcm_token)) {
     Response::send('error', 'Fcm Tokenは必須です。', 400);
 }
 
@@ -66,7 +67,7 @@ try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $userRepository = new MySQLUserRepository($connection);
     $userUseCase = new UserUseCase($userRepository);
-    $userUseCase->updateFcmToken($$user_id, $fcm_token);
+    $userUseCase->updateFcmToken($user_id, $fcm_token);
     Response::send('success', 'FCMトークンの更新が成功しました。', 200);
 } catch (Throwable $e) {
     Response::send('error',  $e->getMessage(), 500);
