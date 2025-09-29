@@ -52,7 +52,7 @@ class UserUseCase {
         // ユーザーが存在するか確認
         $user = $this->userRepository->findById($userId);
         if ($user === null) {
-            throw new \InvalidArgumentException("指定されたユーザーIDのユーザーが存在しません");
+            throw new \InvalidArgumentException( "指定されたユーザーIDのユーザーが存在しません");
         }
 
 
@@ -62,5 +62,39 @@ class UserUseCase {
 
         // FCMトークンを更新
         $this->userRepository->updateFcmToken($userId, $fcmToken);
+    }
+
+    public function findById(string $user_id):User {
+        $user = $this->userRepository->findById($user_id);
+        if($user === null) {
+            throw new \InvalidArgumentException(message: "指定されたユーザーIDのユーザーが存在しません");
+        }
+
+        return $user;
+    }
+
+
+    public function findByEmail(string $email): User {
+        $user = $this->userRepository->findByEmail($email);
+        if($user === null) {
+            throw new \InvalidArgumentException(message: "指定されたユーザーIDのユーザーが存在しません");
+        }
+
+        return $user;
+    }
+
+
+    public function findByStudentCode(string $studentCode): User {
+        $user = $this->userRepository->findByStudentCode($studentCode);
+        if($user === null) {
+            throw new \InvalidArgumentException(message: "指定された学生コードのユーザーが存在しません");
+        }
+
+        return $user;
+    }
+
+
+    public function findByClassNameAndAdmissionYear(string $className, int $admissionYear): array {
+        return $this->userRepository->findByClassNameAndAdmissionYear($className, $admissionYear);
     }
 }
