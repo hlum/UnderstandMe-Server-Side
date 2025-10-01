@@ -7,9 +7,7 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ./public:/var/www/html
-      - ./src:/var/www/src
-      - ./config:/var/www/config
+      - .:/var/www/html
     depends_on:
       - mysql
     networks:
