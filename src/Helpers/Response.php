@@ -1,5 +1,7 @@
 <?php
 
+namespace Helpers;
+
 class Response {
     public static function send(string $status, string $message, int $code = 200, ?string $data = null) {
         http_response_code($code);
