@@ -10,7 +10,7 @@ class Homework implements JsonSerializable{
     public string $teacherID;
     public string $majorID;
     public string $title;
-    public string $description;
+    public ?string $description;
     public DateTimeImmutable $dueDate;
     public DateTimeImmutable $createdAt;
 
@@ -19,7 +19,7 @@ class Homework implements JsonSerializable{
         string $teacherID,
         string $majorID,
         string $title,
-        string $description, 
+        ?string $description, 
         DateTimeImmutable $dueDate, 
         DateTimeImmutable $createdAt
         ) {
@@ -37,7 +37,7 @@ class Homework implements JsonSerializable{
         string $teacherID,
         string $majorID,
         string $title,
-        string $description, 
+        ?string $description, 
         DateTimeImmutable $dueDate
     ): self {
         return new self(
