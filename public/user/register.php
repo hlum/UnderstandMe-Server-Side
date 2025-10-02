@@ -1,23 +1,20 @@
 <?php
 
+require __DIR__ . '/../../vendor/autoload.php';
+
+
+use Infrastructure\Persistence\MySQLUserRepository;
 use Application\UseCases\UserUseCase;
 use Domain\Entities\Role;
+use Helpers\ApiKeyValidator;
+use Helpers\Response;
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-require_once __DIR__ . '/../../src/Helpers/SafeRequire.php';
 
-SafeRequire::requireFile(__DIR__ . '/../../config/config.php');
-SafeRequire::requireFile(__DIR__ . '/../../src/Response.php');
-SafeRequire::requireFile(__DIR__ . '/../../src/Helpers/ApiKeyValidator.php');
-SafeRequire::requireFile(__DIR__ . '/../../src/Domain/Entities/User.php');
-SafeRequire::requireFile(__DIR__ . '/../../src/Domain/Repositories/UserRepositoryInterface.php');
-SafeRequire::requireFile(__DIR__ . '/../../src/Infrastructure/Persistence/MySQLUserRepository.php');
-SafeRequire::requireFile(__DIR__ . '/../../src/Application/UseCases/UserUseCase.php');
 
-use Infrastructure\Persistence\MySQLUserRepository;
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);

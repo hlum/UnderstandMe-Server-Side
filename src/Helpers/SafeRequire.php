@@ -1,5 +1,7 @@
 <?php
 
+namespace Helpers;
+
 class SafeRequire {
     public static function requireFile(string $filePath): void {
         if (file_exists($filePath)) {

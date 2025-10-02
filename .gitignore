@@ -10,3 +10,4 @@ db/
 config/
 
 curltest.txt
+/vendor/
