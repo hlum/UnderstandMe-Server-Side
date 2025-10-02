@@ -20,7 +20,7 @@ class ApiKeyValidator {
         }
 
         if(!hash_equals($teacherApiKey,TEACHER_API_KEY)) {
-            Response::send('error', 'アクセスが拒否されました。無効なAPIキーです。', 403);
+            Response::send('error', 'アクセスが拒否されました。無効なAPIキーです。教師専用のAPIKEYが必要です。', 403);
         }
     }
 }
