@@ -13,4 +13,14 @@ class ApiKeyValidator {
             Response::send('error', 'アクセスが拒否されました。無効なAPIキーです。', 403);
         }
     }
+
+    public static function checkTeacherKey(?string $teacherApiKey) {
+        if (empty($teacherApiKey)) {
+            Response::send('error', 'APIキーが提供されていません。', 400);
+        }
+
+        if(!hash_equals($teacherApiKey,TEACHER_API_KEY)) {
+            Response::send('error', 'アクセスが拒否されました。無効なAPIキーです。', 403);
+        }
+    }
 }
