@@ -5,27 +5,6 @@ use JsonSerializable;
 
 // DBに保存　-> $user->role->value.
 // DBから取得しUserに変換 -> Role::from($row['role']).
-class Role {
-    private string $value;
-
-    public function __construct(string $value) {
-        $this->value = $value;
-    }
-
-    public function getValue(): string {
-        return $this->value;
-    }
-
-    public static function from(string $value): self {
-        if ($value === 'teacher') {
-            return new self('teacher');
-        } elseif ($value === 'student') {
-            return new self('student');
-        } else {
-            throw new \InvalidArgumentException("Invalid role value: $value");
-        }
-    }
-}
 
 class User implements JsonSerializable {
     public string $id;
