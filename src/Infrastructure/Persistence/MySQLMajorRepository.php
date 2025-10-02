@@ -18,7 +18,7 @@ class MySQLMajorRepository implements MajorRepositoryInterface {
 
     public function insert(Major $major): void {
         $query = "INSERT INTO majors (id, name, admission_year, class_name) VALUES (?, ?, ?, ?)";
-        $types = 'ssiss';
+        $types = 'ssis';
         $params = [$major->id, $major->name, $major->admissionYear, $major->className];
         $errorMessage = 'Major保存に失敗しました。';
         $this->executeQuery($query, $types, $params, $errorMessage);
