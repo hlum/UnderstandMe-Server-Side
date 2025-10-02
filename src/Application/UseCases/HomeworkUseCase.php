@@ -58,7 +58,27 @@ class HomeworkUseCase {
         return $homework;
     }
 
+    public function findByStudentId(string $studentId): array {
+        $student = $this->userRepository->findById($studentId);
+        if ($student === null || $student->role->getValue() !== 'student') {
+            throw new \InvalidArgumentException("指定されたStudentIDの学生が存在しません。");
+        }
 
+        if ($student->className === null || $student->admissionYear === null) {
+            throw new \InvalidArgumentException("学生のclassNameまたはadmissionYearが設定されていません。");
+        }
+        
+        $majors = $this->majorRepository->findByClassNameAndAdmissionYear($student->className, $student->admissionYear);
+        if (empty($majors)) {
+            throw new \InvalidArgumentException("学生の専攻が見つかりません。");
+        }
+
+        $homeworks = [];
+        foreach ($majors as $major) {
+            $homeworks = array_merge($homeworks, $this->homeworkRepository->findByMajorId($major->id));
+        }
+        return $homeworks;
+    }
 
     private function validateHomework(Homework $homework): void {
        if(str_word_count($homework->title) > 100) {
