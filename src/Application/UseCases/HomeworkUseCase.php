@@ -109,7 +109,7 @@ class HomeworkUseCase {
 
     private function validateTeacher(string $teacherId): void {
         $teacher = $this->userRepository->findById($teacherId);
-        if ($teacher === null || $teacher->role !== 'teacher') {
+        if ($teacher === null || $teacher->role->getValue() !== 'teacher') {
             throw new \InvalidArgumentException("指定されたTeacherIDの教師が存在しません。");
         }
     }
