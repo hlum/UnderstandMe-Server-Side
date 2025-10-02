@@ -18,7 +18,8 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface {
     public function insert(Homework $homework): void {
         $query = "INSERT INTO homeworks (id, teacher_id, major_id, title, description, due_date) VALUES (?, ?, ?, ?, ?, ?)";
         $types = 'ssssss';
-        $params = [$homework->id, $homework->teacherID, $homework->majorID, $homework->title, $homework->description, $homework->dueDate];
+        $dueDateString = $homework->dueDate->format('Y-m-d H:i:s');
+        $params = [$homework->id, $homework->teacherID, $homework->majorID, $homework->title, $homework->description, $dueDateString];
         $errorMessage = 'Homework保存に失敗しました。';
         $this->executeQuery($query, $types, $params, $errorMessage);
     }
