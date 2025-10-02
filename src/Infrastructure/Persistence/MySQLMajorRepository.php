@@ -41,20 +41,19 @@ class MySQLMajorRepository implements MajorRepositoryInterface {
     }
 
 
-    public function findByNameAndAdmissionYear(string $name, int $admissionYear): ?Major {
-        $query = "SELECT * FROM majors WHERE name = ? AND admission_year = ?";
+    public function findByClassNameAndAdmissionYear(string $className, int $admissionYear): array {
+        $query = "SELECT * FROM majors WHERE class_name = ? AND admission_year = ?";
         $types = 'si';
-        $params = [$name, $admissionYear];
-        $errorMessage = 'NameとAdmissionYearによるMajor検索に失敗しました。';
+        $params = [$className, $admissionYear];
+        $errorMessage = 'ClassNameとAdmissionYearによるMajor検索に失敗しました。';
 
         $result = $this->executeQuery($query, $types, $params, $errorMessage);
-        $row = $result->fetch_assoc();
-
-        if ($row === null) {
-            return null;
+        $majors = [];
+        while ($row = $result->fetch_assoc()) {
+            $majors[] = Major::fromDBRow($row);
         }
 
-        return Major::fromDBRow($row);
+        return $majors;
     }
 
 

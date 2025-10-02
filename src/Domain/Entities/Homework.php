@@ -59,8 +59,8 @@ class Homework implements JsonSerializable{
             $row['major_id'],
             $row['title'],
             $row['description'],
-            $row['due_date'],
-            $row['created_at']
+            new DateTimeImmutable($row['due_date']),
+            new DateTimeImmutable($row['created_at'])
         );
     }
 
