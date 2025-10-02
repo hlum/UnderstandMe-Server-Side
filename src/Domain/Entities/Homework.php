@@ -33,6 +33,25 @@ class Homework implements JsonSerializable{
     }
 
 
+    public static function createNew(
+        string $teacherID,
+        string $majorID,
+        string $title,
+        string $description, 
+        DateTimeImmutable $dueDate
+    ): self {
+        return new self(
+            bin2hex(random_bytes(16)),
+            $teacherID,
+            $majorID,
+            $title,
+            $description,
+            $dueDate,
+            new DateTimeImmutable()
+        );
+    }
+
+
     public static function fromDBRow(array $row): self {
         return new self(
             $row['id'],
