@@ -71,19 +71,7 @@ try {
         Response::send('error', '少なくとも1つのクエリパラメータを指定する必要があります。', 400);
     }
 
-    $result = array_map(function ($hw) {
-        return [
-            'id' => $hw->id,
-            'teacher_id' => $hw->teacherID,
-            'major_id' => $hw->majorID,
-            'title' => $hw->title,
-            'description' => $hw->description,
-            'due_date' => $hw->dueDate ? $hw->dueDate->format(DateTime::ATOM) : null,
-            'created_at' => $hw->createdAt->format(DateTime::ATOM),
-        ];
-    }, $homeworks);
-
-    Response::send('success', '宿題の取得に成功しました', 200, json_encode($result));
+    Response::send('success', '宿題の取得に成功しました', 200, json_encode($homeworks));
 
 } catch (Throwable $e) {
     Response::send('error',  $e->getMessage(), 500);
