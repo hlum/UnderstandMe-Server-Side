@@ -3,13 +3,18 @@
 namespace Application\UseCases;
 use Domain\Entities\Major;
 use Domain\Repositories\MajorRepositoryInterface;
+use Domain\Repositories\UserRepositoryInterface;
 
 
 class MajorUseCase {
     private MajorRepositoryInterface $majorRepository;
-
-    public function __construct(MajorRepositoryInterface $majorRepository) {
+    private UserRepositoryInterface $userRepository;
+    public function __construct(
+        MajorRepositoryInterface $majorRepository,
+        UserRepositoryInterface $userRepository
+        ) {
         $this->majorRepository = $majorRepository;
+        $this->userRepository = $userRepository;
     }
 
     public function add(Major $major) {
@@ -25,6 +30,7 @@ class MajorUseCase {
         return $major;
     }
 
+
     public function findByClassNameAndAdmissionYear(string $className, int $admissionYear): array {
         $majors = $this->majorRepository->findByClassNameAndAdmissionYear($className, $admissionYear);
         if (empty($majors)) {
@@ -32,6 +38,20 @@ class MajorUseCase {
         }
         return $majors;
     }
+
+    public function getMajorByStudentId(string $studentId): array {
+        $user = $this->userRepository->findById($studentId);
+        if ($user === null) {
+            throw new \InvalidArgumentException("指定された学生IDのユーザーが存在しません。");
+        }
+        if ($user->role->getValue() !== 'student') {
+            throw new \InvalidArgumentException("指定されたIDのユーザーは学生ではありません。");
+        }
+
+        
+        return $this->majorRepository->findByClassNameAndAdmissionYear($user->className, $user->admissionYear) ?? null;
+    }
+
     public function getMajorsByTeacherId(string $teacherId): array {
         if (!$this->isTeacher($teacherId)) {
             throw new \InvalidArgumentException("指定されたIDのユーザーは教師ではありません。");
