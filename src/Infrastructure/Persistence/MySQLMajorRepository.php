@@ -41,6 +41,22 @@ class MySQLMajorRepository implements MajorRepositoryInterface {
     }
 
 
+    public function findByTeacherId(string $teacherId): array {
+        $query = "SELECT * FROM majors WHERE teacher_id = ?";
+        $types = 's';
+        $params = [$teacherId];
+        $errorMessage = 'TeacherIdによるMajor検索に失敗しました。';
+
+        $result = $this->executeQuery($query, $types, $params, $errorMessage);
+        $majors = [];
+        while ($row = $result->fetch_assoc()) {
+            $majors[] = Major::fromDBRow($row);
+        }
+
+        return $majors;
+    }
+
+
     public function findByClassNameAndAdmissionYear(string $className, int $admissionYear): array {
         $query = "SELECT * FROM majors WHERE class_name = ? AND admission_year = ?";
         $types = 'si';
