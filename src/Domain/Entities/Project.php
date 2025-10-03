@@ -41,7 +41,7 @@ class Project implements JsonSerializable {
         );
     }
 
-    public function fromDBRow(array $row): self {
+    public static function fromDBRow(array $row): self {
         return new self(
             $row['id'],
             $row['user_id'],
