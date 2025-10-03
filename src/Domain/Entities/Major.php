@@ -18,6 +18,7 @@ use JsonSerializable;
 // 5 rows in set (0.01 sec)
 class Major implements JsonSerializable {
     public string $id;
+    public string $teacher_id;
     public string $name;
     public int $admissionYear;
     public string $className;
@@ -25,12 +26,14 @@ class Major implements JsonSerializable {
 
     private function __construct(
         string $id,
+        string $teacher_id,
         string $name,
         int $admissionYear,
         string $className,
         DateTimeImmutable $createdAt
     ) {
         $this->id = $id;
+        $this->teacher_id = $teacher_id;
         $this->name = $name;
         $this->admissionYear = $admissionYear;
         $this->className = $className;
@@ -38,12 +41,14 @@ class Major implements JsonSerializable {
     }
 
     public static function createNew(
+        string $teacher_id,
         string $name,
         int $admissionYear,
         string $className
     ): self {
         return new self(
             bin2hex(random_bytes(16)),
+            $teacher_id,
             $name,
             $admissionYear,
             $className,
@@ -54,6 +59,7 @@ class Major implements JsonSerializable {
     public static function fromDBRow(array $row): self {
         return new self(
             $row['id'],
+            $row['teacher_id'],
             $row['name'],
             (int)$row['admission_year'],
             $row['class_name'],
@@ -64,6 +70,7 @@ class Major implements JsonSerializable {
     public function jsonSerialize(): array {
         return [
             'id' => $this->id,
+            'teacher_id' => $this->teacher_id,
             'name' => $this->name,
             'admission_year' => $this->admissionYear,
             'class_name' => $this->className,
