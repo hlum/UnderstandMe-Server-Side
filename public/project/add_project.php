@@ -7,7 +7,8 @@ use Infrastructure\Persistence\MySQLProjectRepository;
 use Infrastructure\ExternalServices\GithubSnippetsRepo;
 use Application\UseCases\ProjectUseCase;
 use Domain\Entities\Project;
-
+use Infrastructure\Persistence\MySQLUserRepository;
+use Infrastructure\Persistence\MySQLHomeworkRepository;
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -70,10 +71,17 @@ if($github_file_link == null || !is_string($github_file_link) || !filter_var($gi
 
 try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-    $projectRepository = new MySQLProjectRepository($connection);
-    $snippetsRepo = new GithubSnippetsRepo();
-    $projectUseCase = new ProjectUseCase($projectRepository, $snippetsRepo);
 
+    $projectRepository = new MySQLProjectRepository($connection);
+    $userRepository = new MySQLUserRepository($connection);
+    $snippetsRepo = new GithubSnippetsRepo();
+    $homeworkRepository = new MySQLHomeworkRepository($connection);
+    $projectUseCase = new ProjectUseCase(
+        $projectRepository,
+        $snippetsRepo,
+        $userRepository,
+        $homeworkRepository
+    );
     $project = Project::createNew($user_id, $homework_id, $github_file_link);
 
     $projectUseCase->add($project);

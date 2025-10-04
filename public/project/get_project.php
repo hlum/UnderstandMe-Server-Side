@@ -6,6 +6,7 @@ use Helpers\Response;
 use Infrastructure\Persistence\MySQLProjectRepository;
 use Infrastructure\Persistence\MySQLUserRepository;
 use Infrastructure\ExternalServices\GithubSnippetsRepo;
+use Infrastructure\Persistence\MySQLHomeworkRepository;
 use Application\UseCases\ProjectUseCase;
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -40,7 +41,13 @@ try {
     $projectRepository = new MySQLProjectRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
     $snippetsRepo = new GithubSnippetsRepo();
-    $projectUseCase = new ProjectUseCase($projectRepository, $snippetsRepo);
+    $homeworkRepository = new MySQLHomeworkRepository($connection);
+    $projectUseCase = new ProjectUseCase(
+        $projectRepository,
+        $snippetsRepo,
+        $userRepository,
+        $homeworkRepository
+    );
 
 } catch (Throwable $e) {
     Response::send('error',  $e->getMessage(), 500);
