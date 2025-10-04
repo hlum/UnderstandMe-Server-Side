@@ -39,24 +39,24 @@ class GithubSnippetsRepo implements SnippetsRepo {
     ];
 
     private const MIN_FILE_LINES = 20;
-    private const DEFAULT_SNIPPET_LINES = 30;
-
-    public function __construct(string $repoUrl)
-    {
-        $this->validateRepoUrl($repoUrl);
-        $this->repoUrl = $repoUrl;
-        $this->cloneDir = $this->generateTempDir();
-    }
 
     /**
      * ランダムなコードをリポジトリから取得する
      * 
+     * @param string $repoUrl リポジトリのURL
      * @param int $lines 何行のコードを取得するか
      * @return string|null コードを返すか、適切なファイルが見つからない場合はnullを返す
      * @throws RuntimeException クローンまたは処理に失敗した場合
      */
-    public function getRandomCodeSnippet(int $lines = self::DEFAULT_SNIPPET_LINES): ?string 
+    public function getRandomCodeSnippet(
+        string $repoUrl,
+        int $lines = SnippetsRepo::DEFAULT_SNIPPET_LINES
+    ): ?string 
     {
+        $this->validateRepoUrl($repoUrl);
+        $this->repoUrl = $repoUrl;
+        $this->cloneDir = $this->generateTempDir();
+
         if ($lines <= 0) {
             throw new InvalidArgumentException('Lines must be positive');
         }
@@ -169,13 +169,13 @@ class GithubSnippetsRepo implements SnippetsRepo {
 
         $content = @file_get_contents($file);
         if ($content === false) {
-            return null; // Skip unreadable files
+            return null;
         }
 
         $lines = substr_count($content, "\n") + 1;
         
         if ($lines < self::MIN_FILE_LINES) {
-            return null; // Skip trivial files
+            return null;
         }
 
         $complexity = $this->estimateComplexity($content, $ext);
@@ -305,7 +305,7 @@ class GithubSnippetsRepo implements SnippetsRepo {
      */
     private function cleanup(): void
     {
-        if (!is_dir($this->cloneDir)) {
+        if (!isset($this->cloneDir) || !is_dir($this->cloneDir)) {
             return;
         }
 
