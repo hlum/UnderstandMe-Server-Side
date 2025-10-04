@@ -65,10 +65,10 @@ try {
         $projects[] = $project;
     } elseif (isset($homework_id)) {
         // Homework IDでの検索
-        $projects = $projectUseCase->findByHomeworkId($homework_id);
+        $projects[] = $projectUseCase->findByHomeworkId($homework_id);
     } elseif (isset($user_id)) {
         // User IDでの検索
-        $projects = $projectUseCase->findByUserId($user_id);
+        $projects[] = $projectUseCase->findByUserId($user_id);
     } else {
         // どのクエリパラメータも指定されていない場合はエラーを返す
         Response::send('error', '少なくとも1つのクエリパラメータを指定する必要があります。', 400);

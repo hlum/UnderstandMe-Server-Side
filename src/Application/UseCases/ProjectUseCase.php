@@ -54,17 +54,17 @@ class ProjectUseCase {
     }
 
 
-    public function findByUserId(string $userId): Project {
+    public function findByUserId(string $userId): array {
         $user = $this->userRepository->findById($userId);
         if ($user === null) {
             throw new \InvalidArgumentException("指定されたUserIDのユーザーが存在しません。");
         }
         
-        $project = $this->projectRepository->findByUserId($userId);
-        if ($project === null) {
+        $projects = $this->projectRepository->findByUserId($userId);
+        if (empty($projects)) {
             throw new \InvalidArgumentException("指定されたUserIDのプロジェクトが存在しません。");
         }
-        return $project;
+        return $projects;
     }
 
 

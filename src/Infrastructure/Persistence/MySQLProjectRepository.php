@@ -58,20 +58,20 @@ class MySQLProjectRepository implements ProjectRepositoryInterface {
         return Project::fromDBRow($row);
     }
 
-    function findByUserId(string $user_id): ?Project {
+    function findByUserId(string $user_id): array {
         $query = "SELECT * FROM projects WHERE user_id = ?";
         $types = 's';
         $params = [$user_id];
         $errorMessage = 'UserIDによるProject検索に失敗しました。';
 
         $result = $this->executeQuery($query, $types, $params, $errorMessage);
-        $row = $result->fetch_assoc();
+        $projects = [];
 
-        if($row === null) {
-            return null;
+        while ($row = $result->fetch_assoc()) {
+            $projects[] = Project::fromDBRow($row);
         }
-
-        return Project::fromDBRow($row);
+        
+        return $projects;
     }
 
     private function executeQuery(
