@@ -65,14 +65,14 @@ try {
             Response::send('error', '無効な入学年度形式です。', 400);
         }
         $admission_year = (int)$admission_year;
-        $majors = $majorUseCase->findByClassNameAndAdmissionYear($class_name, $admission_year);
+        $majors[] = $majorUseCase->findByClassNameAndAdmissionYear($class_name, $admission_year);
 
     } elseif (isset($teacher_id)) {
 
         if(!is_string($teacher_id)){
             Response::send('error', '無効な教師ID形式です。', 400);
         }
-        $majors = $majorUseCase->getMajorsByTeacherId($teacher_id);
+        $majors[] = $majorUseCase->getMajorsByTeacherId($teacher_id);
 
     } elseif (isset(($student_id))) {
         if(!is_string($student_id)){
