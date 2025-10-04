@@ -1,7 +1,7 @@
 <?php
 
 namespace Infrastructure\Persistence;
-use Domain\Entities\JobRepositoryInterface;
+use Domain\Repositories\JobRepositoryInterface;
 use Domain\Entities\Job;
 use Domain\Entities\Status;
 use mysqli;
@@ -20,6 +20,20 @@ class MySQLJobRepository implements JobRepositoryInterface {
         $params = [$job->id, $job->projectId, $job->status->getValue()];
         $errorMessage = 'Job保存に失敗しました。';
         $this->executeQuery($query, $types, $params, $errorMessage);
+    }
+
+    public function getAllJobs(int $limit = 100, int $offset = 0): array {
+        $query = "SELECT * FROM jobs LIMIT ? OFFSET ?";
+        $types = 'ii';
+        $params = [$limit, $offset];
+        $errorMessage = '全部のJobs取得に失敗しました。';
+        $result = $this->executeQuery($query, $types, $params, $errorMessage);
+        
+        while($row = $result->fetch_assoc()) {
+            $jobs[] = Job::fromDBRow($row);
+        }
+
+        return $jobs;
     }
 
     public function findById(string $id): ?Job {
@@ -55,23 +69,6 @@ class MySQLJobRepository implements JobRepositoryInterface {
         return Job::fromDBRow($row);
     }
     
-
-    public function findByUserId(string $userId): array {
-        $query = "SELECT j.* FROM jobs j JOIN projects p ON j.project_id = p.id WHERE p.user_id = ?";
-        $types = 's';
-        $params = [$userId];
-        $errorMessage = 'UserIDによるJob検索に失敗しました。';
-
-        $result = $this->executeQuery($query, $types, $params, $errorMessage);
-        $jobs = [];
-
-        while ($row = $result->fetch_assoc()) {
-            $jobs[] = Job::fromDBRow($row);
-        }
-
-        return $jobs;
-    }
-
 
     public function updateStatus(string $id, Status $status): void {
         $query = "UPDATE jobs SET status = ? WHERE id = ?";
