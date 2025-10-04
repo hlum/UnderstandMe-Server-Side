@@ -3,17 +3,25 @@
 namespace Application\UseCases;
 use Domain\Entities\Project;
 use Domain\Repositories\SnippetsRepo;
+use Infrastructure\Persistence\MySQLHomeworkRepository;
 use Infrastructure\Persistence\MySQLProjectRepository;
+use Infrastructure\Persistence\MySQLUserRepository;
 
 class ProjectUseCase {
     private MySQLProjectRepository $projectRepository;
     private SnippetsRepo $snippetsRepo;
+    private MySQLUserRepository $userRepository;
+    private MySQLHomeworkRepository $homeworkRepository;
     public function __construct(
         MySQLProjectRepository $projectRepository,
-        SnippetsRepo $snippetsRepo
-        ) {
+        SnippetsRepo $snippetsRepo,
+        MySQLUserRepository $userRepository,
+        MySQLHomeworkRepository $homeworkRepository
+    ) {
         $this->projectRepository = $projectRepository;
         $this->snippetsRepo = $snippetsRepo;
+        $this->userRepository = $userRepository;
+        $this->homeworkRepository = $homeworkRepository;
     }
 
 
@@ -33,6 +41,11 @@ class ProjectUseCase {
 
 
     public function findByHomeworkId(string $homeworkId): Project {
+        $homework = $this->homeworkRepository->findById($homeworkId);
+        if ($homework === null) {
+            throw new \InvalidArgumentException("指定されたHomeworkIDの課題が存在しません。");
+        }
+
         $project = $this->projectRepository->findByHomeworkId($homeworkId);
         if ($project === null) {
             throw new \InvalidArgumentException("指定されたHomeworkIDのプロジェクトが存在しません。");
@@ -42,6 +55,11 @@ class ProjectUseCase {
 
 
     public function findByUserId(string $userId): Project {
+        $user = $this->userRepository->findById($userId);
+        if ($user === null) {
+            throw new \InvalidArgumentException("指定されたUserIDのユーザーが存在しません。");
+        }
+        
         $project = $this->projectRepository->findByUserId($userId);
         if ($project === null) {
             throw new \InvalidArgumentException("指定されたUserIDのプロジェクトが存在しません。");
@@ -62,6 +80,16 @@ class ProjectUseCase {
     private function validateProject(Project $project) {
         if (empty($project->id) || empty($project->homeworkId) || empty($project->userId) || empty($project->githubFileLink)) {
             throw new \InvalidArgumentException("Projectの全てのフィールドは必須です。");
+        }
+
+        $user = $this->userRepository->findById($project->userId);
+        if ($user === null) {
+            throw new \InvalidArgumentException("指定されたUserIDのユーザーが存在しません。");
+        }
+
+        $homework = $this->homeworkRepository->findById($project->homeworkId);
+        if ($homework === null) {
+            throw new \InvalidArgumentException("指定されたHomeworkIDの課題が存在しません。");
         }
     }
 }
