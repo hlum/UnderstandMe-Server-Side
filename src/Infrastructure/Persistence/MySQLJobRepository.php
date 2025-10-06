@@ -69,10 +69,10 @@ class MySQLJobRepository implements JobRepositoryInterface {
         return Job::fromDBRow($row);
     }
 
-    public function getPendingJobs(int $limit = 10, int $offset = 0): array {
+    public function getJobsByStatus(Status $status, int $limit = 10, int $offset = 0): array {
         $query = "SELECT * FROM jobs WHERE status = ? LIMIT ? OFFSET ?";
         $types = 'sii';
-        $params = [Status::from('pending')->getValue(), $limit, $offset];
+        $params = [$status->getValue(), $limit, $offset];
         $errorMessage = '保留中のJobs取得に失敗しました。';
         $result = $this->executeQuery($query, $types, $params, $errorMessage);
 
