@@ -1,6 +1,6 @@
 <?php
 
-namespace Domain\Entities;
+namespace Domain\Repositories;
 use Domain\Entities\Choice;
 
 interface ChoiceRepositoryInterface {

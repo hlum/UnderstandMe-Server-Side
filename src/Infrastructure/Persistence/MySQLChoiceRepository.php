@@ -2,7 +2,7 @@
 
 namespace Infrastructure\Persistence;
 use Domain\Entities\Choice;
-use Domain\Entities\ChoiceRepositoryInterface;
+use Domain\Repositories\ChoiceRepositoryInterface;
 use mysqli;
 use mysqli_result;
 
