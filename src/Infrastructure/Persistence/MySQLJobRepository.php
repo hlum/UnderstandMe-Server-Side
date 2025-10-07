@@ -76,6 +76,7 @@ class MySQLJobRepository implements JobRepositoryInterface {
         $errorMessage = '保留中のJobs取得に失敗しました。';
         $result = $this->executeQuery($query, $types, $params, $errorMessage);
 
+        $jobs = [];
         while($row = $result->fetch_assoc()) {
             $jobs[] = Job::fromDBRow($row);
         }

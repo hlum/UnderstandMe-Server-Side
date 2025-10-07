@@ -15,7 +15,8 @@ class GithubSnippetsRepo implements SnippetsRepo {
 
     private const CODE_EXTENSIONS = [
         'php', 'js', 'ts', 'tsx', 'jsx', 'java', 'kt', 'swift', 
-        'cpp', 'c', 'cs', 'rb', 'py', 'go', 'rs', 'vue', 'scala'
+        'cpp', 'c', 'cs', 'rb', 'py', 'go', 'rs', 'vue', 'scala',
+        'ino','h'
     ];
 
     private const IGNORE_DIRS = [
@@ -58,7 +59,7 @@ class GithubSnippetsRepo implements SnippetsRepo {
         $this->cloneDir = $this->generateTempDir();
 
         if ($lines <= 0) {
-            throw new InvalidArgumentException('Lines must be positive');
+            throw new InvalidArgumentException('Linesの指定は 1 以上にしてください。');
         }
 
         try {
@@ -108,12 +109,12 @@ class GithubSnippetsRepo implements SnippetsRepo {
         
         if ($status !== 0) {
             throw new RuntimeException(
-                "Failed to clone repository: " . implode("\n", $output)
+                "リポジトリのクローンに失敗しました: " . implode("\n", $output)
             );
         }
 
         if (!is_dir($this->cloneDir)) {
-            throw new RuntimeException('Clone directory was not created');
+            throw new RuntimeException('クロンのリポジトリが生成されませんでした。');
         }
     }
 
@@ -213,7 +214,7 @@ class GithubSnippetsRepo implements SnippetsRepo {
     private function getCodeFiles(string $dir): array
     {
         if (!is_dir($dir)) {
-            throw new RuntimeException("Directory does not exist: {$dir}");
+            throw new RuntimeException("ディレクトリが存在しません: {$dir}");
         }
 
         $iterator = new RecursiveIteratorIterator(

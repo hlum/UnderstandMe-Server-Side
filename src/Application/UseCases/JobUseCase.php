@@ -91,7 +91,7 @@ class JobUseCase {
 
     private function validateJob(Job $job): void {
 
-        if (empty($job->id) || empty($job->project_id)) {
+        if (empty($job->id) || empty($job->projectId)) {
             throw new \InvalidArgumentException("ProjectIDは必須です。");
         }
 
