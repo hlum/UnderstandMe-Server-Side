@@ -7,26 +7,26 @@ use Domain\Entities\GeneratedQuestionsAndChoices;
 use Domain\Entities\Question;
 use Domain\Repositories\QuestionGeneratorInterface;
 
+
 class OllamaQuestionGenerator implements QuestionGeneratorInterface {
     public function generateQuestions(string $jobId, int $numQuestions, string $codeSnippet): array {
-        $endpoint = 'https://hlumaungphyo.site/api/generate';
 
         // データの準備
         $data = [
-            'model' => 'gpt-oss:latest',
-            'prompt' => $codeSnippet,
+            'model' => 'codequiz:latest',
+            'prompt' => '作成する数:'.$numQuestions . ' コードスニペット: ' . $codeSnippet,
             'stream' => false
         ];
 
         // curl セッションの初期化
-        $ch = curl_init($endpoint);
+        $ch = curl_init(OLLAMA_ENDPOINT);
 
         // オプションの設定
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST           => true,
             CURLOPT_POSTFIELDS     => json_encode($data),
-            CURLOPT_TIMEOUT        => 60,
+            CURLOPT_TIMEOUT        => 300,
             CURLOPT_HTTPHEADER     => [
                 'Content-Type: application/json'
             ]
@@ -39,8 +39,9 @@ class OllamaQuestionGenerator implements QuestionGeneratorInterface {
         if($response === false) {
             $error = curl_error($ch);
             curl_close($ch);
-            throw new \Exception('Curl error: ' . $error);
+            throw new \Exception('Curl エラー: ' . $error);
         }
+       
 
         // Close Curl
         curl_close($ch);
@@ -54,6 +55,17 @@ class OllamaQuestionGenerator implements QuestionGeneratorInterface {
 
     private function decodeResponse(bool|string $response, $jobId): array {
         $result = json_decode($response, true);
+        $result = $result['response'] ?? null;
+
+        if($result === null) {
+            throw new \Exception('Ollama API からのレスポンスが不正です。');
+        }
+
+        $result = json_decode($result, true);
+
+        if($result === null) {
+            throw new \Exception('Ollama API からのレスポンスが不正です。');
+        }
 
         if(!isset($result['questions'])) {
             throw new \Exception('Ollama API からのレスポンスが不正です。');
