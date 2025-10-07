@@ -44,6 +44,10 @@ class JobUseCase {
         $this->jobRepository->updateStatus($id, $status);
     }
 
+    public function getJobsByStatus(Status $status): array {
+        return $this->jobRepository->getJobsByStatus($status);
+    }
+
 
     public function deleteById(string $id): void {
         $job = $this->jobRepository->findById($id);
@@ -91,7 +95,7 @@ class JobUseCase {
 
     private function validateJob(Job $job): void {
 
-        if (empty($job->id) || empty($job->project_id)) {
+        if (empty($job->id) || empty($job->projectId)) {
             throw new \InvalidArgumentException("ProjectIDは必須です。");
         }
 

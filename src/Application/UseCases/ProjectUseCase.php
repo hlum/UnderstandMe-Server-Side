@@ -82,6 +82,7 @@ class ProjectUseCase {
             throw new \InvalidArgumentException("Projectの全てのフィールドは必須です。");
         }
 
+
         $user = $this->userRepository->findById($project->userId);
         if ($user === null) {
             throw new \InvalidArgumentException("指定されたUserIDのユーザーが存在しません。");
@@ -90,6 +91,11 @@ class ProjectUseCase {
         $homework = $this->homeworkRepository->findById($project->homeworkId);
         if ($homework === null) {
             throw new \InvalidArgumentException("指定されたHomeworkIDの課題が存在しません。");
+        }
+
+        $projectWithSameHomeworkId = $this->projectRepository->findByHomeworkId($homework->id);
+        if ($projectWithSameHomeworkId !== null) {
+            throw new \InvalidArgumentException("指定されたHomeworkIDのプロジェクトは既に提出されています。");
         }
     }
 }

@@ -1,14 +1,23 @@
 <?php
 
 require __DIR__ . '/../../vendor/autoload.php';
+use Application\UseCases\JobUseCase;
+use Application\UseCases\ProcessPendingJobsUseCase;
 use Helpers\Response;
 use Helpers\ApiKeyValidator;
+use Infrastructure\ExternalServices\OllamaQuestionGenerator;
+use Infrastructure\Persistence\MySQLChoiceRepository;
+use Infrastructure\Persistence\MySQLJobRepository;
 use Infrastructure\Persistence\MySQLProjectRepository;
 use Infrastructure\ExternalServices\GithubSnippetsRepo;
 use Application\UseCases\ProjectUseCase;
 use Domain\Entities\Project;
+use Infrastructure\Persistence\MySQLQuestionRepository;
 use Infrastructure\Persistence\MySQLUserRepository;
 use Infrastructure\Persistence\MySQLHomeworkRepository;
+use Domain\Entities\Job;
+use Domain\Entities\Status;
+
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -29,7 +38,7 @@ $headers = getallheaders();
 // API Key validation
 $headers = getallheaders();
 $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-ApiKeyValidator::checkTeacherKey($clientApiKey);
+ApiKeyValidator::check($clientApiKey);
 
 
 /* Expected JSON structure
@@ -69,23 +78,65 @@ if($github_file_link == null || !is_string($github_file_link) || !filter_var($gi
     Response::send('error', '無効なGitHubファイルリンク形式です。', 400);
 }
 
+
 try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
     $projectRepository = new MySQLProjectRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
-    $snippetsRepo = new GithubSnippetsRepo();
+    $snippetsRepository = new GithubSnippetsRepo();
     $homeworkRepository = new MySQLHomeworkRepository($connection);
+    $jobRepository = new MySQLJobRepository($connection);
+    $questionRepository = new MySQLQuestionRepository($connection);
+    $choiceRepository = new MySQLChoiceRepository($connection);
+    $questionGenerator = new OllamaQuestionGenerator();
+
+
     $projectUseCase = new ProjectUseCase(
         $projectRepository,
-        $snippetsRepo,
+        $snippetsRepository,
         $userRepository,
         $homeworkRepository
     );
-    $project = Project::createNew($user_id, $homework_id, $github_file_link);
 
+    $project = Project::createNew($user_id, $homework_id, $github_file_link);
     $projectUseCase->add($project);
-    Response::send('success', 'プロジェクトが正常に追加されました。', 200);
+
+
+    $jobUseCase = new JobUseCase($jobRepository, $userRepository, $projectRepository);
+
+    $job = Job::createNew($project->id, Status::from('pending'));
+    $jobUseCase->add($job);
+
+    
+
+    $jobProcessor = new ProcessPendingJobsUseCase(
+        $jobRepository,
+        $questionRepository,
+        $choiceRepository,
+        $questionGenerator,
+        $snippetsRepository,
+        $projectRepository
+    );
+
+
+    $processingJobExist = count($jobUseCase->getJobsByStatus(Status::from('processing'))) > 0;
+
+    if($processingJobExist) {
+        Response::send('info', 'プロジェクトが追加されましたが、現在別のプロジェクトの問題生成処理中です。少々お待ちください。', 202);
+    }
+
+    try {
+        $jobProcessor->process($job);
+        $jobUseCase->updateStatus($job->id, Status::from('done'));
+        // TODO : Userに問題生成が終了したことを知らせる。
+    } catch (Throwable $e) {
+        // Log the error but do not fail the entire request
+        error_log("Jobの処理失敗 (Job ID {$job->id}): " . $e->getMessage());
+    }
+
+
+    Response::send('success', 'プロジェクトが正常に追加されました。問題が生成されました。', 200);
 
 } catch (Throwable $e) {
     Response::send('error',  $e->getMessage(), 500);

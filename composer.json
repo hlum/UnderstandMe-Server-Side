@@ -11,7 +11,8 @@
             "Domain\\": "src/Domain/",
             "Application\\":"src/Application",
             "Infrastructure\\": "src/Infrastructure",
-            "Helpers\\": "src/Helpers"
+            "Helpers\\": "src/Helpers",
+            "Cron\\": "src/Cron"
         }
     },
     "require": {}

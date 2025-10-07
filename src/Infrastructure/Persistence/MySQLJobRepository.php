@@ -68,7 +68,21 @@ class MySQLJobRepository implements JobRepositoryInterface {
 
         return Job::fromDBRow($row);
     }
-    
+
+    public function getJobsByStatus(Status $status, int $limit = 10, int $offset = 0): array {
+        $query = "SELECT * FROM jobs WHERE status = ? LIMIT ? OFFSET ?";
+        $types = 'sii';
+        $params = [$status->getValue(), $limit, $offset];
+        $errorMessage = '保留中のJobs取得に失敗しました。';
+        $result = $this->executeQuery($query, $types, $params, $errorMessage);
+
+        $jobs = [];
+        while($row = $result->fetch_assoc()) {
+            $jobs[] = Job::fromDBRow($row);
+        }
+
+        return $jobs;
+    }
 
     public function updateStatus(string $id, Status $status): void {
         $query = "UPDATE jobs SET status = ? WHERE id = ?";
