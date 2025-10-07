@@ -15,7 +15,6 @@ use Domain\Entities\Status;
 
 class ProcessPendingJobsUseCase {
     private JobRepositoryInterface $jobRepository;
-    private UserRepositoryInterface $userRepository;
     private QuestionRepositoryInterface $questionRepository;
     private ChoiceRepositoryInterface $choiceRepository;
     private QuestionGeneratorInterface $questionGenerator;
@@ -26,7 +25,6 @@ class ProcessPendingJobsUseCase {
 
     public function __construct(
         JobRepositoryInterface $jobRepository,
-        UserRepositoryInterface $userRepository,
         QuestionRepositoryInterface $questionRepository,
         ChoiceRepositoryInterface $choiceRepository,
         QuestionGeneratorInterface $questionGenerator,
@@ -34,7 +32,6 @@ class ProcessPendingJobsUseCase {
         ProjectRepositoryInterface $projectRepository
     ) {
         $this->jobRepository = $jobRepository;
-        $this->userRepository = $userRepository;
         $this->questionRepository = $questionRepository;
         $this->choiceRepository = $choiceRepository;
         $this->questionGenerator = $questionGenerator;
@@ -42,20 +39,19 @@ class ProcessPendingJobsUseCase {
         $this->projectRepository = $projectRepository;
     }
 
-    public function process(): void {
-        if ($this->processingJobExists()) {
-            throw new \Exception('処理中のJobがあるため少々お待ちください。');
+    public function process(Job $job) {
+        $job = $this->jobRepository->findById($job->id);
+    
+
+        // If the job is already being processed, skip it
+        if ($job->status == Status::from('processing')) {
+            return;
         }
 
-        $pendingJob = $this->getPendingJob();
-        if (!isset($pendingJob)) {
-            throw new \Exception('保留中のJobがありません。');
-        }
-
-        $this->jobRepository->updateStatus($pendingJob->id, Status::from('processing'));
+        $this->jobRepository->updateStatus($job->id, Status::from('processing'));
 
         try {
-            $project = $this->projectRepository->findById($pendingJob->projectId);
+            $project = $this->projectRepository->findById($job->projectId);
             $codeSnippet = $this->snippetsRepository->getRandomCodeSnippet(
                 $project->githubFileLink,
                 50
@@ -67,7 +63,7 @@ class ProcessPendingJobsUseCase {
             }
 
             $generatedQAndChoices = $this->questionGenerator->generateQuestions(
-                $pendingJob->id,
+                $job->id,
                 5,
                 $codeSnippet
             );
@@ -79,34 +75,10 @@ class ProcessPendingJobsUseCase {
                 }
             }
 
-            $this->jobRepository->updateStatus($pendingJob->id, Status::from('done'));
+            $this->jobRepository->updateStatus($job->id, Status::from('done'));
 
         } catch (\Exception $e) {
-            $this->jobRepository->updateStatus($pendingJob->id, Status::from('failed'));
             throw $e;
         }
-    }
-
-
-    // 生成中のJobがあるかどうか
-    private function processingJobExists(): bool {
-        $processingJobs = $this->jobRepository->getJobsByStatus(Status::from('processing'),1);
-        return !empty($processingJobs);
-    }
-
-    private function getPendingJob(): ?Job {
-        $failedJob = $this->jobRepository->getJobsByStatus(Status::from('failed'),1);
-        
-        if (!empty($failedJob)) {
-            return $failedJob[0];
-        }
-
-        $pendingJob = $this->jobRepository->getJobsByStatus(Status::from('pending'), 1);
-
-        if(empty($pendingJob)) {
-            return null;
-        }
-
-        return $pendingJob[0];
     }
 }

@@ -78,7 +78,6 @@ if($github_file_link == null || !is_string($github_file_link) || !filter_var($gi
     Response::send('error', '無効なGitHubファイルリンク形式です。', 400);
 }
 
-$processingError = false;
 
 try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
@@ -113,7 +112,6 @@ try {
 
     $jobProcessor = new ProcessPendingJobsUseCase(
         $jobRepository,
-        $userRepository,
         $questionRepository,
         $choiceRepository,
         $questionGenerator,
@@ -121,19 +119,25 @@ try {
         $projectRepository
     );
 
-    try{
-        $jobProcessor->process();
-    } catch(Throwable $e) {
-        $processingError = true;
-        error_log('Job processing error: ' . $e->getMessage());
+
+    $processingJobExist = count($jobUseCase->getJobsByStatus(Status::from('processing'))) > 0;
+
+    if($processingJobExist) {
+        Response::send('info', 'プロジェクトが追加されましたが、現在別のプロジェクトの問題生成処理中です。少々お待ちください。', 202);
     }
+
+    try {
+        $jobProcessor->process($job);
+        $jobUseCase->updateStatus($job->id, Status::from('done'));
+        // TODO : Userに問題生成が終了したことを知らせる。
+    } catch (Throwable $e) {
+        // Log the error but do not fail the entire request
+        error_log("Jobの処理失敗 (Job ID {$job->id}): " . $e->getMessage());
+    }
+
 
     Response::send('success', 'プロジェクトが正常に追加されました。問題が生成されました。', 200);
 
 } catch (Throwable $e) {
-    if($processingError) {
-        Response::send('info', 'プロジェクトが追加されましたが、現在別のプロジェクトの問題生成処理中です。少々お待ちください。', 202);
-    } else {
-        Response::send('error',  $e->getMessage(), 500);
-    }
+    Response::send('error',  $e->getMessage(), 500);
 }

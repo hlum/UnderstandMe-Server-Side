@@ -44,6 +44,10 @@ class JobUseCase {
         $this->jobRepository->updateStatus($id, $status);
     }
 
+    public function getJobsByStatus(Status $status): array {
+        return $this->jobRepository->getJobsByStatus($status);
+    }
+
 
     public function deleteById(string $id): void {
         $job = $this->jobRepository->findById($id);
