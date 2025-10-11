@@ -26,7 +26,7 @@ ApiKeyValidator::check($clientApiKey);
 
 $class_name      = $_GET['class_name']      ?? null;
 $admission_year  = $_GET['admission_year']  ?? null;
-$user_id         = $_GET['user_id']         ?? null;
+$user_id         = $_GET['id']         ?? null;
 $email           = $_GET['email']           ?? null;
 $student_code    = $_GET['student_code']    ?? null;
 

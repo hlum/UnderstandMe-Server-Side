@@ -35,7 +35,7 @@ by major_id (get all homeworks for a specific major)
 by teacher_id (get all homeworks assigned by a specific teacher)
 */
 
-$homework_id = $_GET['homework_id'] ?? null;
+$homework_id = $_GET['id'] ?? null;
 $student_id   = $_GET['student_id']   ?? null;
 $major_id    = $_GET['major_id']    ?? null;
 $teacher_id  = $_GET['teacher_id']  ?? null;

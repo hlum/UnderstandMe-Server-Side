@@ -31,7 +31,7 @@ by userID
 get all with limit and offset
 */
 
-$job_id = $_GET['job_id'] ?? null;
+$job_id = $_GET['id'] ?? null;
 $user_id = $_GET['user_id'] ?? null;
 $limit   = $_GET['limit']   ?? 100;
 $offset  = $_GET['offset']  ?? 0;

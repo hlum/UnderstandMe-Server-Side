@@ -30,7 +30,7 @@ by project_id
 by homework_id
 by user_id
 */
-$project_id = $_GET['project_id'] ?? null;
+$project_id = $_GET['id'] ?? null;
 $homework_id   = $_GET['homework_id']   ?? null;
 $user_id    = $_GET['user_id']    ?? null;
 
