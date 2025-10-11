@@ -14,11 +14,16 @@ class UserUseCase {
         $this->userRepository = $userRepository;
     }
 
-    public function registerUser(string $id, string $email, Role $role, ?string $studentCode, ?int $admissionYear, ?string $className, ?string $fcmToken): User {
+    public function registerUser(string $id, string $email, Role $role, ?string $photoURL, ?string $studentCode, ?int $admissionYear, ?string $className, ?string $fcmToken): User {
         // 学校のメールか確認
         if (!str_ends_with($email, '@jec.ac.jp')) {
             throw new \InvalidArgumentException("学校のメールアドレスではありません。");
         }
+
+        if($photoURL != null && !filter_var($photoURL, FILTER_VALIDATE_URL)) {
+            throw new \InvalidArgumentException("無効なphoto_url形式です。");
+        }
+        
         // 既に存在するメールアドレスか確認
         if ($this->userRepository->findById($id) !== null) {
             throw new \InvalidArgumentException("このユーザーIDは既に登録されています");
@@ -40,7 +45,7 @@ class UserUseCase {
         }
 
         // 新しいユーザーを作成
-        $user = User::createNew($id, $email, $role, $studentCode, $admissionYear, $className, $fcmToken);
+        $user = User::createNew($id, $email, $role, $photoURL, $studentCode, $admissionYear, $className, $fcmToken);
 
         // ユーザーをリポジトリに保存
         $this->userRepository->insert($user);
