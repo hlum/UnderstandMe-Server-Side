@@ -9,6 +9,7 @@ use JsonSerializable;
 class User implements JsonSerializable {
     public string $id;
     public string $email;
+    public ?string $photoURL;
     public Role $role;
     public ?string $studentCode;       // 学生のみ
     public ?int $admissionYear;        // 学生のみ
@@ -19,6 +20,7 @@ class User implements JsonSerializable {
     private function __construct(
         string $id,
         string $email,
+        ?string $photoURL,
         Role $role,
         ?string $studentCode,
         ?int $admissionYear,
@@ -36,6 +38,7 @@ class User implements JsonSerializable {
 
         $this->id = $id;
         $this->email = $email;
+        $this->photoURL = $photoURL;
         $this->role = $role;
         $this->studentCode = $studentCode;
         $this->admissionYear = $admissionYear;
@@ -51,6 +54,7 @@ class User implements JsonSerializable {
             'email' => $this->email,
             'role' => $this->role instanceof Role ? $this->role->getValue() : $this->role,
             'student_code' => $this->studentCode,
+            'photo_url' => $this->photoURL,
             'admission_year' => $this->admissionYear,
             'class_name' => $this->className,
             'fcm_token' => $this->fcmToken,
@@ -67,11 +71,13 @@ class User implements JsonSerializable {
         ?string $studentCode,
         ?int $admissionYear,
         ?string $className,
-        ?string $fcmToken
+        ?string $fcmToken,
+        ?string $photoURL
     ): self {
         return new self(
             $id,
             $email,
+            $photoURL,
             $role,
             $studentCode,
             $admissionYear,
@@ -86,6 +92,7 @@ class User implements JsonSerializable {
         return new self(
             $row['id'],
             $row['email'],
+            $row['photo_url'] ?? null,
             Role::from($row['role']),
             $row['student_code'] ?? null,
             $row['admission_year'] !== null ? (int)$row['admission_year'] : null,
