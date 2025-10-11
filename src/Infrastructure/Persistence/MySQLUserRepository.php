@@ -20,9 +20,9 @@ class MySQLUserRepository implements UserRepositoryInterface {
     }
 
     public function insert(User $user): void {
-        $query = "INSERT INTO users (id, email, role, student_code, admission_year, class_name, fcm_token) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        $types = 'sssssss';
-        $params = [$user->id, $user->email, $user->role->getValue(), $user->studentCode, $user->admissionYear, $user->className, $user->fcmToken];
+        $query = "INSERT INTO users (id, email, role, photo_url, student_code, admission_year, class_name, fcm_token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $types = 'ssssssss';
+        $params = [$user->id, $user->email, $user->role->getValue(), $user->photoURL, $user->studentCode, $user->admissionYear, $user->className, $user->fcmToken];
         $error_message = 'ユーザーの保存に失敗しました';
         $this->executeQuery($query, $types, $params, $error_message);
     }
