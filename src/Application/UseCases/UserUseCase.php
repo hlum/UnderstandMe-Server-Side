@@ -23,7 +23,7 @@ class UserUseCase {
         if($photoURL != null && !filter_var($photoURL, FILTER_VALIDATE_URL)) {
             throw new \InvalidArgumentException("無効なphoto_url形式です。");
         }
-        
+
         // 既に存在するメールアドレスか確認
         if ($this->userRepository->findById($id) !== null) {
             throw new \InvalidArgumentException("このユーザーIDは既に登録されています");
@@ -45,7 +45,7 @@ class UserUseCase {
         }
 
         // 新しいユーザーを作成
-        $user = User::createNew($id, $email, $role, $photoURL, $studentCode, $admissionYear, $className, $fcmToken);
+        $user = User::createNew($id, $email, $role, $studentCode, $admissionYear, $className, $fcmToken, $photoURL);
 
         // ユーザーをリポジトリに保存
         $this->userRepository->insert($user);
