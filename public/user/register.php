@@ -51,6 +51,7 @@ $user_id = $input['user_id'] ?? null;
 $email = $input['email'] ?? null;
 $role = Role::from($input['role'] ?? 'student');
 $fcm_token = $input['fcm_token'] ?? null;
+$photo_url = $input['photo_url'] ?? null;
 
 if (empty($user_id)) {
     Response::send('error', 'ユーザーIDは必須です。', 400);
@@ -66,6 +67,11 @@ if (empty($email)) {
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     Response::send('error', '無効なメールアドレス形式です。', 400);
 }
+
+if($photo_url != null && !filter_var($photo_url, FILTER_VALIDATE_URL)) {
+    Response::send('error', '無効なphoto_url形式です。', 400);
+}
+
 if (!isNullORValidFcmToken($fcm_token)) {
     Response::send('error', '無効なFCMトークン形式です。', 400);
 }
@@ -82,7 +88,7 @@ try {
     $userRepository = new MySQLUserRepository($connection);
     $userUseCase = new UserUseCase($userRepository);
 
-    $userUseCase->registerUser($user_id, $email, $role, $student_code, $grade, $class_name, $fcm_token);
+    $userUseCase->registerUser($user_id, $email, $role, $photo_url, $student_code, $grade, $class_name, $fcm_token);
 
     Response::send('success', 'ユーザー登録が成功しました。', 200);
 } catch (Throwable $e) {
