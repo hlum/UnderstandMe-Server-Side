@@ -119,7 +119,7 @@ try {
         $projectRepository
     );
 
-
+ 
     $processingJobExist = count($jobUseCase->getJobsByStatus(Status::from('processing'))) > 0;
 
     if($processingJobExist) {
@@ -133,6 +133,7 @@ try {
     } catch (Throwable $e) {
         // Log the error but do not fail the entire request
         error_log("Jobの処理失敗 (Job ID {$job->id}): " . $e->getMessage());
+        exit();
     }
 
 
