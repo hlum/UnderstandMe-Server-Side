@@ -37,6 +37,7 @@ ApiKeyValidator::check($clientApiKey);
     // role: String('student' or 'teacher'),
     // student_code: String not nullable,
     // fcm_token: String nullable,
+    // photo_url: String nullable (URL format)
 // }
 
 
@@ -77,10 +78,16 @@ if (!isNullORValidFcmToken($fcm_token)) {
 }
 
 $student_code = mb_substr($email, 0, strpos($email, '@'));
-$grade = $student_code.trim(mb_substr($student_code, 0, 2), '0');
-if((int)$grade != 0){
-    $grade = (int)$grade;
+$admission_year = $student_code.trim(mb_substr($student_code, 0, 2), '0');
+
+
+
+if((int)$admission_year != 0){
+    $admission_year = (int)$admission_year;
+} else {
+    Response::send('error', '無効なメールアドレスです。学校からのメール以外は登録できません。', 400);
 }
+
 $class_name = mb_substr($student_code, 2, 2);
 
 try {
@@ -88,7 +95,7 @@ try {
     $userRepository = new MySQLUserRepository($connection);
     $userUseCase = new UserUseCase($userRepository);
 
-    $userUseCase->registerUser($user_id, $email, $role, $photo_url, $student_code, $grade, $class_name, $fcm_token);
+    $userUseCase->registerUser($user_id, $email, $role, $photo_url, $student_code, $admission_year, $class_name, $fcm_token);
 
     Response::send('success', 'ユーザー登録が成功しました。', 200);
 } catch (Throwable $e) {
