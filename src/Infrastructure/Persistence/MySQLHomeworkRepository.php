@@ -16,10 +16,10 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface {
     }
 
     public function insert(Homework $homework): void {
-        $query = "INSERT INTO homeworks (id, teacher_id, major_id, title, description, due_date) VALUES (?, ?, ?, ?, ?, ?)";
+        $query = "INSERT INTO homeworks (id, teacher_id, class_id, title, description, due_date) VALUES (?, ?, ?, ?, ?, ?)";
         $types = 'ssssss';
         $dueDateString = $homework->dueDate->format('Y-m-d H:i:s');
-        $params = [$homework->id, $homework->teacherID, $homework->majorID, $homework->title, $homework->description, $dueDateString];
+        $params = [$homework->id, $homework->teacherID, $homework->classID, $homework->title, $homework->description, $dueDateString];
         $errorMessage = 'Homework保存に失敗しました。';
         $this->executeQuery($query, $types, $params, $errorMessage);
     }
@@ -42,11 +42,11 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface {
     }
 
 
-    public function findByMajorId(string $majorId): array {
-        $query = "SELECT * FROM homeworks WHERE major_id = ?";
+    public function findByClassID(string $classID): array {
+        $query = "SELECT * FROM homeworks WHERE class_id = ?";
         $types = 's';
-        $params = [$majorId];
-        $errorMessage = 'MajorIDによるHomework検索に失敗しました。';
+        $params = [$classID];
+        $errorMessage = 'ClassIDによるHomework検索に失敗しました。';
 
         $result = $this->executeQuery($query, $types, $params, $errorMessage);
         $homeworks = [];
@@ -64,7 +64,7 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface {
         $query = "SELECT * FROM homeworks WHERE teacher_id = ?";
         $types = 's';
         $params = [$teacherId];
-        $errorMessage = 'MajorIDによるHomework検索に失敗しました。';
+        $errorMessage = 'teacher_id によるHomework検索に失敗しました。';
 
         $result = $this->executeQuery($query, $types, $params, $errorMessage);
         $homeworks = [];

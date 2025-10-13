@@ -28,7 +28,7 @@ ApiKeyValidator::check($clientApiKey);
 by id
 by teacher_id
 by major_code and admission_year
-by student_id (get the major of a specific student)
+by student_id (get the class of a specific student)
 */
 
 

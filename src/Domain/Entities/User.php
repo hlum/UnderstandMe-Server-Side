@@ -13,7 +13,7 @@ class User implements JsonSerializable {
     public Role $role;
     public ?string $studentCode;       // 学生のみ
     public ?int $admissionYear;        // 学生のみ
-    public ?string $className;         // 学生のみ
+    public ?string $majorCode;         // 学生のみ
     public ?string $fcmToken;
     public \DateTimeImmutable $createdAt;
 
@@ -24,15 +24,15 @@ class User implements JsonSerializable {
         Role $role,
         ?string $studentCode,
         ?int $admissionYear,
-        ?string $className,
+        ?string $majorCode,
         ?string $fcmToken,
         \DateTimeImmutable $createdAt
     ) {
         // ドメインレベルでもテーブル制約を適用する
-        if ($role->getValue() === 'student' && ($studentCode === null || $admissionYear === null || $className === null)) {
+        if ($role->getValue() === 'student' && ($studentCode === null || $admissionYear === null || $majorCode === null)) {
             throw new \InvalidArgumentException("学生はstudent_code、admission_year、class_nameを持つ必要があります");
         }
-        if ($role->getValue() === 'teacher' && ($studentCode !== null || $admissionYear !== null || $className !== null)) {
+        if ($role->getValue() === 'teacher' && ($studentCode !== null || $admissionYear !== null || $majorCode !== null)) {
             throw new \InvalidArgumentException("教師はstudent_code、admission_year、class_nameを持つべきではありません");
         }
 
@@ -42,7 +42,7 @@ class User implements JsonSerializable {
         $this->role = $role;
         $this->studentCode = $studentCode;
         $this->admissionYear = $admissionYear;
-        $this->className = $className;
+        $this->majorCode = $majorCode;
         $this->fcmToken = $fcmToken;
         $this->createdAt = $createdAt;
     }
@@ -56,7 +56,7 @@ class User implements JsonSerializable {
             'student_code' => $this->studentCode,
             'photo_url' => $this->photoURL,
             'admission_year' => $this->admissionYear,
-            'class_name' => $this->className,
+            'major_code' => $this->majorCode,
             'fcm_token' => $this->fcmToken,
             'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
         ];
@@ -70,7 +70,7 @@ class User implements JsonSerializable {
         Role $role,
         ?string $studentCode,
         ?int $admissionYear,
-        ?string $className,
+        ?string $majorCode,
         ?string $fcmToken,
         ?string $photoURL
     ): self {
@@ -81,7 +81,7 @@ class User implements JsonSerializable {
             $role,
             $studentCode,
             $admissionYear,
-            $className,
+            $majorCode,
             $fcmToken,
             new \DateTimeImmutable()
         );
@@ -96,7 +96,7 @@ class User implements JsonSerializable {
             Role::from($row['role']),
             $row['student_code'] ?? null,
             $row['admission_year'] !== null ? (int)$row['admission_year'] : null,
-            $row['class_name'] ?? null,
+            $row['major_code'] ?? null,
             $row['fcm_token'] ?? null,
             new \DateTimeImmutable($row['created_at'])
         );

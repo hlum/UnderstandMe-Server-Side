@@ -12,7 +12,7 @@ use JsonSerializable;
 // | id             | char(36)     | NO   | PRI | NULL              |                   |
 // | name           | varchar(100) | NO   | MUL | NULL              |                   |
 // | admission_year | int          | NO   |     | NULL              |                   |
-// | class_name     | varchar(10)  | NO   |     | NULL              |                   |
+// | major_code     | varchar(10)  | NO   |     | NULL              |                   |
 // | created_at     | timestamp    | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
 // +----------------+--------------+------+-----+-------------------+-------------------+
 // 5 rows in set (0.01 sec)

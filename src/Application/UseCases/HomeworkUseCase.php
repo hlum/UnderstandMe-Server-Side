@@ -13,16 +13,16 @@ use Domain\Repositories\HomeworkRepositoryInterface;
 class HomeworkUseCase {
     private HomeworkRepositoryInterface $homeworkRepository;
     private UserRepositoryInterface $userRepository;
-    private ClassRepositoryInterface $majorRepository;
+    private ClassRepositoryInterface $classRepository;
 
     public function __construct(
         HomeworkRepositoryInterface $homeworkRepository,
         UserRepositoryInterface $userRepository,
-        ClassRepositoryInterface $majorRepository
+        ClassRepositoryInterface $classRepository
         ) {
         $this->homeworkRepository = $homeworkRepository;
         $this->userRepository = $userRepository;
-        $this->majorRepository = $majorRepository;
+        $this->classRepository = $classRepository;
     }
 
     public function add(Homework $homework) {
@@ -39,11 +39,11 @@ class HomeworkUseCase {
         return $homework;
     }
 
-    public function findByMajorId(string $majorId): array {
-        $this->validateMajor($majorId);
-        $homework = $this->homeworkRepository->findByMajorId($majorId);
+    public function findByClassId(string $classID): array {
+        $this->validateClass($classID);
+        $homework = $this->homeworkRepository->findByClassID($classID);
         if($homework === null) {
-            throw new \InvalidArgumentException("指定されたMajorIDの宿題が存在しません。");
+            throw new \InvalidArgumentException("指定されたClassIDの宿題が存在しません。");
         }
         return $homework;
     }
@@ -64,18 +64,18 @@ class HomeworkUseCase {
             throw new \InvalidArgumentException("指定されたStudentIDの学生が存在しません。");
         }
 
-        if ($student->className === null || $student->admissionYear === null) {
-            throw new \InvalidArgumentException("学生のclassNameまたはadmissionYearが設定されていません。");
+        if ($student->majorCode === null || $student->admissionYear === null) {
+            throw new \InvalidArgumentException("学生のmajorCodeまたはadmissionYearが設定されていません。");
         }
         
-        $majors = $this->majorRepository->findByMajorCodeAndAdmissionYear($student->className, $student->admissionYear);
-        if (empty($majors)) {
+        $classes = $this->classRepository->findByMajorCodeAndAdmissionYear($student->majorCode, $student->admissionYear);
+        if (empty($classes)) {
             throw new \InvalidArgumentException("学生の専攻が見つかりません。");
         }
 
         $homeworks = [];
-        foreach ($majors as $major) {
-            $homeworks = array_merge($homeworks, $this->homeworkRepository->findByMajorId($major->id));
+        foreach ($classes as $class) {
+            $homeworks = array_merge($homeworks, $this->homeworkRepository->findByClassID($class->id));
         }
         return $homeworks;
     }
@@ -95,16 +95,16 @@ class HomeworkUseCase {
         }
 
         $this->validateTeacher($homework->teacherID);
-        $this->validateMajor($homework->majorID);
+        $this->validateClass($homework->classID);
         $this->validateDueDate($homework->dueDate);
     }
 
-    private function validateMajor(string $majorId): ClassEntity {
-        $major = $this->majorRepository->findById($majorId);
-        if ($major === null) {
-            throw new \InvalidArgumentException("指定されたMajorIDの専攻が存在しません。");
+    private function validateClass(string $classID): ClassEntity {
+        $class = $this->classRepository->findById($classID);
+        if ($class === null) {
+            throw new \InvalidArgumentException("指定されたClassIDのクラスが存在しません。");
         }
-        return $major;
+        return $class;
     }
 
     private function validateTeacher(string $teacherId): void {

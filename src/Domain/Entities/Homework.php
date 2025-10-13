@@ -8,7 +8,7 @@ use DateTimeImmutable;
 class Homework implements JsonSerializable{
     public string $id;
     public string $teacherID;
-    public string $majorID;
+    public string $classID;
     public string $title;
     public ?string $description;
     public DateTimeImmutable $dueDate;
@@ -17,7 +17,7 @@ class Homework implements JsonSerializable{
     private function __construct(
         string $id,
         string $teacherID,
-        string $majorID,
+        string $classID,
         string $title,
         ?string $description, 
         DateTimeImmutable $dueDate, 
@@ -25,7 +25,7 @@ class Homework implements JsonSerializable{
         ) {
         $this->id = $id;
         $this->teacherID = $teacherID;
-        $this->majorID = $majorID;
+        $this->classID = $classID;
         $this->title = $title;
         $this->description = $description;
         $this->dueDate = $dueDate;
@@ -35,7 +35,7 @@ class Homework implements JsonSerializable{
 
     public static function createNew(
         string $teacherID,
-        string $majorID,
+        string $classID,
         string $title,
         ?string $description, 
         DateTimeImmutable $dueDate
@@ -43,7 +43,7 @@ class Homework implements JsonSerializable{
         return new self(
             bin2hex(random_bytes(16)),
             $teacherID,
-            $majorID,
+            $classID,
             $title,
             $description,
             $dueDate,
@@ -56,7 +56,7 @@ class Homework implements JsonSerializable{
         return new self(
             $row['id'],
             $row['teacher_id'],
-            $row['major_id'],
+            $row['class_id'],
             $row['title'],
             $row['description'],
             new DateTimeImmutable($row['due_date']),
@@ -68,7 +68,7 @@ class Homework implements JsonSerializable{
         return [
             'id' => $this->id,
             'teacher_id' => $this->teacherID,
-            'major_id' => $this->majorID,
+            'class_id' => $this->classID,
             'title' => $this->title,
             'description' => $this->description,
             'due_date' => $this->dueDate->format('Y-m-d H:i:s'),

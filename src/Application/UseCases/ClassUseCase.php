@@ -7,23 +7,23 @@ use Domain\Repositories\UserRepositoryInterface;
 
 
 class ClassUseCase {
-    private ClassRepositoryInterface $majorRepository;
+    private ClassRepositoryInterface $classRepository;
     private UserRepositoryInterface $userRepository;
     public function __construct(
-        ClassRepositoryInterface $majorRepository,
+        ClassRepositoryInterface $classRepository,
         UserRepositoryInterface $userRepository
         ) {
-        $this->majorRepository = $majorRepository;
+        $this->classRepository = $classRepository;
         $this->userRepository = $userRepository;
     }
 
     public function add(ClassEntity $class) {
         $this->validateClass($class);
-        $this->majorRepository->insert($class);
+        $this->classRepository->insert($class);
     }
 
     public function findById(string $id): ClassEntity {
-        $class = $this->majorRepository->findById($id);
+        $class = $this->classRepository->findById($id);
         if ($class === null) {
             throw new \InvalidArgumentException("指定されたIDのクラスが存在しません。");
         }
@@ -32,7 +32,7 @@ class ClassUseCase {
 
 
     public function findByMajorCodeAndAdmissionYear(string $majorCode, int $admissionYear): array {
-        $classes = $this->majorRepository->findByMajorCodeAndAdmissionYear($majorCode, $admissionYear);
+        $classes = $this->classRepository->findByMajorCodeAndAdmissionYear($majorCode, $admissionYear);
         if (empty($classes)) {
             throw new \InvalidArgumentException("指定された専攻コードと入学年度のクラスが存在しません。");
         }
@@ -49,14 +49,14 @@ class ClassUseCase {
         }
 
         
-        return $this->majorRepository->findByMajorCodeAndAdmissionYear($user->className, $user->admissionYear) ?? null;
+        return $this->classRepository->findByMajorCodeAndAdmissionYear($user->majorCode, $user->admissionYear) ?? null;
     }
 
     public function getClassesByTeacherId(string $teacherId): array {
         if (!$this->isTeacher($teacherId)) {
             throw new \InvalidArgumentException("指定されたIDのユーザーは教師ではありません。");
         }
-        return $this->majorRepository->findByTeacherId($teacherId);
+        return $this->classRepository->findByTeacherId($teacherId);
     }
 
     private function isTeacher(string $userId): bool {
@@ -65,7 +65,7 @@ class ClassUseCase {
     }
 
     private function validateClass(ClassEntity $class): void {
-        $classInDb = $this->majorRepository->findById($class->id);
+        $classInDb = $this->classRepository->findById($class->id);
         if ($classInDb !== null) {
             throw new \InvalidArgumentException("指定されたIDのクラスは既に存在します。");
         }
