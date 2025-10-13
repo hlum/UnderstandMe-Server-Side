@@ -6,7 +6,7 @@ use Helpers\ApiKeyValidator;
 use Helpers\Response;
 use Infrastructure\Persistence\MySQLHomeworkRepository;
 use Infrastructure\Persistence\MySQLUserRepository;
-use Infrastructure\Persistence\MySQLMajorRepository;
+use Infrastructure\Persistence\MySQLClassRepository;
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -45,7 +45,7 @@ try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $homeworkRepository = new MySQLHomeworkRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
-    $majorRepository = new MySQLMajorRepository($connection);
+    $majorRepository = new MySQLClassRepository($connection);
 
     $homeworkUseCase = new HomeworkUseCase($homeworkRepository, $userRepository, $majorRepository);
 

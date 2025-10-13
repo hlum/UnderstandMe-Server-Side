@@ -6,19 +6,19 @@ use DateTimeImmutable;
 use Domain\Entities\Homework;
 use Domain\Entities\ClassEntity;
 use Domain\Repositories\UserRepositoryInterface;
-use Domain\Repositories\MajorRepositoryInterface;
+use Domain\Repositories\ClassRepositoryInterface;
 
 use Domain\Repositories\HomeworkRepositoryInterface;
 
 class HomeworkUseCase {
     private HomeworkRepositoryInterface $homeworkRepository;
     private UserRepositoryInterface $userRepository;
-    private MajorRepositoryInterface $majorRepository;
+    private ClassRepositoryInterface $majorRepository;
 
     public function __construct(
         HomeworkRepositoryInterface $homeworkRepository,
         UserRepositoryInterface $userRepository,
-        MajorRepositoryInterface $majorRepository
+        ClassRepositoryInterface $majorRepository
         ) {
         $this->homeworkRepository = $homeworkRepository;
         $this->userRepository = $userRepository;
@@ -68,7 +68,7 @@ class HomeworkUseCase {
             throw new \InvalidArgumentException("学生のclassNameまたはadmissionYearが設定されていません。");
         }
         
-        $majors = $this->majorRepository->findByClassNameAndAdmissionYear($student->className, $student->admissionYear);
+        $majors = $this->majorRepository->findByMajorCodeAndAdmissionYear($student->className, $student->admissionYear);
         if (empty($majors)) {
             throw new \InvalidArgumentException("学生の専攻が見つかりません。");
         }
