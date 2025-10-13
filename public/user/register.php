@@ -48,7 +48,7 @@ if (json_last_error() !== JSON_ERROR_NONE) {
     Response::send('error', '無効なJSONデータです。', 400);
 }
 
-$user_id = $input['user_id'] ?? null;
+$user_id = $input['id'] ?? null;
 $email = $input['email'] ?? null;
 $role = Role::from($input['role'] ?? 'student');
 $fcm_token = $input['fcm_token'] ?? null;
@@ -88,14 +88,14 @@ if((int)$admission_year != 0){
     Response::send('error', '無効なメールアドレスです。学校からのメール以外は登録できません。', 400);
 }
 
-$class_name = mb_substr($student_code, 2, 2);
+$major_code = mb_substr($student_code, 2, 2);
 
 try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $userRepository = new MySQLUserRepository($connection);
     $userUseCase = new UserUseCase($userRepository);
 
-    $userUseCase->registerUser($user_id, $email, $role, $photo_url, $student_code, $admission_year, $class_name, $fcm_token);
+    $userUseCase->registerUser($user_id, $email, $role, $photo_url, $student_code, $admission_year, $major_code, $fcm_token);
 
     Response::send('success', 'ユーザー登録が成功しました。', 200);
 } catch (Throwable $e) {

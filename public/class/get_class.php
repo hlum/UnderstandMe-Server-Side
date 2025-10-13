@@ -65,21 +65,21 @@ try {
             Response::send('error', '無効な入学年度形式です。', 400);
         }
         $admission_year = (int)$admission_year;
-        $classes[] = $classUseCase->findByMajorCodeAndAdmissionYear($major_code, $admission_year);
+        $classes = $classUseCase->findByMajorCodeAndAdmissionYear($major_code, $admission_year);
 
     } elseif (isset($teacher_id)) {
 
         if(!is_string($teacher_id)){
             Response::send('error', '無効な教師ID形式です。', 400);
         }
-        $classes[] = $classUseCase->getClassesByTeacherId($teacher_id);
+        $classes = $classUseCase->getClassesByTeacherId($teacher_id);
 
     } elseif (isset(($student_id))) {
         if(!is_string($student_id)){
             Response::send('error', '無効な学生ID形式です。', 400);
         }
 
-        $classes[] = $classUseCase->getClassesByStudentId($student_id);
+        $classes = $classUseCase->getClassesByStudentId($student_id);
 
     } else {
         Response::send('error', '少なくとも1つのクエリパラメータ（id、major_code と admission_year、student_id）を指定してください。', 400);

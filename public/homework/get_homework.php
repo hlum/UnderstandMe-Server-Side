@@ -45,9 +45,9 @@ try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $homeworkRepository = new MySQLHomeworkRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
-    $majorRepository = new MySQLClassRepository($connection);
+    $classRepository = new MySQLClassRepository($connection);
 
-    $homeworkUseCase = new HomeworkUseCase($homeworkRepository, $userRepository, $majorRepository);
+    $homeworkUseCase = new HomeworkUseCase($homeworkRepository, $userRepository, $classRepository);
 
 } catch (Throwable $e) {
     Response::send('error',  $e->getMessage(), 500);

@@ -30,10 +30,10 @@ class User implements JsonSerializable {
     ) {
         // ドメインレベルでもテーブル制約を適用する
         if ($role->getValue() === 'student' && ($studentCode === null || $admissionYear === null || $majorCode === null)) {
-            throw new \InvalidArgumentException("学生はstudent_code、admission_year、class_nameを持つ必要があります");
+            throw new \InvalidArgumentException("学生はstudent_code、admission_year、major_codeを持つ必要があります");
         }
         if ($role->getValue() === 'teacher' && ($studentCode !== null || $admissionYear !== null || $majorCode !== null)) {
-            throw new \InvalidArgumentException("教師はstudent_code、admission_year、class_nameを持つべきではありません");
+            throw new \InvalidArgumentException("教師はstudent_code、admission_year、major_codeを持つべきではありません");
         }
 
         $this->id = $id;

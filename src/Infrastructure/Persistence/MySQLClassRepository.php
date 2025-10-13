@@ -8,7 +8,7 @@ use Domain\Repositories\ClassRepositoryInterface;
 use Domain\Entities\ClassEntity;
 
 
-class MySQLMajorRepository implements ClassRepositoryInterface {
+class MySQLClassRepository implements ClassRepositoryInterface {
     private mysqli $connection;
 
     public function __construct(mysqli $connection) {
