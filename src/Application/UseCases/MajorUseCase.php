@@ -1,7 +1,7 @@
 <?php
 
 namespace Application\UseCases;
-use Domain\Entities\Major;
+use Domain\Entities\ClassEntity;
 use Domain\Repositories\MajorRepositoryInterface;
 use Domain\Repositories\UserRepositoryInterface;
 
@@ -17,12 +17,12 @@ class MajorUseCase {
         $this->userRepository = $userRepository;
     }
 
-    public function add(Major $major) {
+    public function add(ClassEntity $major) {
         $this->validateMajor($major);
         $this->majorRepository->insert($major);
     }
 
-    public function findById(string $id): Major {
+    public function findById(string $id): ClassEntity {
         $major = $this->majorRepository->findById($id);
         if ($major === null) {
             throw new \InvalidArgumentException("指定されたIDの学科が存在しません。");
@@ -64,7 +64,7 @@ class MajorUseCase {
         return $user !== null && $user->role->getValue() === 'teacher';
     }
 
-    private function validateMajor(Major $major): void {
+    private function validateMajor(ClassEntity $major): void {
         $majorInDb = $this->majorRepository->findById($major->id);
         if ($majorInDb !== null) {
             throw new \InvalidArgumentException("指定されたIDの学科は既に存在します。");

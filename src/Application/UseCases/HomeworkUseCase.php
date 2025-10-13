@@ -4,7 +4,7 @@ namespace Application\UseCases;
 
 use DateTimeImmutable;
 use Domain\Entities\Homework;
-use Domain\Entities\Major;
+use Domain\Entities\ClassEntity;
 use Domain\Repositories\UserRepositoryInterface;
 use Domain\Repositories\MajorRepositoryInterface;
 
@@ -99,7 +99,7 @@ class HomeworkUseCase {
         $this->validateDueDate($homework->dueDate);
     }
 
-    private function validateMajor(string $majorId): Major {
+    private function validateMajor(string $majorId): ClassEntity {
         $major = $this->majorRepository->findById($majorId);
         if ($major === null) {
             throw new \InvalidArgumentException("指定されたMajorIDの専攻が存在しません。");

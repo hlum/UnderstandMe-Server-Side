@@ -16,7 +16,7 @@ use JsonSerializable;
 // | created_at     | timestamp    | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
 // +----------------+--------------+------+-----+-------------------+-------------------+
 // 5 rows in set (0.01 sec)
-class Major implements JsonSerializable {
+class ClassEntity implements JsonSerializable {
     public string $id;
     public string $teacher_id;
     public string $name;

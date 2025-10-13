@@ -2,7 +2,7 @@
 
 require __DIR__ . '/../../vendor/autoload.php';
 use Application\UseCases\MajorUseCase;
-use Domain\Entities\Major;
+use Domain\Entities\ClassEntity;
 use Helpers\Response;
 use Helpers\ApiKeyValidator;
 use Infrastructure\Persistence\MySQLMajorRepository;
@@ -82,7 +82,7 @@ try {
     $majorRepository = new MySQLMajorRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
     $majorUseCase = new MajorUseCase($majorRepository, $userRepository);
-    $newMajor = Major::createNew(
+    $newMajor = ClassEntity::createNew(
         name: $name,
         teacher_id: $teacher_id,
         admissionYear: $admission_year,

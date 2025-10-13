@@ -5,7 +5,7 @@ namespace Infrastructure\Persistence;
 use mysqli;
 use mysqli_result;
 use Domain\Repositories\MajorRepositoryInterface;
-use Domain\Entities\Major;
+use Domain\Entities\ClassEntity;
 
 
 class MySQLMajorRepository implements MajorRepositoryInterface {
@@ -16,7 +16,7 @@ class MySQLMajorRepository implements MajorRepositoryInterface {
     }
 
 
-    public function insert(Major $major): void {
+    public function insert(ClassEntity $major): void {
         $query = "INSERT INTO majors (id, teacher_id, name, admission_year, class_name) VALUES (?, ?, ?, ?, ?)";
         $types = 'sssis';
         $params = [$major->id, $major->teacher_id, $major->name, $major->admissionYear, $major->className];
@@ -24,7 +24,7 @@ class MySQLMajorRepository implements MajorRepositoryInterface {
         $this->executeQuery($query, $types, $params, $errorMessage);
     }
 
-    public function findById(string $id): ?Major {
+    public function findById(string $id): ?ClassEntity {
         $query = "SELECT * FROM majors WHERE id = ?";
         $types = 's';
         $params = [$id];
@@ -37,7 +37,7 @@ class MySQLMajorRepository implements MajorRepositoryInterface {
             return null;
         }
 
-        return Major::fromDBRow($row);
+        return ClassEntity::fromDBRow($row);
     }
 
 
@@ -50,7 +50,7 @@ class MySQLMajorRepository implements MajorRepositoryInterface {
         $result = $this->executeQuery($query, $types, $params, $errorMessage);
         $majors = [];
         while ($row = $result->fetch_assoc()) {
-            $majors[] = Major::fromDBRow($row);
+            $majors[] = ClassEntity::fromDBRow($row);
         }
 
         return $majors;
@@ -66,7 +66,7 @@ class MySQLMajorRepository implements MajorRepositoryInterface {
         $result = $this->executeQuery($query, $types, $params, $errorMessage);
         $majors = [];
         while ($row = $result->fetch_assoc()) {
-            $majors[] = Major::fromDBRow($row);
+            $majors[] = ClassEntity::fromDBRow($row);
         }
 
         return $majors;
