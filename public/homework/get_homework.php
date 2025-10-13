@@ -6,7 +6,7 @@ use Helpers\ApiKeyValidator;
 use Helpers\Response;
 use Infrastructure\Persistence\MySQLHomeworkRepository;
 use Infrastructure\Persistence\MySQLUserRepository;
-use Infrastructure\Persistence\MySQLMajorRepository;
+use Infrastructure\Persistence\MySQLClassRepository;
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -30,14 +30,14 @@ ApiKeyValidator::check($clientApiKey);
 /*
 by homework_id
 by student_id
-by student_id and major_id (get homeworks for a student in a specific major)
-by major_id (get all homeworks for a specific major)
+by student_id and class_id (get homeworks for a student in a specific class)
+by class_id (get all homeworks for a specific class)
 by teacher_id (get all homeworks assigned by a specific teacher)
 */
 
 $homework_id = $_GET['id'] ?? null;
 $student_id   = $_GET['student_id']   ?? null;
-$major_id    = $_GET['major_id']    ?? null;
+$class_id    = $_GET['class_id']    ?? null;
 $teacher_id  = $_GET['teacher_id']  ?? null;
 
 
@@ -45,7 +45,7 @@ try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $homeworkRepository = new MySQLHomeworkRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
-    $majorRepository = new MySQLMajorRepository($connection);
+    $majorRepository = new MySQLClassRepository($connection);
 
     $homeworkUseCase = new HomeworkUseCase($homeworkRepository, $userRepository, $majorRepository);
 
@@ -63,8 +63,8 @@ try {
         }
     } elseif (isset($student_id)) {
         $homeworks = $homeworkUseCase->findByStudentId($student_id);
-    } elseif (isset($major_id)) {
-        $homeworks = $homeworkUseCase->findByMajorId($major_id);
+    } elseif (isset($class_id)) {
+        $homeworks = $homeworkUseCase->findByClassId($class_id);
     } elseif (isset($teacher_id)) {
         $homeworks = $homeworkUseCase->findByTeacherId($teacher_id);
     } else {

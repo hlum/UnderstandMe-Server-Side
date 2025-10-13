@@ -14,7 +14,7 @@ class UserUseCase {
         $this->userRepository = $userRepository;
     }
 
-    public function registerUser(string $id, string $email, Role $role, ?string $photoURL, ?string $studentCode, ?int $admissionYear, ?string $className, ?string $fcmToken): User {
+    public function registerUser(string $id, string $email, Role $role, ?string $photoURL, ?string $studentCode, ?int $admissionYear, ?string $majorCode, ?string $fcmToken): User {
         // 学校のメールか確認
         if (!str_ends_with($email, '@jec.ac.jp')) {
             throw new \InvalidArgumentException("学校のメールアドレスではありません。");
@@ -45,7 +45,7 @@ class UserUseCase {
         }
 
         // 新しいユーザーを作成
-        $user = User::createNew($id, $email, $role, $studentCode, $admissionYear, $className, $fcmToken, $photoURL);
+        $user = User::createNew($id, $email, $role, $studentCode, $admissionYear, $majorCode, $fcmToken, $photoURL);
 
         // ユーザーをリポジトリに保存
         $this->userRepository->insert($user);
@@ -99,7 +99,7 @@ class UserUseCase {
     }
 
 
-    public function findByClassNameAndAdmissionYear(string $className, int $admissionYear): array {
-        return $this->userRepository->findByClassNameAndAdmissionYear($className, $admissionYear);
+    public function findByMajorCodeAndAdmissionYear(string $majorCode, int $admissionYear): array {
+        return $this->userRepository->findByMajorCodeAndAdmissionYear($majorCode, $admissionYear);
     }
 }

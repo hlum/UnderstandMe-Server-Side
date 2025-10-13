@@ -7,7 +7,7 @@ use Helpers\Response;
 use Helpers\ApiKeyValidator;
 use Infrastructure\Persistence\MySQLHomeworkRepository;
 use Infrastructure\Persistence\MySQLUserRepository;
-use Infrastructure\Persistence\MySQLMajorRepository;
+use Infrastructure\Persistence\MySQLClassRepository;
 
 
 ini_set('display_errors', 1);
@@ -33,7 +33,7 @@ ApiKeyValidator::checkTeacherKey($clientApiKey);
 // Expected JSON structure
 // {
     // teacher_id: String,
-    // major_id: String nullable,
+    // class_id: String nullable,
     // title: String,
     // description: String nullable,
     // due_date: String nullable // ISO 8601 date format "2025-10-01T23:59:00Z"
@@ -46,7 +46,7 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 }
 
 $teacher_id = $input['teacher_id'] ?? null;
-$major_id = $input['major_id'] ?? null;
+$class_id = $input['class_id'] ?? null;
 $title = $input['title'] ?? null;
 $description = $input['description'] ?? null;
 $due_date = $input['due_date'] ?? null;
@@ -74,12 +74,12 @@ try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $homeworkRepository = new MySQLHomeworkRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
-    $majorRepository = new MySQLMajorRepository($connection);
+    $classRepository = new MySQLClassRepository($connection);
 
-    $homeworkUseCase = new HomeworkUseCase($homeworkRepository, $userRepository, $majorRepository);
+    $homeworkUseCase = new HomeworkUseCase($homeworkRepository, $userRepository, $classRepository);
     $newHomework = Homework::createNew(
         $teacher_id,
-        $major_id,
+        $class_id,
         $title,
         $description,
         $due_date

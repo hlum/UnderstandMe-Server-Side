@@ -3,8 +3,8 @@
 require __DIR__ . '/../../vendor/autoload.php';
 use Helpers\Response;
 use Helpers\ApiKeyValidator;
-use Infrastructure\Persistence\MySQLMajorRepository;
-use Application\UseCases\MajorUseCase;
+use Infrastructure\Persistence\MySQLClassRepository;
+use Application\UseCases\ClassUseCase;
 use Infrastructure\Persistence\MySQLUserRepository;
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -27,23 +27,23 @@ ApiKeyValidator::check($clientApiKey);
 /* Possible queries
 by id
 by teacher_id
-by class_name and admission_year
-by student_id (get the major of a specific student)
+by major_code and admission_year
+by student_id (get the class of a specific student)
 */
 
 
 $id = $_GET['id'] ?? null;
 $teacher_id = $_GET['teacher_id'] ?? null;
-$class_name   = $_GET['class_name']   ?? null;
+$major_code   = $_GET['major_code']   ?? null;
 $admission_year    = $_GET['admission_year']    ?? null;
 $student_id  = $_GET['student_id']  ?? null;
 
 
 try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-    $majorRepository = new MySQLMajorRepository($connection);
+    $classRepository = new MySQLClassRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
-    $majorUseCase = new MajorUseCase($majorRepository, $userRepository);
+    $classUseCase = new ClassUseCase($classRepository, $userRepository);
 
 } catch (Throwable $e) {
     Response::send('error',  $e->getMessage(), 500);
@@ -51,43 +51,41 @@ try {
 
 
 try {
-    $majors = [];
+    $classes = [];
 
     if (isset($id)) {
-        $major = $majorUseCase->findById($id);
-        $majors[] = $major;
-    } elseif (isset($class_name) && isset($admission_year)) {
+        $class = $classUseCase->findById($id);
+        $classes[] = $class;
+    } elseif (isset($major_code) && isset($admission_year)) {
 
-        if(!is_string($class_name)){
-            Response::send('error', '無効なクラス名形式です。', 400);
+        if(!is_string($major_code)){
+            Response::send('error', '無効な専攻のコード形式です。', 400);
         }
         if(!is_numeric($admission_year)){
             Response::send('error', '無効な入学年度形式です。', 400);
         }
         $admission_year = (int)$admission_year;
-        $majors[] = $majorUseCase->findByClassNameAndAdmissionYear($class_name, $admission_year);
+        $classes[] = $classUseCase->findByMajorCodeAndAdmissionYear($major_code, $admission_year);
 
     } elseif (isset($teacher_id)) {
 
         if(!is_string($teacher_id)){
             Response::send('error', '無効な教師ID形式です。', 400);
         }
-        $majors[] = $majorUseCase->getMajorsByTeacherId($teacher_id);
+        $classes[] = $classUseCase->getClassesByTeacherId($teacher_id);
 
     } elseif (isset(($student_id))) {
         if(!is_string($student_id)){
             Response::send('error', '無効な学生ID形式です。', 400);
         }
-        // Assuming a method getMajorByStudentId exists in MajorUseCase
-        $major = $majorUseCase->getMajorByStudentId($student_id);
-        if ($major !== null) {
-            $majors[] = $major;
-        }
+
+        $classes[] = $classUseCase->getClassesByStudentId($student_id);
+
     } else {
-        Response::send('error', '少なくとも1つのクエリパラメータ（id、class_nameとadmission_year、student_id）を指定してください。', 400);
+        Response::send('error', '少なくとも1つのクエリパラメータ（id、major_code と admission_year、student_id）を指定してください。', 400);
     }
 
-    Response::send('success', '専攻の取得に成功しました。', 200, json_encode($majors));
+    Response::send('success', 'クラスの取得に成功しました。', 200, json_encode($classes));
 
 } catch (InvalidArgumentException $e) {
     Response::send('error', $e->getMessage(), 404);

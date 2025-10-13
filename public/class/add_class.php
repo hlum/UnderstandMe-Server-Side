@@ -1,11 +1,11 @@
 <?php
 
 require __DIR__ . '/../../vendor/autoload.php';
-use Application\UseCases\MajorUseCase;
+use Application\UseCases\ClassUseCase;
 use Domain\Entities\ClassEntity;
 use Helpers\Response;
 use Helpers\ApiKeyValidator;
-use Infrastructure\Persistence\MySQLMajorRepository;
+use Infrastructure\Persistence\MySQLClassRepository;
 use Infrastructure\Persistence\MySQLUserRepository;
 
 ini_set('display_errors', 1);
@@ -34,7 +34,7 @@ ApiKeyValidator::checkTeacherKey($clientApiKey);
     // name: String,
     // teacher_id: String,
     // admission_year: Integer,
-    // class_name: String
+    // major_code: String
 // }
 
 $input = json_decode(file_get_contents('php://input'), true);
@@ -45,7 +45,7 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 
 $name = $input['name'] ?? null;
 $admission_year = $input['admission_year'] ?? null;
-$class_name = $input['class_name'] ?? null;
+$major_code = $input['major_code'] ?? null;
 $teacher_id = $input['teacher_id'] ?? null;
 
 if (!isset($name)) {
@@ -69,28 +69,28 @@ if (!isset($admission_year)) {
 if($admission_year == null || !is_int($admission_year)){
     Response::send('error', '無効な入学年度形式です。', 400);
 }
-if (!isset($class_name)) {
-    Response::send('error', 'クラス名は必須です。', 400);
+if (!isset($major_code)) {
+    Response::send('error', '専攻のコードは必須です。', 400);
 }
-if($class_name == null || !is_string($class_name)){
-    Response::send('error', '無効なクラス名形式です。', 400);
+if($major_code == null || !is_string($major_code)){
+    Response::send('error', '無効な専攻のコード形式です。', 400);
 }
 
 try {
 
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-    $majorRepository = new MySQLMajorRepository($connection);
+    $classRepository = new MySQLClassRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
-    $majorUseCase = new MajorUseCase($majorRepository, $userRepository);
-    $newMajor = ClassEntity::createNew(
+    $classUseCase = new ClassUseCase($classRepository, $userRepository);
+    $newClass = ClassEntity::createNew(
         name: $name,
         teacher_id: $teacher_id,
         admissionYear: $admission_year,
-        className: $class_name
+        majorCode: $major_code
     );
 
-    $majorUseCase->add($newMajor);
-    Response::send('success', '学科が正常に追加されました。', 200);
+    $classUseCase->add($newClass);
+    Response::send('success', 'クラスが正常に追加されました。', 200);
 
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);

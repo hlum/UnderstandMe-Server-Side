@@ -4,11 +4,11 @@ namespace Infrastructure\Persistence;
 
 use mysqli;
 use mysqli_result;
-use Domain\Repositories\MajorRepositoryInterface;
+use Domain\Repositories\ClassRepositoryInterface;
 use Domain\Entities\ClassEntity;
 
 
-class MySQLMajorRepository implements MajorRepositoryInterface {
+class MySQLMajorRepository implements ClassRepositoryInterface {
     private mysqli $connection;
 
     public function __construct(mysqli $connection) {
@@ -16,19 +16,19 @@ class MySQLMajorRepository implements MajorRepositoryInterface {
     }
 
 
-    public function insert(ClassEntity $major): void {
-        $query = "INSERT INTO majors (id, teacher_id, name, admission_year, class_name) VALUES (?, ?, ?, ?, ?)";
+    public function insert(ClassEntity $class): void {
+        $query = "INSERT INTO classes (id, teacher_id, name, admission_year, major_code) VALUES (?, ?, ?, ?, ?)";
         $types = 'sssis';
-        $params = [$major->id, $major->teacher_id, $major->name, $major->admissionYear, $major->className];
-        $errorMessage = 'Major保存に失敗しました。';
+        $params = [$class->id, $class->teacher_id, $class->name, $class->admissionYear, $class->majorCode];
+        $errorMessage = 'Class保存に失敗しました。';
         $this->executeQuery($query, $types, $params, $errorMessage);
     }
 
     public function findById(string $id): ?ClassEntity {
-        $query = "SELECT * FROM majors WHERE id = ?";
+        $query = "SELECT * FROM classes WHERE id = ?";
         $types = 's';
         $params = [$id];
-        $errorMessage = 'IdによるMajor検索に失敗しました。';
+        $errorMessage = 'IdによるClass検索に失敗しました。';
 
         $result = $this->executeQuery($query, $types, $params, $errorMessage);
         $row = $result->fetch_assoc();
@@ -42,34 +42,34 @@ class MySQLMajorRepository implements MajorRepositoryInterface {
 
 
     public function findByTeacherId(string $teacherId): array {
-        $query = "SELECT * FROM majors WHERE teacher_id = ?";
+        $query = "SELECT * FROM classes WHERE teacher_id = ?";
         $types = 's';
         $params = [$teacherId];
-        $errorMessage = 'TeacherIdによるMajor検索に失敗しました。';
+        $errorMessage = 'TeacherIdによるClass検索に失敗しました。';
 
         $result = $this->executeQuery($query, $types, $params, $errorMessage);
-        $majors = [];
+        $classes = [];
         while ($row = $result->fetch_assoc()) {
-            $majors[] = ClassEntity::fromDBRow($row);
+            $classes[] = ClassEntity::fromDBRow($row);
         }
 
-        return $majors;
+        return $classes;
     }
 
 
-    public function findByClassNameAndAdmissionYear(string $className, int $admissionYear): array {
-        $query = "SELECT * FROM majors WHERE class_name = ? AND admission_year = ?";
+    public function findByMajorCodeAndAdmissionYear(string $majorCode, int $admissionYear): array {
+        $query = "SELECT * FROM classes WHERE major_code = ? AND admission_year = ?";
         $types = 'si';
-        $params = [$className, $admissionYear];
-        $errorMessage = 'ClassNameとAdmissionYearによるMajor検索に失敗しました。';
+        $params = [$majorCode, $admissionYear];
+        $errorMessage = 'MajorCodeとAdmissionYearによるClass検索に失敗しました。';
 
         $result = $this->executeQuery($query, $types, $params, $errorMessage);
-        $majors = [];
+        $classes = [];
         while ($row = $result->fetch_assoc()) {
-            $majors[] = ClassEntity::fromDBRow($row);
+            $classes[] = ClassEntity::fromDBRow($row);
         }
 
-        return $majors;
+        return $classes;
     }
 
 

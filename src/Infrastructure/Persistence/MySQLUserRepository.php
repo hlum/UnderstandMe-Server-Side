@@ -20,9 +20,9 @@ class MySQLUserRepository implements UserRepositoryInterface {
     }
 
     public function insert(User $user): void {
-        $query = "INSERT INTO users (id, email, role, photo_url, student_code, admission_year, class_name, fcm_token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $query = "INSERT INTO users (id, email, role, photo_url, student_code, admission_year, major_code, fcm_token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $types = 'ssssssss';
-        $params = [$user->id, $user->email, $user->role->getValue(), $user->photoURL, $user->studentCode, $user->admissionYear, $user->className, $user->fcmToken];
+        $params = [$user->id, $user->email, $user->role->getValue(), $user->photoURL, $user->studentCode, $user->admissionYear, $user->majorCode, $user->fcmToken];
         $error_message = 'ユーザーの保存に失敗しました';
         $this->executeQuery($query, $types, $params, $error_message);
     }
@@ -77,11 +77,11 @@ class MySQLUserRepository implements UserRepositoryInterface {
     }
 
 
-    public function findByClassNameAndAdmissionYear(string $className, int $admissionYear): array {
-        $query = "SELECT * FROM users WHERE class_name = ? AND admission_year = ?";
+    public function findByMajorCodeAndAdmissionYear(string $majorCode, int $admissionYear): array {
+        $query = "SELECT * FROM users WHERE major_code = ? AND admission_year = ?";
         $types = 'si';
-        $params = [$className, $admissionYear];
-        $error_message = 'クラス名と入学年によるユーザーの検索に失敗しました';
+        $params = [$majorCode, $admissionYear];
+        $error_message = '専攻コードと入学年によるユーザーの検索に失敗しました';
 
         $result = $this->executeQuery($query, $types, $params, $error_message);
         $users = [];

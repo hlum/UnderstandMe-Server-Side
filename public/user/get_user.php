@@ -24,7 +24,7 @@ $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
 ApiKeyValidator::check($clientApiKey);
 
 
-$class_name      = $_GET['class_name']      ?? null;
+$major_code      = $_GET['major_code']      ?? null;
 $admission_year  = $_GET['admission_year']  ?? null;
 $user_id         = $_GET['id']         ?? null;
 $email           = $_GET['email']           ?? null;
@@ -57,13 +57,13 @@ try {
         if ($user !== null) {
             $users = [$user];
         }
-    } elseif (isset($admission_year) || isset($class_name)) {
-        if (!(isset($admission_year) && isset($class_name))) {
-            Response::send('error', 'admission_yearとclass_nameは両方指定する必要があります。', 400);
+    } elseif (isset($admission_year) || isset($major_code)) {
+        if (!(isset($admission_year) && isset($major_code))) {
+            Response::send('error', 'admission_yearとmajor_codeは両方指定する必要があります。', 400);
         }
-        $users = $userUseCase->findByClassNameAndAdmissionYear($class_name, $admission_year);
+        $users = $userUseCase->findByMajorCodeAndAdmissionYear($major_code, $admission_year);
     } else {
-        Response::send('error', 'user_id、email、student_code、admission_year+class_nameのいずれかを指定してください', 400);
+        Response::send('error', 'user_id、email、student_code、admission_year+major_codeのいずれかを指定してください', 400);
     }
 
     if (empty($users)) {
