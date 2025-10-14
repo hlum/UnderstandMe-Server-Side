@@ -80,6 +80,36 @@ class HomeworkUseCase {
         return $homeworks;
     }
 
+    public function findByStudentIDWithStatus(string $studentId): array {
+        $student = $this->userRepository->findById($studentId);
+        if ($student === null || $student->role->getValue() !== 'student') {
+            throw new \InvalidArgumentException("指定されたStudentIDの学生が存在しません。");
+        }
+
+        return $this->homeworkRepository->findByStudentIDWithStatus($studentId);
+    }
+
+    public function findByIDWithStatus(string $homeworkID): array {
+        $homework = $this->homeworkRepository->findByIDWithStatus($homeworkID);
+        if ($homework === null) {
+            throw new \InvalidArgumentException("指定されたIDの宿題が存在しません。");
+        }
+        return $homework;
+    }
+
+
+    public function findByClassIDWithStatus(string $classID, string $studentID): array {
+        $this->validateClass($classID);
+        
+        $student = $this->userRepository->findById($studentID);
+        if ($student === null || $student->role->getValue() !== 'student') {
+            throw new \InvalidArgumentException("指定されたStudentIDの学生が存在しません。");
+        }
+
+        return $this->homeworkRepository->findByClassIDWithStatus($classID, $studentID);
+    }
+
+
     private function validateHomework(Homework $homework): void {
        if(str_word_count($homework->title) > 100) {
             throw new \InvalidArgumentException("タイトルが長すぎます。100文字以内にしてください。");

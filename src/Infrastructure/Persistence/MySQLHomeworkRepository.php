@@ -60,6 +60,97 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface {
     }
 
 
+    public function findByIDWithStatus(string $homeworkID): array {
+        $query = "SELECT h.id AS homework_id, h.teacher_id AS teacher_id, h.class_id AS class_id, h.title, h.description, h.due_date, h.created_at, p.id AS project_id, j.status AS submission_status
+        FROM homeworks h
+        LEFT JOIN projects p ON p.homework_id = h.id
+        LEFT JOIN jobs j ON j.project_id = p.id WHERE h.id = ? ORDER BY h.created_at DESC";
+        $types = 's';
+        $params = [$homeworkID];
+        $errorMessage = 'HomeworkIDによるHomeworkとその提出状況の検索に失敗しました。';
+        $result = $this->executeQuery($query, $types, $params, $errorMessage);
+        $homeworksWithStatus = [];
+        while($row = $result->fetch_assoc()) {
+            $homework = Homework::fromDBRow([
+                'id' => $row['homework_id'],
+                'teacher_id' => $row['teacher_id'],
+                'class_id' => $row['class_id'],
+                'title' => $row['title'],
+                'description' => $row['description'],
+                'due_date' => $row['due_date'],
+                'created_at' => $row['created_at']
+            ]);
+            $homeworksWithStatus[] = [
+                'homework' => $homework,
+                'project_id' => $row['project_id'],
+                'submission_status' => $row['submission_status']
+            ];
+        }
+        return $homeworksWithStatus;
+    }
+
+
+    public function findByStudentIDWithStatus(string $studentId): array {
+        $query = "SELECT h.id AS homework_id, h.title, h.description, h.due_date, h.created_at, p.id AS project_id, j.status AS submission_status
+        FROM homeworks h
+        LEFT JOIN projects p ON p.homework_id = h.id AND p.user_id = ?
+        LEFT JOIN jobs j ON j.project_id = p.id ORDER BY h.created_at DESC";
+        $types = 's';
+        $params = [$studentId];
+        $errorMessage = '学生IDによるHomeworkとその提出状況の検索に失敗しました。';
+        $result = $this->executeQuery($query, $types, $params, $errorMessage);
+        $homeworksWithStatus = [];
+        while($row = $result->fetch_assoc()) {
+            $homework = Homework::fromDBRow([
+                'id' => $row['homework_id'],
+                'teacher_id' => '', // Not needed for this context
+                'class_id' => '',   // Not needed for this context
+                'title' => $row['title'],
+                'description' => $row['description'],
+                'due_date' => $row['due_date'],
+                'created_at' => $row['created_at']
+            ]);
+            $homeworksWithStatus[] = [
+                'homework' => $homework,
+                'project_id' => $row['project_id'],
+                'submission_status' => $row['submission_status']
+            ];
+        }
+
+        return $homeworksWithStatus;
+    }
+
+
+    public function findByClassIDWithStatus(string $classID, string $studentID): array {
+        $query = "SELECT h.id AS homework_id, h.title, h.description, h.due_date, h.created_at, p.id AS project_id, j.status AS submission_status
+        FROM homeworks h
+        LEFT JOIN projects p ON p.homework_id = h.id AND p.user_id = ?
+        LEFT JOIN jobs j ON j.project_id = p.id WHERE h.class_id = ? ORDER BY h.created_at DESC";
+        $types = 'ss';
+        $params = [$studentID, $classID];
+        $errorMessage = 'ClassIDとStudentIDによるHomeworkとその提出状況の検索に失敗しました。';
+        $result = $this->executeQuery($query, $types, $params, $errorMessage);
+        $homeworksWithStatus = [];
+        while($row = $result->fetch_assoc()) {
+            $homework = Homework::fromDBRow([
+                'id' => $row['homework_id'],
+                'teacher_id' => '', // Not needed for this context
+                'class_id' => $classID,
+                'title' => $row['title'],
+                'description' => $row['description'],
+                'due_date' => $row['due_date'],
+                'created_at' => $row['created_at']
+            ]);
+            $homeworksWithStatus[] = [
+                'homework' => $homework,
+                'project_id' => $row['project_id'],
+                'submission_status' => $row['submission_status']
+            ];
+        }
+        return $homeworksWithStatus;
+    }
+
+
     public function findByTeacherId(string $teacherId): array {
         $query = "SELECT * FROM homeworks WHERE teacher_id = ?";
         $types = 's';
