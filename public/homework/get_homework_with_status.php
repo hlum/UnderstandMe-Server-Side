@@ -54,9 +54,9 @@ try {
 try {
     $homeworksWithStatus = [];
     if (isset($homework_id)) {
-        $homeworksWithStatus[] = $homeworkUseCase->findByIDWithStatus($homework_id);
+        $homeworksWithStatus = $homeworkUseCase->findByIDWithStatus($homework_id);
     } else if (isset($student_id) && isset($class_id)) {
-        $homeworksWithStatus = $homeworkUseCase->findByClassIDWithStatus($student_id, $class_id);
+        $homeworksWithStatus = $homeworkUseCase->findByClassIDWithStatus($class_id, $student_id);
     } else if (isset($student_id)) {
         $homeworksWithStatus = $homeworkUseCase->findByStudentIDWithStatus($student_id);
     } else {
