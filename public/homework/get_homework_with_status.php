@@ -57,6 +57,8 @@ try {
         $homeworksWithStatus[] = $homeworkUseCase->findByIDWithStatus($homework_id);
     } else if (isset($student_id) && isset($class_id)) {
         $homeworksWithStatus = $homeworkUseCase->findByClassIDWithStatus($student_id, $class_id);
+    } else if (isset($student_id)) {
+        $homeworksWithStatus = $homeworkUseCase->findByStudentIDWithStatus($student_id);
     } else {
         Response::send('error', 'idかstudent_idとclass_idを指定してください', 400);
     }
