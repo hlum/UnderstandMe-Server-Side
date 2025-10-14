@@ -65,6 +65,8 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface {
             homework_id,
             homework_title,
             due_date,
+            description,
+            class_id,
             github_file_link,
             job_status,
             submission_state
@@ -81,6 +83,8 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface {
             $homeworksWithStatus[] = [
                 'id' => $row['homework_id'],
                 'title' => $row['homework_title'],
+                'description' => $row['description'],
+                'class_id' => $row['class_id'],
                 'due_date' => $row['due_date'],
                 'github_file_link' => $row['github_file_link'],
                 'job_status' => $row['job_status'],
@@ -96,6 +100,8 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface {
             homework_id,
             homework_title,
             due_date,
+            description,
+            class_id,
             github_file_link,
             job_status,
             submission_state
@@ -112,6 +118,8 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface {
             $homeworksWithStatus[] = [
                 'id' => $row['homework_id'],
                 'title' => $row['homework_title'],
+                'class_id' => $row['class_id'],
+                'description' => $row['description'],
                 'due_date' => $row['due_date'],
                 'github_file_link' => $row['github_file_link'],
                 'job_status' => $row['job_status'],
@@ -128,6 +136,8 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface {
             homework_id,
             homework_title,
             due_date,
+            class_id,
+            description,
             github_file_link,
             job_status,
             submission_state
@@ -142,7 +152,9 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface {
         while($row = $result->fetch_assoc()) {
             $homeworksWithStatus[] = [
                 'id' => $row['homework_id'],
-                'homework_title' => $row['homework_title'],
+                'title' => $row['homework_title'],
+                'class_id' => $row['class_id'],
+                'description' => $row['description'],
                 'due_date' => $row['due_date'],
                 'github_file_link' => $row['github_file_link'],
                 'job_status' => $row['job_status'],
