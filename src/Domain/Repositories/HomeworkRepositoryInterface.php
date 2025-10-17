@@ -11,6 +11,6 @@ interface HomeworkRepositoryInterface {
     public function findByClassID(string $classID): array;
     public function deleteById(string $id): void;
     public function findByStudentIDWithStatus(string $studentId): array;
-    public function findByIDWithStatus(string $homeworkID): array;
+    public function findByIDWithStatus(string $homeworkID, string $student_id): array;
     public function findByClassIDWithStatus(string $classID, string $studentID): array;
 }

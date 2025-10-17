@@ -89,8 +89,8 @@ class HomeworkUseCase {
         return $this->homeworkRepository->findByStudentIDWithStatus($studentId);
     }
 
-    public function findByIDWithStatus(string $homeworkID): array {
-        $homework = $this->homeworkRepository->findByIDWithStatus($homeworkID);
+    public function findByIDWithStatus(string $homeworkID, string $studentID): array {
+        $homework = $this->homeworkRepository->findByIDWithStatus($homeworkID, $studentID);
         if ($homework === null) {
             throw new \InvalidArgumentException("指定されたIDの宿題が存在しません。");
         }

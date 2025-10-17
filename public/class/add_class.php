@@ -1,4 +1,7 @@
 <?php
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 require __DIR__ . '/../../vendor/autoload.php';
 use Application\UseCases\ClassUseCase;
@@ -18,8 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if(!in_array($_SERVER['REQUEST_METHOD'], ['PATCH'])) {
-    Response::send('error', 'Method not allowed. Use UPDATE', 405);
+if(!in_array($_SERVER['REQUEST_METHOD'], ['POST'])) {
+    Response::send('error', 'Method not allowed. Use POST', 405);
 }
 
 $headers = getallheaders();

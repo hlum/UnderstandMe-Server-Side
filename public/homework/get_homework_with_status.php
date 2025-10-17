@@ -27,9 +27,15 @@ $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
 ApiKeyValidator::check($clientApiKey);
 
 
+
+// curl -X POST "http://24cm0138.main.jp/understand_me/public/homework/get_homework_with_status.php?id=8d82b12f53cd8a07db1a17f00950b6a1" \
+//   -H "Content-Type: application/json"
+//   -H "Authorization: 'afskjw42y8571wsdkls514amoiejojsdk'"
+
+
 // Possible queries
 /*
-by homework_id
+by id, student_id ( homework id , student_id)
 by student_id and class_id (get homeworks for a student in a specific class)
 */
 
@@ -54,7 +60,7 @@ try {
 try {
     $homeworksWithStatus = [];
     if (isset($homework_id)) {
-        $homeworksWithStatus = $homeworkUseCase->findByIDWithStatus($homework_id);
+        $homeworksWithStatus = $homeworkUseCase->findByIDWithStatus($homework_id, $student_id);
     } else if (isset($student_id) && isset($class_id)) {
         $homeworksWithStatus = $homeworkUseCase->findByClassIDWithStatus($class_id, $student_id);
     } else if (isset($student_id)) {

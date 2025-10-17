@@ -9,7 +9,7 @@ class ApiKeyValidator {
             Response::send('error', 'APIキーが提供されていません。', 400);
         }
 
-        if (!hash_equals($clientApiKey, API_KEY)) {
+        if (!hash_equals(API_KEY, $clientApiKey)) {
             Response::send('error', 'アクセスが拒否されました。無効なAPIキーです。', 403);
         }
     }

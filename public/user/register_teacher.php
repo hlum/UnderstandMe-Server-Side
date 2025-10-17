@@ -32,8 +32,7 @@ if (!in_array($_SERVER['REQUEST_METHOD'], ['POST'])) {
 // API Key validation
 $headers = getallheaders();
 $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-ApiKeyValidator::check($clientApiKey);
-
+ApiKeyValidator::checkTeacherKey($clientApiKey);
 
 // POSTされたJSONデータを取得
 $input = json_decode(file_get_contents('php://input'), true);
@@ -50,10 +49,6 @@ if (json_last_error() !== JSON_ERROR_NONE) {
     // id: String,
     // email: String,
     // role: String('student' or 'teacher'),
-    // student_code: String not nullable,
-    // major_code: String not nullable,
-    // admission_year: String
-    // fcm_token: String nullable,
     // photo_url: String nullable (URL format)
 // }
 
@@ -62,13 +57,8 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 
 $user_id = $input['id'] ?? null;
 $email = $input['email'] ?? null;
-$fcm_token = $input['fcm_token'] ?? null;
 $photo_url = $input['photo_url'] ?? null;
-$role = Role::from($input['role'] ?? 'student');
-$student_code = $input['student_code'] ?? null;
-$major_code = $input['major_code'] ?? null;
-$admission_year = $input['admission_year'];
-
+$role = Role::from($input['role'] ?? 'teacher');
 
 if (empty($user_id)) {
     Response::send('error', 'ユーザーIDは必須です。', 400);
@@ -89,35 +79,18 @@ if($photo_url != null && !filter_var($photo_url, FILTER_VALIDATE_URL)) {
     Response::send('error', '無効なphoto_url形式です。', 400);
 }
 
-if (!isNullORValidFcmToken($fcm_token)) {
-    Response::send('error', '無効なFCMトークン形式です。', 400);
-}
+$student_code = mb_substr($email, 0, strpos($email, '@'));
+$admission_year = $student_code.trim(mb_substr($student_code, 0, 2), '0');
 
-if(!isset($student_code)) {
-    Response::send('error', 'student_codeを指定する必要があります。', 400);
-}
-
-if(!isset($major_code)) {
-    Response::send('error', 'major_codeを指定する必要があります。', 400);
-}
-
-if(!isset($admission_year)) {
-    Response::send('error', 'admission_yearを指定する必要があります。', 400);
-}
 
 try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $userRepository = new MySQLUserRepository($connection);
     $userUseCase = new UserUseCase($userRepository);
 
-    $userUseCase->registerUser($user_id, $email, $role, $photo_url, $student_code, $admission_year, $major_code, $fcm_token);
+    $userUseCase->registerUser($user_id, $email, $role, $photo_url, null,null, null, null);
 
     Response::send('success', 'ユーザー登録が成功しました。', 200);
 } catch (Throwable $e) {
     Response::send('error',  $e->getMessage(), 500);
-}
-
-
-function isNullORValidFcmToken(?string $token): bool {
-    return $token === null || (is_string($token) && strlen($token) > 10);
 }

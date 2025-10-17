@@ -60,7 +60,7 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface {
     }
 
 
-    public function findByIDWithStatus(string $homeworkID): array {
+    public function findByIDWithStatus(string $homeworkID, string $student_id): array {
         $query = "SELECT 
             homework_id,
             homework_title,
@@ -71,11 +71,11 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface {
             job_status,
             submission_state
             FROM homework_submission_status_per_user
-            WHERE homework_id = ?;
+            WHERE homework_id = ? AND user_id = ?;
             ";
             
-        $types = 's';
-        $params = [$homeworkID];
+        $types = 'ss';
+        $params = [$homeworkID, $student_id];
         $errorMessage = 'HomeworkIDによるHomeworkとその提出状況の検索に失敗しました。';
         $result = $this->executeQuery($query, $types, $params, $errorMessage);
         $homeworksWithStatus = [];

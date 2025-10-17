@@ -29,8 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if(!in_array($_SERVER['REQUEST_METHOD'], ['PATCH'])) {
-    Response::send('error', 'Method not allowed. Use UPDATE', 405);
+if (!in_array($_SERVER['REQUEST_METHOD'], ['PATCH'])) {
+    Response::send('error', 'Method not allowed. Use PATCH', 405);
 }
 
 $headers = getallheaders();
@@ -61,20 +61,20 @@ $github_file_link = $input['github_file_link'] ?? null;
 if (!isset($user_id)) {
     Response::send('error', 'ユーザーIDは必須です。', 400);
 }
-if($user_id == null || !is_string($user_id)){
+if ($user_id == null || !is_string($user_id)) {
     Response::send('error', '無効なユーザーID形式です。', 400);
 }
 
 if (!isset($homework_id)) {
     Response::send('error', '課題IDは必須です。', 400);
 }
-if($homework_id == null || !is_string($homework_id)){
+if ($homework_id == null || !is_string($homework_id)) {
     Response::send('error', '無効な課題ID形式です。', 400);
 }
 if (!isset($github_file_link)) {
     Response::send('error', 'GitHubファイルリンクは必須です。', 400);
 }
-if($github_file_link == null || !is_string($github_file_link) || !filter_var($github_file_link, FILTER_VALIDATE_URL)){
+if ($github_file_link == null || !is_string($github_file_link) || !filter_var($github_file_link, FILTER_VALIDATE_URL)) {
     Response::send('error', '無効なGitHubファイルリンク形式です。', 400);
 }
 
@@ -108,7 +108,7 @@ try {
     $job = Job::createNew($project->id, Status::from('pending'));
     $jobUseCase->add($job);
 
-    
+
 
     $jobProcessor = new ProcessPendingJobsUseCase(
         $jobRepository,
@@ -119,10 +119,10 @@ try {
         $projectRepository
     );
 
- 
+
     $processingJobExist = count($jobUseCase->getJobsByStatus(Status::from('processing'))) > 0;
 
-    if($processingJobExist) {
+    if ($processingJobExist) {
         Response::send('info', 'プロジェクトが追加されましたが、現在別のプロジェクトの問題生成処理中です。少々お待ちください。', 202);
     }
 
@@ -140,5 +140,6 @@ try {
     Response::send('success', 'プロジェクトが正常に追加されました。問題が生成されました。', 200);
 
 } catch (Throwable $e) {
-    Response::send('error',  $e->getMessage(), 500);
+    $jobUseCase->updateStatus($job->id, Status::from('pending'));
+    Response::send('error', $e->getMessage(), 500);
 }

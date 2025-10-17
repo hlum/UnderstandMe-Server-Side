@@ -1,4 +1,8 @@
 <?php
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
 
 require __DIR__ . '/../../vendor/autoload.php';
 
@@ -73,5 +77,5 @@ try {
     Response::send('success', 'ユーザーの取得に成功しました', 200, json_encode($users));
 
 } catch (Throwable $e) {
-    Response::send('error', $e->getMessage(), 500);
+    Response::send('error', $e->getMessage(), $e->getCode());
 }
