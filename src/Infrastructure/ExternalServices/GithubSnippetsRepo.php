@@ -9,34 +9,94 @@ use RecursiveDirectoryIterator;
 use RuntimeException;
 use InvalidArgumentException;
 
-class GithubSnippetsRepo implements SnippetsRepo {
+class GithubSnippetsRepo implements SnippetsRepo
+{
     private string $repoUrl;
     private string $cloneDir;
 
     private const CODE_EXTENSIONS = [
-        'php', 'js', 'ts', 'tsx', 'jsx', 'java', 'kt', 'swift', 
-        'cpp', 'c', 'cs', 'rb', 'py', 'go', 'rs', 'vue', 'scala',
-        'ino','h'
+        'php',
+        'js',
+        'ts',
+        'tsx',
+        'jsx',
+        'java',
+        'kt',
+        'swift',
+        'cpp',
+        'c',
+        'cs',
+        'rb',
+        'py',
+        'go',
+        'rs',
+        'vue',
+        'scala',
+        'ino',
+        'h'
     ];
 
     private const IGNORE_DIRS = [
-        'node_modules', 'vendor', 'Pods', 'build', 
-        'dist', 'target', '.git', '.idea', '.gradle',
-        '.vscode', '__pycache__', 'coverage', '.next'
+        'node_modules',
+        'vendor',
+        'Pods',
+        'build',
+        'dist',
+        'target',
+        '.git',
+        '.idea',
+        '.gradle',
+        '.vscode',
+        '__pycache__',
+        'coverage',
+        '.next'
     ];
 
     private const IGNORE_EXTENSIONS = [
-        'xcodeproj', 'build', 'vscode', 'xcassets', 
-        'readme', 'plist', 'json', 'mp3', 'png', 'jpg', 
-        'jpeg', 'gif', 'svg', 'lock', 'log', 'bundle', 
-        'mp4', 'zip', 'jar', 'wav', 'sh', 'md', 'xml',
-        'yml', 'yaml', 'toml', 'ico', 'woff', 'woff2', 'ttf'
+        'xcodeproj',
+        'build',
+        'vscode',
+        'xcassets',
+        'readme',
+        'plist',
+        'json',
+        'mp3',
+        'png',
+        'jpg',
+        'jpeg',
+        'gif',
+        'svg',
+        'lock',
+        'log',
+        'bundle',
+        'mp4',
+        'zip',
+        'jar',
+        'wav',
+        'sh',
+        'md',
+        'xml',
+        'yml',
+        'yaml',
+        'toml',
+        'ico',
+        'woff',
+        'woff2',
+        'ttf'
     ];
 
     private const IGNORE_FILES = [
-        'README.md', 'LICENSE', '.gitignore', 'composer.json', 
-        'package.json', 'yarn.lock', 'package-lock.json',
-        'Podfile', 'CMakeLists.txt', 'Gemfile', 'Makefile'
+        'README.md',
+        'LICENSE',
+        '.gitignore',
+        'composer.json',
+        'package.json',
+        'yarn.lock',
+        'package-lock.json',
+        'Podfile',
+        'CMakeLists.txt',
+        'Gemfile',
+        'Makefile'
     ];
 
     private const MIN_FILE_LINES = 20;
@@ -52,8 +112,7 @@ class GithubSnippetsRepo implements SnippetsRepo {
     public function getRandomCodeSnippet(
         string $repoUrl,
         int $lines = SnippetsRepo::DEFAULT_SNIPPET_LINES
-    ): ?string 
-    {
+    ): ?string {
         $this->validateRepoUrl($repoUrl);
         $this->repoUrl = $repoUrl;
         $this->cloneDir = $this->generateTempDir();
@@ -106,7 +165,7 @@ class GithubSnippetsRepo implements SnippetsRepo {
         );
 
         exec($cmd, $output, $status);
-        
+
         if ($status !== 0) {
             throw new RuntimeException(
                 "リポジトリのクローンに失敗しました: " . implode("\n", $output)
@@ -132,7 +191,7 @@ class GithubSnippetsRepo implements SnippetsRepo {
 
         // 最も高くランク付けされたファイルを選択
         $topFile = $rankedFiles[0]['file'];
-        
+
         return $this->extractRandomSnippet($topFile, $snippetLines);
     }
 
@@ -145,7 +204,7 @@ class GithubSnippetsRepo implements SnippetsRepo {
 
         foreach ($files as $file) {
             $fileData = $this->analyzeFile($file);
-            
+
             if ($fileData !== null) {
                 $ranked[] = $fileData;
             }
@@ -163,7 +222,7 @@ class GithubSnippetsRepo implements SnippetsRepo {
     private function analyzeFile(string $file): ?array
     {
         $ext = pathinfo($file, PATHINFO_EXTENSION);
-        
+
         if (!in_array($ext, self::CODE_EXTENSIONS, true)) {
             return null;
         }
@@ -174,7 +233,7 @@ class GithubSnippetsRepo implements SnippetsRepo {
         }
 
         $lines = substr_count($content, "\n") + 1;
-        
+
         if ($lines < self::MIN_FILE_LINES) {
             return null;
         }

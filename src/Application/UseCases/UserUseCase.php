@@ -7,16 +7,19 @@ use Domain\Entities\User;
 use Domain\Entities\Role;
 use Domain\Repositories\UserRepositoryInterface;
 
-class UserUseCase {
+class UserUseCase
+{
     private UserRepositoryInterface $userRepository;
 
-    public function __construct(UserRepositoryInterface $userRepository) {
+    public function __construct(UserRepositoryInterface $userRepository)
+    {
         $this->userRepository = $userRepository;
     }
 
-    public function registerUser(string $id, string $email, Role $role, ?string $photoURL, ?string $studentCode, ?int $admissionYear, ?string $majorCode, ?string $fcmToken): User {
+    public function registerUser(string $id, string $email, Role $role, ?string $photoURL, ?string $studentCode, ?int $admissionYear, ?string $majorCode, ?string $fcmToken): User
+    {
 
-        if($photoURL != null && !filter_var($photoURL, FILTER_VALIDATE_URL)) {
+        if ($photoURL != null && !filter_var($photoURL, FILTER_VALIDATE_URL)) {
             throw new \InvalidArgumentException("無効なphoto_url形式です。");
         }
 
@@ -24,9 +27,9 @@ class UserUseCase {
         if ($this->userRepository->findById($id) !== null) {
             throw new \InvalidArgumentException("このユーザーIDは既に登録されています", 200);
         }
-         // 既に存在するメールアドレスか確認
+        // 既に存在するメールアドレスか確認
         if ($this->userRepository->findByEmail($email) !== null) {
-            throw new \InvalidArgumentException("このメールアドレスは既に登録されています",200);
+            throw new \InvalidArgumentException("このメールアドレスは既に登録されています", 200);
         }
         // 既に存在する学生コードか確認
         if ($role->getValue() === 'student' && $this->userRepository->findByStudentCode($studentCode) !== null) {
@@ -49,15 +52,16 @@ class UserUseCase {
         return $user;
     }
 
-    public function updateFcmToken(string $userId, ?string $fcmToken): void {
+    public function updateFcmToken(string $userId, ?string $fcmToken): void
+    {
         // ユーザーが存在するか確認
         $user = $this->userRepository->findById($userId);
         if ($user === null) {
-            throw new \InvalidArgumentException( "指定されたユーザーIDのユーザーが存在しません");
+            throw new \InvalidArgumentException("指定されたユーザーIDのユーザーが存在しません");
         }
 
 
-        if($fcmToken == null) {
+        if ($fcmToken == null) {
             throw new \InvalidArgumentException("無効なfcm_tokenです。");
         }
 
@@ -65,9 +69,10 @@ class UserUseCase {
         $this->userRepository->updateFcmToken($userId, $fcmToken);
     }
 
-    public function findById(string $user_id):User {
+    public function findById(string $user_id): User
+    {
         $user = $this->userRepository->findById($user_id);
-        if($user === null) {
+        if ($user === null) {
             throw new \InvalidArgumentException(message: "指定されたユーザーIDのユーザーが存在しません", code: 200);
         }
 
@@ -75,19 +80,21 @@ class UserUseCase {
     }
 
 
-    public function findByEmail(string $email): User {
+    public function findByEmail(string $email): User
+    {
         $user = $this->userRepository->findByEmail($email);
-        if($user === null) {
-            throw new \InvalidArgumentException(message: "指定されたユーザーIDのユーザーが存在しません", code:200);
+        if ($user === null) {
+            throw new \InvalidArgumentException(message: "指定されたユーザーIDのユーザーが存在しません", code: 200);
         }
 
         return $user;
     }
 
 
-    public function findByStudentCode(string $studentCode): User {
+    public function findByStudentCode(string $studentCode): User
+    {
         $user = $this->userRepository->findByStudentCode($studentCode);
-        if($user === null) {
+        if ($user === null) {
             throw new \InvalidArgumentException(message: "指定された学生コードのユーザーが存在しません", code: 200);
         }
 
@@ -95,9 +102,10 @@ class UserUseCase {
     }
 
 
-    public function findByMajorCodeAndAdmissionYear(string $majorCode, int $admissionYear): array {
+    public function findByMajorCodeAndAdmissionYear(string $majorCode, int $admissionYear): array
+    {
         $user = $this->userRepository->findByMajorCodeAndAdmissionYear($majorCode, $admissionYear);
-        if($user === null) {
+        if ($user === null) {
             throw new \InvalidArgumentException(message: "指定された学生コードのユーザーが存在しません", code: 200);
         }
 

@@ -13,7 +13,8 @@ use Domain\Repositories\UserRepositoryInterface;
 use Domain\Entities\Status;
 
 
-class ProcessPendingJobsUseCase {
+class ProcessPendingJobsUseCase
+{
     private JobRepositoryInterface $jobRepository;
     private QuestionRepositoryInterface $questionRepository;
     private ChoiceRepositoryInterface $choiceRepository;
@@ -39,9 +40,10 @@ class ProcessPendingJobsUseCase {
         $this->projectRepository = $projectRepository;
     }
 
-    public function process(Job $job) {
+    public function process(Job $job)
+    {
         $job = $this->jobRepository->findById($job->id);
-    
+
 
         // If the job is already being processed, skip it
         if ($job->status == Status::from('processing')) {

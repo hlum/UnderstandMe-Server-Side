@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if(!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
+if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
     Response::send('error', 'Method not allowed. Use GET', 405);
 }
 
@@ -36,8 +36,8 @@ by teacher_id (get all homeworks assigned by a specific teacher)
 */
 
 $homework_id = $_GET['id'] ?? null;
-$class_id    = $_GET['class_id']    ?? null;
-$teacher_id  = $_GET['teacher_id']  ?? null;
+$class_id = $_GET['class_id'] ?? null;
+$teacher_id = $_GET['teacher_id'] ?? null;
 
 try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
@@ -48,7 +48,7 @@ try {
     $homeworkUseCase = new HomeworkUseCase($homeworkRepository, $userRepository, $classRepository);
 
 } catch (Throwable $e) {
-    Response::send('error',  $e->getMessage(), 500);
+    Response::send('error', $e->getMessage(), 500);
 }
 
 try {
@@ -70,5 +70,5 @@ try {
     Response::send('success', '宿題の取得に成功しました', 200, json_encode($homeworks));
 
 } catch (Throwable $e) {
-    Response::send('error',  $e->getMessage(), 500);
+    Response::send('error', $e->getMessage(), 500);
 }

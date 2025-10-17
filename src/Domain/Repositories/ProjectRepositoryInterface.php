@@ -4,7 +4,8 @@ namespace Domain\Repositories;
 use Domain\Entities\Project;
 
 
-interface ProjectRepositoryInterface {
+interface ProjectRepositoryInterface
+{
     public function insert(Project $project): void;
     public function findById(string $id): ?Project;
     public function findByUserId(string $user_id): array;

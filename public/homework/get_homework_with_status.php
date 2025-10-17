@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 
-if(!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
+if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
     Response::send('error', 'Method not allowed. Use GET', 405);
 }
 
@@ -40,8 +40,8 @@ by student_id and class_id (get homeworks for a student in a specific class)
 */
 
 $homework_id = $_GET['id'] ?? null;
-$student_id   = $_GET['student_id']   ?? null;
-$class_id    = $_GET['class_id']    ?? null;
+$student_id = $_GET['student_id'] ?? null;
+$class_id = $_GET['class_id'] ?? null;
 
 
 try {
@@ -53,7 +53,7 @@ try {
     $homeworkUseCase = new HomeworkUseCase($homeworkRepository, $userRepository, $classRepository);
 
 } catch (Throwable $e) {
-    Response::send('error',  $e->getMessage(), 500);
+    Response::send('error', $e->getMessage(), 500);
 }
 
 
@@ -70,6 +70,6 @@ try {
     }
 
     Response::send('success', "課題の取得に成功しました", 200, json_encode($homeworksWithStatus));
-}catch (Throwable $e) {
-    Response::send('error',  $e->getMessage(), 500);
+} catch (Throwable $e) {
+    Response::send('error', $e->getMessage(), 500);
 }

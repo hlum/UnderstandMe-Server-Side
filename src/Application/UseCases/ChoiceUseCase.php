@@ -6,7 +6,8 @@ use Domain\Repositories\ChoiceRepositoryInterface;
 use Domain\Repositories\QuestionRepositoryInterface;
 
 
-class ChoiceUseCase {
+class ChoiceUseCase
+{
     private ChoiceRepositoryInterface $choiceRepository;
     private QuestionRepositoryInterface $questionRepository;
 
@@ -19,13 +20,15 @@ class ChoiceUseCase {
     }
 
 
-    public function add(Choice $choice) {
+    public function add(Choice $choice)
+    {
         $this->validateChoice($choice);
         $this->choiceRepository->insert($choice);
     }
 
 
-    public function findById(string $id): Choice {
+    public function findById(string $id): Choice
+    {
         $choice = $this->choiceRepository->findById($id);
         if ($choice === null) {
             throw new \InvalidArgumentException("指定されたIDの選択肢が存在しません。");
@@ -34,7 +37,8 @@ class ChoiceUseCase {
     }
 
 
-    public function findByQuestionId(string $questionId): array {
+    public function findByQuestionId(string $questionId): array
+    {
         $question = $this->questionRepository->findById($questionId);
         if ($question === null) {
             throw new \InvalidArgumentException("指定されたQuestionIDの質問が存在しません。");
@@ -44,7 +48,8 @@ class ChoiceUseCase {
     }
 
 
-    private function validateChoice(Choice $choice) {
+    private function validateChoice(Choice $choice)
+    {
         if (empty($choice->text)) {
             throw new \InvalidArgumentException("選択肢のテキストは必須です。");
         }

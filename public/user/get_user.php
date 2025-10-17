@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if(!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
+if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
     Response::send('error', 'Method not allowed. Use GET', 405);
 }
 
@@ -28,11 +28,11 @@ $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
 ApiKeyValidator::check($clientApiKey);
 
 
-$major_code      = $_GET['major_code']      ?? null;
-$admission_year  = $_GET['admission_year']  ?? null;
-$user_id         = $_GET['id']         ?? null;
-$email           = $_GET['email']           ?? null;
-$student_code    = $_GET['student_code']    ?? null;
+$major_code = $_GET['major_code'] ?? null;
+$admission_year = $_GET['admission_year'] ?? null;
+$user_id = $_GET['id'] ?? null;
+$email = $_GET['email'] ?? null;
+$student_code = $_GET['student_code'] ?? null;
 
 
 try {
@@ -40,7 +40,7 @@ try {
     $userRepository = new MySQLUserRepository($connection);
     $userUseCase = new UserUseCase($userRepository);
 } catch (Throwable $e) {
-    Response::send('error',  $e->getMessage(), 500);
+    Response::send('error', $e->getMessage(), 500);
 }
 
 try {

@@ -6,7 +6,8 @@ namespace Domain\Entities;
 use DateTimeImmutable;
 use JsonSerializable;
 
-class Choice implements JsonSerializable {
+class Choice implements JsonSerializable
+{
     public string $id;
     public string $questionId;
     public string $choiceText;
@@ -38,16 +39,18 @@ class Choice implements JsonSerializable {
         );
     }
 
-    public static function fromDBRow(array $row): self {
+    public static function fromDBRow(array $row): self
+    {
         return new self(
             id: $row['id'],
             questionId: $row['question_id'],
             choiceText: $row['choice_text'],
-            isCorrect: (bool)$row['is_correct']
+            isCorrect: (bool) $row['is_correct']
         );
     }
 
-    public function jsonSerialize(): array {
+    public function jsonSerialize(): array
+    {
         return [
             'id' => $this->id,
             'question_id' => $this->questionId,

@@ -2,18 +2,22 @@
 
 namespace Domain\Entities;
 
-class Role {
+class Role
+{
     private string $value;
 
-    public function __construct(string $value) {
+    public function __construct(string $value)
+    {
         $this->value = $value;
     }
 
-    public function getValue(): string {
+    public function getValue(): string
+    {
         return $this->value;
     }
 
-    public static function from(string $value): self {
+    public static function from(string $value): self
+    {
         if ($value === 'teacher') {
             return new self('teacher');
         } elseif ($value === 'student') {

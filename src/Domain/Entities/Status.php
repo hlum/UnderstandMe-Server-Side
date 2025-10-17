@@ -2,18 +2,22 @@
 
 namespace Domain\Entities;
 
-class Status {
+class Status
+{
     private string $value;
 
-    public function __construct(string $value) {
+    public function __construct(string $value)
+    {
         $this->value = $value;
     }
 
-    public function getValue(): string {
+    public function getValue(): string
+    {
         return $this->value;
     }
 
-    public static function from(string $value): self {
+    public static function from(string $value): self
+    {
         if ($value === 'pending') {
             return new self('pending');
         } elseif ($value === 'processing') {
@@ -21,7 +25,7 @@ class Status {
         } elseif ($value === 'done') {
             return new self('done');
         } elseif ($value === 'failed') {
-            return new self('failed');  
+            return new self('failed');
         } else {
             throw new \InvalidArgumentException("Invalid status value: $value");
         }

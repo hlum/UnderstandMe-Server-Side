@@ -41,7 +41,7 @@ $processPendingJobsUseCase = new ProcessPendingJobsUseCase(
 $maxRetryCounts = 5;
 $currentRetry = 0;
 
-while($currentRetry < $maxRetryCounts) {
+while ($currentRetry < $maxRetryCounts) {
     try {
 
         $pendingJobs = $jobUseCase->getJobsByStatus(Status::from('pending'));
@@ -58,8 +58,8 @@ while($currentRetry < $maxRetryCounts) {
         echo "Jobの処理が完了しまし、問題生成されました。\n";
         // TODO : Userに問題生成が終了したことを知らせる。
         break;
-        
-        
+
+
     } catch (Throwable $e) {
         $currentRetry++;
         error_log("Jobの処理失敗 (Attempt $currentRetry): " . $e->getMessage());

@@ -10,7 +10,8 @@ use Domain\Repositories\ClassRepositoryInterface;
 
 use Domain\Repositories\HomeworkRepositoryInterface;
 
-class HomeworkUseCase {
+class HomeworkUseCase
+{
     private HomeworkRepositoryInterface $homeworkRepository;
     private UserRepositoryInterface $userRepository;
     private ClassRepositoryInterface $classRepository;
@@ -19,19 +20,21 @@ class HomeworkUseCase {
         HomeworkRepositoryInterface $homeworkRepository,
         UserRepositoryInterface $userRepository,
         ClassRepositoryInterface $classRepository
-        ) {
+    ) {
         $this->homeworkRepository = $homeworkRepository;
         $this->userRepository = $userRepository;
         $this->classRepository = $classRepository;
     }
 
-    public function add(Homework $homework) {
+    public function add(Homework $homework)
+    {
         $this->validateHomework($homework);
         $this->homeworkRepository->insert($homework);
     }
 
 
-    public function findById(string $id): Homework {
+    public function findById(string $id): Homework
+    {
         $homework = $this->homeworkRepository->findById($id);
         if ($homework === null) {
             throw new \InvalidArgumentException("指定されたIDの宿題が存在しません。");
@@ -39,26 +42,29 @@ class HomeworkUseCase {
         return $homework;
     }
 
-    public function findByClassId(string $classID): array {
+    public function findByClassId(string $classID): array
+    {
         $this->validateClass($classID);
         $homework = $this->homeworkRepository->findByClassID($classID);
-        if($homework === null) {
+        if ($homework === null) {
             throw new \InvalidArgumentException("指定されたClassIDの宿題が存在しません。");
         }
         return $homework;
     }
 
 
-    public function findByTeacherId(string $teacherId): array {
+    public function findByTeacherId(string $teacherId): array
+    {
         $this->validateTeacher($teacherId);
         $homework = $this->homeworkRepository->findByTeacherId($teacherId);
-        if($homework === null) {
+        if ($homework === null) {
             throw new \InvalidArgumentException("指定されたTeacherIDの宿題が存在しません。");
         }
         return $homework;
     }
 
-    public function findByStudentId(string $studentId): array {
+    public function findByStudentId(string $studentId): array
+    {
         $student = $this->userRepository->findById($studentId);
         if ($student === null || $student->role->getValue() !== 'student') {
             throw new \InvalidArgumentException("指定されたStudentIDの学生が存在しません。");
@@ -67,7 +73,7 @@ class HomeworkUseCase {
         if ($student->majorCode === null || $student->admissionYear === null) {
             throw new \InvalidArgumentException("学生のmajorCodeまたはadmissionYearが設定されていません。");
         }
-        
+
         $classes = $this->classRepository->findByMajorCodeAndAdmissionYear($student->majorCode, $student->admissionYear);
         if (empty($classes)) {
             throw new \InvalidArgumentException("学生の専攻が見つかりません。");
@@ -80,7 +86,8 @@ class HomeworkUseCase {
         return $homeworks;
     }
 
-    public function findByStudentIDWithStatus(string $studentId): array {
+    public function findByStudentIDWithStatus(string $studentId): array
+    {
         $student = $this->userRepository->findById($studentId);
         if ($student === null || $student->role->getValue() !== 'student') {
             throw new \InvalidArgumentException("指定されたStudentIDの学生が存在しません。");
@@ -89,7 +96,8 @@ class HomeworkUseCase {
         return $this->homeworkRepository->findByStudentIDWithStatus($studentId);
     }
 
-    public function findByIDWithStatus(string $homeworkID, string $studentID): array {
+    public function findByIDWithStatus(string $homeworkID, string $studentID): array
+    {
         $homework = $this->homeworkRepository->findByIDWithStatus($homeworkID, $studentID);
         if ($homework === null) {
             throw new \InvalidArgumentException("指定されたIDの宿題が存在しません。");
@@ -98,9 +106,10 @@ class HomeworkUseCase {
     }
 
 
-    public function findByClassIDWithStatus(string $classID, string $studentID): array {
+    public function findByClassIDWithStatus(string $classID, string $studentID): array
+    {
         $this->validateClass($classID);
-        
+
         $student = $this->userRepository->findById($studentID);
         if ($student === null || $student->role->getValue() !== 'student') {
             throw new \InvalidArgumentException("指定されたStudentIDの学生が存在しません。");
@@ -110,17 +119,18 @@ class HomeworkUseCase {
     }
 
 
-    private function validateHomework(Homework $homework): void {
-       if(str_word_count($homework->title) > 100) {
+    private function validateHomework(Homework $homework): void
+    {
+        if (str_word_count($homework->title) > 100) {
             throw new \InvalidArgumentException("タイトルが長すぎます。100文字以内にしてください。");
         }
-        if(str_word_count($homework->title) < 1) {
+        if (str_word_count($homework->title) < 1) {
             throw new \InvalidArgumentException("タイトルが短すぎます。1文字以上にしてください。");
         }
 
         $existingHomework = $this->homeworkRepository->findById($homework->id);
 
-        if($existingHomework !== null) {
+        if ($existingHomework !== null) {
             throw new \InvalidArgumentException("このIDの宿題は既に存在します。");
         }
 
@@ -129,7 +139,8 @@ class HomeworkUseCase {
         $this->validateDueDate($homework->dueDate);
     }
 
-    private function validateClass(string $classID): ClassEntity {
+    private function validateClass(string $classID): ClassEntity
+    {
         $class = $this->classRepository->findById($classID);
         if ($class === null) {
             throw new \InvalidArgumentException("指定されたClassIDのクラスが存在しません。");
@@ -137,14 +148,16 @@ class HomeworkUseCase {
         return $class;
     }
 
-    private function validateTeacher(string $teacherId): void {
+    private function validateTeacher(string $teacherId): void
+    {
         $teacher = $this->userRepository->findById($teacherId);
         if ($teacher === null || $teacher->role->getValue() !== 'teacher') {
             throw new \InvalidArgumentException("指定されたTeacherIDの教師が存在しません。");
         }
     }
 
-    private function validateDueDate(DateTimeImmutable $dueDate): void {
+    private function validateDueDate(DateTimeImmutable $dueDate): void
+    {
         $now = new \DateTime();
         if ($dueDate <= $now) {
             throw new \InvalidArgumentException("締め切り日は現在日時よりも未来である必要があります。");

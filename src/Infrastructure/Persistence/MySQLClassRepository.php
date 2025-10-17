@@ -8,15 +8,18 @@ use Domain\Repositories\ClassRepositoryInterface;
 use Domain\Entities\ClassEntity;
 
 
-class MySQLClassRepository implements ClassRepositoryInterface {
+class MySQLClassRepository implements ClassRepositoryInterface
+{
     private mysqli $connection;
 
-    public function __construct(mysqli $connection) {
+    public function __construct(mysqli $connection)
+    {
         $this->connection = $connection;
     }
 
 
-    public function insert(ClassEntity $class): void {
+    public function insert(ClassEntity $class): void
+    {
         $query = "INSERT INTO classes (id, teacher_id, name, admission_year, major_code) VALUES (?, ?, ?, ?, ?)";
         $types = 'sssis';
         $params = [$class->id, $class->teacher_id, $class->name, $class->admissionYear, $class->majorCode];
@@ -24,7 +27,8 @@ class MySQLClassRepository implements ClassRepositoryInterface {
         $this->executeQuery($query, $types, $params, $errorMessage);
     }
 
-    public function findById(string $id): ?ClassEntity {
+    public function findById(string $id): ?ClassEntity
+    {
         $query = "SELECT * FROM classes WHERE id = ?";
         $types = 's';
         $params = [$id];
@@ -41,7 +45,8 @@ class MySQLClassRepository implements ClassRepositoryInterface {
     }
 
 
-    public function findByTeacherId(string $teacherId): array {
+    public function findByTeacherId(string $teacherId): array
+    {
         $query = "SELECT * FROM classes WHERE teacher_id = ?";
         $types = 's';
         $params = [$teacherId];
@@ -57,7 +62,8 @@ class MySQLClassRepository implements ClassRepositoryInterface {
     }
 
 
-    public function findByMajorCodeAndAdmissionYear(string $majorCode, int $admissionYear): array {
+    public function findByMajorCodeAndAdmissionYear(string $majorCode, int $admissionYear): array
+    {
         $query = "SELECT * FROM classes WHERE major_code = ? AND admission_year = ?";
         $types = 'si';
         $params = [$majorCode, $admissionYear];
@@ -78,7 +84,7 @@ class MySQLClassRepository implements ClassRepositoryInterface {
         string $types,
         array $params,
         string $error_message
-        ): mysqli_result|bool {
+    ): mysqli_result|bool {
 
         $stmt = $this->connection->prepare($query);
 

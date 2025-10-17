@@ -47,14 +47,14 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 
 // Expected JSON structure
 // {
-    // id: String,
-    // email: String,
-    // role: String('student' or 'teacher'),
-    // student_code: String not nullable,
-    // major_code: String not nullable,
-    // admission_year: String
-    // fcm_token: String nullable,
-    // photo_url: String nullable (URL format)
+// id: String,
+// email: String,
+// role: String('student' or 'teacher'),
+// student_code: String not nullable,
+// major_code: String not nullable,
+// admission_year: String
+// fcm_token: String nullable,
+// photo_url: String nullable (URL format)
 // }
 
 
@@ -74,7 +74,7 @@ if (empty($user_id)) {
     Response::send('error', 'ユーザーIDは必須です。', 400);
 }
 
-if($user_id == null || !is_string($user_id)){
+if ($user_id == null || !is_string($user_id)) {
     Response::send('error', '無効なユーザーID形式です。', 400);
 }
 
@@ -85,7 +85,7 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     Response::send('error', '無効なメールアドレス形式です。', 400);
 }
 
-if($photo_url != null && !filter_var($photo_url, FILTER_VALIDATE_URL)) {
+if ($photo_url != null && !filter_var($photo_url, FILTER_VALIDATE_URL)) {
     Response::send('error', '無効なphoto_url形式です。', 400);
 }
 
@@ -93,15 +93,15 @@ if (!isNullORValidFcmToken($fcm_token)) {
     Response::send('error', '無効なFCMトークン形式です。', 400);
 }
 
-if(!isset($student_code)) {
+if (!isset($student_code)) {
     Response::send('error', 'student_codeを指定する必要があります。', 400);
 }
 
-if(!isset($major_code)) {
+if (!isset($major_code)) {
     Response::send('error', 'major_codeを指定する必要があります。', 400);
 }
 
-if(!isset($admission_year)) {
+if (!isset($admission_year)) {
     Response::send('error', 'admission_yearを指定する必要があります。', 400);
 }
 
@@ -114,10 +114,11 @@ try {
 
     Response::send('success', 'ユーザー登録が成功しました。', 200);
 } catch (Throwable $e) {
-    Response::send('error',  $e->getMessage(), 500);
+    Response::send('error', $e->getMessage(), 500);
 }
 
 
-function isNullORValidFcmToken(?string $token): bool {
+function isNullORValidFcmToken(?string $token): bool
+{
     return $token === null || (is_string($token) && strlen($token) > 10);
 }

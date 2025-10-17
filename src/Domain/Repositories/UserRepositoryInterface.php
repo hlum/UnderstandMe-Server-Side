@@ -5,7 +5,8 @@ namespace Domain\Repositories;
 
 use Domain\Entities\User;
 
-interface UserRepositoryInterface {
+interface UserRepositoryInterface
+{
     public function insert(User $user): void;
     public function findByEmail(string $email): ?User;
     public function findById(string $id): ?User;

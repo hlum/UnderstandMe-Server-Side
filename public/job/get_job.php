@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if(!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
+if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
     Response::send('error', 'Method not allowed. Use GET', 405);
 }
 
@@ -33,8 +33,8 @@ get all with limit and offset
 
 $job_id = $_GET['id'] ?? null;
 $user_id = $_GET['user_id'] ?? null;
-$limit   = $_GET['limit']   ?? 100;
-$offset  = $_GET['offset']  ?? 0;
+$limit = $_GET['limit'] ?? 100;
+$offset = $_GET['offset'] ?? 0;
 
 try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
@@ -43,7 +43,7 @@ try {
     $projectRepository = new MySQLProjectRepository($connection);
     $jobUseCase = new JobUseCase($jobRepository, $userRepository, $projectRepository);
 } catch (Throwable $e) {
-    Response::send('error',  $e->getMessage(), 500);
+    Response::send('error', $e->getMessage(), 500);
 }
 
 
@@ -64,13 +64,13 @@ try {
         if (!is_numeric($limit) || !is_numeric($offset)) {
             Response::send('error', 'limitとoffsetは数値である必要があります。', 400);
         }
-        $limit = (int)$limit;
-        $offset = (int)$offset;
+        $limit = (int) $limit;
+        $offset = (int) $offset;
         $jobs = $jobUseCase->getAllJobs($limit, $offset);
     }
 
     Response::send('success', 'Jobsの取得に成功しました。', 200, json_encode($jobs));
 
 } catch (Throwable $e) {
-    Response::send('error',  $e->getMessage(), 500);
+    Response::send('error', $e->getMessage(), 500);
 }

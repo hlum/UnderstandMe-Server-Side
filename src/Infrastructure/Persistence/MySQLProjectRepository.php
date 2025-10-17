@@ -7,16 +7,19 @@ use Domain\Repositories\ProjectRepositoryInterface;
 use mysqli;
 use mysqli_result;
 
-class MySQLProjectRepository implements ProjectRepositoryInterface {
+class MySQLProjectRepository implements ProjectRepositoryInterface
+{
     private mysqli $connection;
 
-    public function __construct(mysqli $connection) {
+    public function __construct(mysqli $connection)
+    {
         $this->connection = $connection;
     }
 
 
 
-    function insert(Project $project): void {
+    function insert(Project $project): void
+    {
         $query = "INSERT INTO projects (id, homework_id, user_id, github_file_link) VALUES (?, ?, ?, ?)";
         $types = 'ssss';
         $params = [$project->id, $project->homeworkId, $project->userId, $project->githubFileLink];
@@ -25,7 +28,8 @@ class MySQLProjectRepository implements ProjectRepositoryInterface {
     }
 
 
-    function findByHomeworkId(string $homework_id): ?Project {
+    function findByHomeworkId(string $homework_id): ?Project
+    {
         $query = "SELECT * FROM projects WHERE homework_id = ?";
         $types = 's';
         $params = [$homework_id];
@@ -34,7 +38,7 @@ class MySQLProjectRepository implements ProjectRepositoryInterface {
         $result = $this->executeQuery($query, $types, $params, $errorMessage);
         $row = $result->fetch_assoc();
 
-        if($row === null) {
+        if ($row === null) {
             return null;
         }
 
@@ -42,7 +46,8 @@ class MySQLProjectRepository implements ProjectRepositoryInterface {
     }
 
 
-    function findById(string $id): ?Project {
+    function findById(string $id): ?Project
+    {
         $query = "SELECT * FROM projects WHERE id = ?";
         $types = 's';
         $params = [$id];
@@ -51,14 +56,15 @@ class MySQLProjectRepository implements ProjectRepositoryInterface {
         $result = $this->executeQuery($query, $types, $params, $errorMessage);
         $row = $result->fetch_assoc();
 
-        if($row === null) {
+        if ($row === null) {
             return null;
         }
 
         return Project::fromDBRow($row);
     }
 
-    function findByUserId(string $user_id): array {
+    function findByUserId(string $user_id): array
+    {
         $query = "SELECT * FROM projects WHERE user_id = ?";
         $types = 's';
         $params = [$user_id];
@@ -70,7 +76,7 @@ class MySQLProjectRepository implements ProjectRepositoryInterface {
         while ($row = $result->fetch_assoc()) {
             $projects[] = Project::fromDBRow($row);
         }
-        
+
         return $projects;
     }
 
@@ -79,7 +85,7 @@ class MySQLProjectRepository implements ProjectRepositoryInterface {
         string $types,
         array $params,
         string $error_message
-        ): mysqli_result|bool {
+    ): mysqli_result|bool {
 
         $stmt = $this->connection->prepare($query);
 

@@ -6,7 +6,8 @@ use JsonSerializable;
 // DBに保存　-> $user->role->value.
 // DBから取得しUserに変換 -> Role::from($row['role']).
 
-class User implements JsonSerializable {
+class User implements JsonSerializable
+{
     public string $id;
     public string $email;
     public ?string $photoURL;
@@ -48,7 +49,8 @@ class User implements JsonSerializable {
     }
 
 
-    public function jsonSerialize(): array {
+    public function jsonSerialize(): array
+    {
         return [
             'id' => $this->id,
             'email' => $this->email,
@@ -88,14 +90,15 @@ class User implements JsonSerializable {
     }
 
     // ファクトリーメソッド：DBからの復元用
-    public static function fromDbRow(array $row): self {
+    public static function fromDbRow(array $row): self
+    {
         return new self(
             $row['id'],
             $row['email'],
             $row['photo_url'] ?? null,
             Role::from($row['role']),
             $row['student_code'] ?? null,
-            $row['admission_year'] !== null ? (int)$row['admission_year'] : null,
+            $row['admission_year'] !== null ? (int) $row['admission_year'] : null,
             $row['major_code'] ?? null,
             $row['fcm_token'] ?? null,
             new \DateTimeImmutable($row['created_at'])

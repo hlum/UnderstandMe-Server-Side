@@ -16,7 +16,8 @@ use JsonSerializable;
 // | created_at     | timestamp    | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
 // +----------------+--------------+------+-----+-------------------+-------------------+
 // 5 rows in set (0.01 sec)
-class ClassEntity implements JsonSerializable {
+class ClassEntity implements JsonSerializable
+{
     public string $id;
     public string $teacher_id;
     public string $name;
@@ -56,18 +57,20 @@ class ClassEntity implements JsonSerializable {
         );
     }
 
-    public static function fromDBRow(array $row): self {
+    public static function fromDBRow(array $row): self
+    {
         return new self(
             $row['id'],
             $row['teacher_id'],
             $row['name'],
-            (int)$row['admission_year'],
+            (int) $row['admission_year'],
             $row['major_code'],
             new DateTimeImmutable($row['created_at'])
         );
     }
 
-    public function jsonSerialize(): array {
+    public function jsonSerialize(): array
+    {
         return [
             'id' => $this->id,
             'teacher_id' => $this->teacher_id,
