@@ -131,6 +131,8 @@ try {
         $jobUseCase->updateStatus($job->id, Status::from('done'));
         // TODO : Userに問題生成が終了したことを知らせる。
     } catch (Throwable $e) {
+        $jobUseCase->updateStatus($job->id, Status::from('pending'));
+
         // Log the error but do not fail the entire request
         error_log("Jobの処理失敗 (Job ID {$job->id}): " . $e->getMessage());
         exit();
@@ -140,6 +142,5 @@ try {
     Response::send('success', 'プロジェクトが正常に追加されました。問題が生成されました。', 200);
 
 } catch (Throwable $e) {
-    $jobUseCase->updateStatus($job->id, Status::from('pending'));
     Response::send('error', $e->getMessage(), 500);
 }

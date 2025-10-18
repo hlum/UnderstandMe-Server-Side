@@ -28,11 +28,11 @@ class MySQLProjectRepository implements ProjectRepositoryInterface
     }
 
 
-    function findByHomeworkId(string $homework_id): ?Project
+    function findByHomeworkId(string $homework_id, string $student_id): ?Project
     {
-        $query = "SELECT * FROM projects WHERE homework_id = ?";
-        $types = 's';
-        $params = [$homework_id];
+        $query = "SELECT * FROM projects WHERE homework_id = ? AND user_id = ?";
+        $types = 'ss';
+        $params = [$homework_id, $student_id];
         $errorMessage = 'HomeworkIDによるProject検索に失敗しました。';
 
         $result = $this->executeQuery($query, $types, $params, $errorMessage);

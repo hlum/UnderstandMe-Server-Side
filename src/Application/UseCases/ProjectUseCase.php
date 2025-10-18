@@ -99,7 +99,7 @@ class ProjectUseCase
             throw new \InvalidArgumentException("指定されたHomeworkIDの課題が存在しません。");
         }
 
-        $projectWithSameHomeworkId = $this->projectRepository->findByHomeworkId($homework->id);
+        $projectWithSameHomeworkId = $this->projectRepository->findByHomeworkId($homework->id, $user->id);
         if ($projectWithSameHomeworkId !== null) {
             throw new \InvalidArgumentException("指定されたHomeworkIDのプロジェクトは既に提出されています。");
         }
