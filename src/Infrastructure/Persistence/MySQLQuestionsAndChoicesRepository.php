@@ -12,7 +12,7 @@ class MySQLQuestionsAndChoicesRepository implements QuestionsAndChoicesRepositor
 
     public function __construct(mysqli $connection)
     {
-        $this->$connection = $$connection;
+        $this->connection = $connection;
     }
 
     public function getQuestionsAndChoicesByHomeworkId(string $homeworkId, string $userID): array
@@ -23,7 +23,6 @@ class MySQLQuestionsAndChoicesRepository implements QuestionsAndChoicesRepositor
         $errorMessage = 'HomeworkIDとUserIDによるQuestionsAndChoices検索に失敗しました。';
 
         $result = $this->executeQuery($query, $types, $params, $errorMessage);
-
         $questionsAndChoices = [];
 
         while ($row = $result->fetch_assoc()) {
