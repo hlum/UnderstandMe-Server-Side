@@ -5,12 +5,14 @@ use Domain\Entities\Choice;
 use Domain\Entities\Question;
 
 
-class GeneratedQuestionsAndChoices {
+class GeneratedQuestionsAndChoices
+{
     public Question $question;
     /** @var Choice[] */
     public array $choices;
 
-    private function __construct(Question $question, array $choices) {
+    private function __construct(Question $question, array $choices)
+    {
         $this->question = $question;
         $this->choices = $choices;
     }

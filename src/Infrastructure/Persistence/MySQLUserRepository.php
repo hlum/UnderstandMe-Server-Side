@@ -8,18 +8,21 @@ use Domain\Repositories\UserRepositoryInterface;
 use mysqli;
 use mysqli_result;
 
-class MySQLUserRepository implements UserRepositoryInterface {
+class MySQLUserRepository implements UserRepositoryInterface
+{
     private mysqli $connection;
 
-    public function __construct(mysqli $connection) {
+    public function __construct(mysqli $connection)
+    {
         $this->connection = $connection;
 
-        if($this->connection->connect_error) {
+        if ($this->connection->connect_error) {
             throw new \RuntimeException('データベース接続エラー \n 詳細 \n' . $this->connection->connect_error);
         }
     }
 
-    public function insert(User $user): void {
+    public function insert(User $user): void
+    {
         $query = "INSERT INTO users (id, email, role, photo_url, student_code, admission_year, major_code, fcm_token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $types = 'ssssssss';
         $params = [$user->id, $user->email, $user->role->getValue(), $user->photoURL, $user->studentCode, $user->admissionYear, $user->majorCode, $user->fcmToken];
@@ -27,7 +30,8 @@ class MySQLUserRepository implements UserRepositoryInterface {
         $this->executeQuery($query, $types, $params, $error_message);
     }
 
-    public function findByEmail(string $email): ?User {
+    public function findByEmail(string $email): ?User
+    {
         $query = "SELECT * FROM users WHERE email = ?";
         $types = 's';
         $params = [$email];
@@ -43,7 +47,8 @@ class MySQLUserRepository implements UserRepositoryInterface {
     }
 
 
-    public function findById(string $id): ?User {
+    public function findById(string $id): ?User
+    {
         $query = "SELECT * FROM users WHERE id = ?";
         $types = 's';
         $params = [$id];
@@ -60,7 +65,8 @@ class MySQLUserRepository implements UserRepositoryInterface {
     }
 
 
-    public function findByStudentCode(string $studentCode): ?User {
+    public function findByStudentCode(string $studentCode): ?User
+    {
         $query = "SELECT * FROM users WHERE student_code = ?";
         $types = 's';
         $params = [$studentCode];
@@ -77,7 +83,8 @@ class MySQLUserRepository implements UserRepositoryInterface {
     }
 
 
-    public function findByMajorCodeAndAdmissionYear(string $majorCode, int $admissionYear): array {
+    public function findByMajorCodeAndAdmissionYear(string $majorCode, int $admissionYear): array
+    {
         $query = "SELECT * FROM users WHERE major_code = ? AND admission_year = ?";
         $types = 'si';
         $params = [$majorCode, $admissionYear];
@@ -93,7 +100,8 @@ class MySQLUserRepository implements UserRepositoryInterface {
     }
 
 
-    public function updateFcmToken(string $userId, ?string $fcmToken): void {
+    public function updateFcmToken(string $userId, ?string $fcmToken): void
+    {
         $query = "UPDATE users SET fcm_token = ? WHERE id = ?";
         $types = 'ss';
         $params = [$fcmToken, $userId];
@@ -106,22 +114,23 @@ class MySQLUserRepository implements UserRepositoryInterface {
         string $query,
         string $types,
         array $params,
-        string $error_message): mysqli_result|bool {
-            $stmt = $this->connection->prepare($query);
+        string $error_message
+    ): mysqli_result|bool {
+        $stmt = $this->connection->prepare($query);
 
-            if ($stmt === false) {
-                throw new \RuntimeException('ステートメントの準備に失敗しました。詳細: ' . $this->connection->error);
-            }
-
-            $stmt->bind_param($types, ...$params);
-            if ($stmt === false) {
-                throw new \RuntimeException('パラメータのバインドに失敗しました。詳細: ' . $this->connection->error);
-            }
-
-            if (!$stmt->execute()) {
-                throw new \RuntimeException('クエリの実行に失敗しました。詳細: ' . $stmt->error);
-            }
-
-            return $stmt->get_result();
+        if ($stmt === false) {
+            throw new \RuntimeException('ステートメントの準備に失敗しました。詳細: ' . $this->connection->error);
         }
+
+        $stmt->bind_param($types, ...$params);
+        if ($stmt === false) {
+            throw new \RuntimeException('パラメータのバインドに失敗しました。詳細: ' . $this->connection->error);
+        }
+
+        if (!$stmt->execute()) {
+            throw new \RuntimeException('クエリの実行に失敗しました。詳細: ' . $stmt->error);
+        }
+
+        return $stmt->get_result();
+    }
 }

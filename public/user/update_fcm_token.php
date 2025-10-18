@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if(!in_array($_SERVER['REQUEST_METHOD'], ['PATCH'])) {
+if (!in_array($_SERVER['REQUEST_METHOD'], ['PATCH'])) {
     Response::send('error', 'Method not allowed. Use UPDATE', 405);
 }
 
@@ -31,8 +31,8 @@ ApiKeyValidator::check($clientApiKey);
 
 // Expected JSON structure
 // {
-    // user_id: String,
-    // fcm_token: String nullable,
+// user_id: String,
+// fcm_token: String nullable,
 // }
 
 $input = json_decode(file_get_contents('php://input'), true);
@@ -49,11 +49,11 @@ if (!isset($user_id)) {
     Response::send('error', 'ユーザーIDは必須です。', 400);
 }
 
-if($user_id == null || !is_string($user_id)){
+if ($user_id == null || !is_string($user_id)) {
     Response::send('error', '無効なユーザーID形式です。', 400);
 }
 
-if(!isset($fcm_token)) {
+if (!isset($fcm_token)) {
     Response::send('error', 'Fcm Tokenは必須です。', 400);
 }
 
@@ -65,7 +65,7 @@ try {
     $userUseCase->updateFcmToken($user_id, $fcm_token);
     Response::send('success', 'FCMトークンの更新が成功しました。', 200);
 } catch (Throwable $e) {
-    Response::send('error',  $e->getMessage(), 500);
+    Response::send('error', $e->getMessage(), 500);
 }
 
 

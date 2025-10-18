@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if(!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
+if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
     Response::send('error', 'Method not allowed. Use GET', 405);
 }
 
@@ -31,8 +31,8 @@ by homework_id
 by user_id
 */
 $project_id = $_GET['id'] ?? null;
-$homework_id   = $_GET['homework_id']   ?? null;
-$user_id    = $_GET['user_id']    ?? null;
+$homework_id = $_GET['homework_id'] ?? null;
+$user_id = $_GET['user_id'] ?? null;
 
 
 try {
@@ -50,7 +50,7 @@ try {
     );
 
 } catch (Throwable $e) {
-    Response::send('error',  $e->getMessage(), 500);
+    Response::send('error', $e->getMessage(), 500);
 }
 
 
@@ -78,5 +78,5 @@ try {
     Response::send('success', 'projectの取得に成功しました。', 200, json_encode($projects));
 
 } catch (Throwable $e) {
-    Response::send('error',  $e->getMessage(), 500);
+    Response::send('error', $e->getMessage(), 500);
 }

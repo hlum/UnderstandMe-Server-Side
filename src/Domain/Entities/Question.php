@@ -6,7 +6,8 @@ use DateTimeImmutable;
 use JsonSerializable;
 
 
-class Question implements JsonSerializable{
+class Question implements JsonSerializable
+{
     public string $id;
     public string $jobId;
     public string $text;
@@ -37,7 +38,8 @@ class Question implements JsonSerializable{
     }
 
 
-    public static function fromDBRow(array $row): self {
+    public static function fromDBRow(array $row): self
+    {
         return new self(
             id: $row['id'],
             jobId: $row['job_id'],
@@ -49,7 +51,8 @@ class Question implements JsonSerializable{
 
 
 
-    public function jsonSerialize(): array {
+    public function jsonSerialize(): array
+    {
         return [
             'id' => $this->id,
             'job_id' => $this->jobId,

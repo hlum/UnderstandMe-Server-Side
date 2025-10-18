@@ -3,7 +3,8 @@
 namespace Domain\Repositories;
 use Domain\Entities\ClassEntity;
 
-interface ClassRepositoryInterface {
+interface ClassRepositoryInterface
+{
     public function insert(ClassEntity $class): void;
     public function findById(string $id): ?ClassEntity;
     public function findByTeacherId(string $teacherId): array;

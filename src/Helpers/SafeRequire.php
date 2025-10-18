@@ -2,8 +2,10 @@
 
 namespace Helpers;
 
-class SafeRequire {
-    public static function requireFile(string $filePath): void {
+class SafeRequire
+{
+    public static function requireFile(string $filePath): void
+    {
         if (file_exists($filePath)) {
             require_once $filePath;
         } else {

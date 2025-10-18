@@ -28,16 +28,12 @@ $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
 ApiKeyValidator::check($clientApiKey);
 
 
-// Possible queries
-/*
-by homework_id
-by class_id (get all homeworks for a specific class)
-by teacher_id (get all homeworks assigned by a specific teacher)
-*/
+$homeworkID = $_GET['homework_id'] ?? null;
 
-$homework_id = $_GET['id'] ?? null;
-$class_id = $_GET['class_id'] ?? null;
-$teacher_id = $_GET['teacher_id'] ?? null;
+if (!isset($homeworkID)) {
+    Response::send('error', 'homework_id は必須です。', 400);
+}
+
 
 try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
@@ -52,23 +48,9 @@ try {
 }
 
 try {
-    $homeworks = [];
+    $homeworksWithStatus = $homeworkUseCase->fetchHomeworksStatusListForAllStudents($homeworkID);
 
-    if (isset($homework_id)) {
-        $homework = $homeworkUseCase->findById($homework_id);
-        if ($homework !== null) {
-            $homeworks = [$homework];
-        }
-    } elseif (isset($class_id)) {
-        $homeworks = $homeworkUseCase->findByClassId($class_id);
-    } elseif (isset($teacher_id)) {
-        $homeworks = $homeworkUseCase->findByTeacherId($teacher_id);
-    } else {
-        Response::send('error', '少なくとも1つのクエリパラメータを指定する必要があります。', 400);
-    }
-
-    Response::send('success', '宿題の取得に成功しました', 200, json_encode($homeworks));
-
+    Response::send('success', '課題の取得成功', 200, json_encode($homeworksWithStatus));
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);
 }

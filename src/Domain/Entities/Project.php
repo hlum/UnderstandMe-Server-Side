@@ -5,7 +5,8 @@ use \DateTimeImmutable;
 use \JsonSerializable;
 
 
-class Project implements JsonSerializable {
+class Project implements JsonSerializable
+{
     public string $id;
     public string $userId;
     public string $homeworkId;
@@ -41,7 +42,8 @@ class Project implements JsonSerializable {
         );
     }
 
-    public static function fromDBRow(array $row): self {
+    public static function fromDBRow(array $row): self
+    {
         return new self(
             $row['id'],
             $row['user_id'],
@@ -51,7 +53,8 @@ class Project implements JsonSerializable {
         );
     }
 
-    public function jsonSerialize(): array {
+    public function jsonSerialize(): array
+    {
         return [
             'id' => $this->id,
             'user_id' => $this->userId,

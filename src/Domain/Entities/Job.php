@@ -7,7 +7,8 @@ use DateTimeImmutable;
 
 
 
-class Job implements JsonSerializable{
+class Job implements JsonSerializable
+{
     public string $id;
     public string $projectId;
     public Status $status;
@@ -20,7 +21,7 @@ class Job implements JsonSerializable{
         Status $status,
         ?DateTimeImmutable $createdAt,
         DateTimeImmutable $updatedAt
-        ) {
+    ) {
         $this->id = $id;
         $this->projectId = $projectId;
         $this->status = $status;
@@ -41,7 +42,8 @@ class Job implements JsonSerializable{
         );
     }
 
-    public static function fromDBRow(array $row): self {
+    public static function fromDBRow(array $row): self
+    {
         return new self(
             $row['id'],
             $row['project_id'],
@@ -51,7 +53,8 @@ class Job implements JsonSerializable{
         );
     }
 
-    public function jsonSerialize(): array {
+    public function jsonSerialize(): array
+    {
         return [
             'id' => $this->id,
             'project_id' => $this->projectId,

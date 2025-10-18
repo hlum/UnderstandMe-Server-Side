@@ -5,7 +5,8 @@ namespace Domain\Entities;
 use JsonSerializable;
 use DateTimeImmutable;
 
-class Homework implements JsonSerializable{
+class Homework implements JsonSerializable
+{
     public string $id;
     public string $teacherID;
     public string $classID;
@@ -19,10 +20,10 @@ class Homework implements JsonSerializable{
         string $teacherID,
         string $classID,
         string $title,
-        ?string $description, 
-        DateTimeImmutable $dueDate, 
+        ?string $description,
+        DateTimeImmutable $dueDate,
         DateTimeImmutable $createdAt
-        ) {
+    ) {
         $this->id = $id;
         $this->teacherID = $teacherID;
         $this->classID = $classID;
@@ -37,7 +38,7 @@ class Homework implements JsonSerializable{
         string $teacherID,
         string $classID,
         string $title,
-        ?string $description, 
+        ?string $description,
         DateTimeImmutable $dueDate
     ): self {
         return new self(
@@ -52,7 +53,8 @@ class Homework implements JsonSerializable{
     }
 
 
-    public static function fromDBRow(array $row): self {
+    public static function fromDBRow(array $row): self
+    {
         return new self(
             $row['id'],
             $row['teacher_id'],
@@ -64,7 +66,8 @@ class Homework implements JsonSerializable{
         );
     }
 
-    public function jsonSerialize(): array {
+    public function jsonSerialize(): array
+    {
         return [
             'id' => $this->id,
             'teacher_id' => $this->teacherID,

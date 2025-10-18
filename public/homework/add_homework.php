@@ -1,6 +1,9 @@
 <?php
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
-require __DIR__ .'/../../vendor/autoload.php';
+require __DIR__ . '/../../vendor/autoload.php';
 use Application\UseCases\HomeworkUseCase;
 use Domain\Entities\Homework;
 use Helpers\Response;
@@ -19,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if(!in_array($_SERVER['REQUEST_METHOD'], ['PATCH'])) {
+if (!in_array($_SERVER['REQUEST_METHOD'], ['POST'])) {
     Response::send('error', 'Method not allowed. Use UPDATE', 405);
 }
 
@@ -32,11 +35,11 @@ ApiKeyValidator::checkTeacherKey($clientApiKey);
 
 // Expected JSON structure
 // {
-    // teacher_id: String,
-    // class_id: String nullable,
-    // title: String,
-    // description: String nullable,
-    // due_date: String nullable // ISO 8601 date format "2025-10-01T23:59:00Z"
+// teacher_id: String,
+// class_id: String nullable,
+// title: String,
+// description: String nullable,
+// due_date: String nullable // ISO 8601 date format "2025-10-01T23:59:00Z"
 // }
 
 $input = json_decode(file_get_contents('php://input'), true);
@@ -54,18 +57,18 @@ $due_date = $input['due_date'] ?? null;
 if (!isset($teacher_id)) {
     Response::send('error', '教師IDは必須です。', 400);
 }
-if($teacher_id == null || !is_string($teacher_id)){
+if ($teacher_id == null || !is_string($teacher_id)) {
     Response::send('error', '無効な教師ID形式です。', 400);
 }
 if (!isset($title)) {
     Response::send('error', 'タイトルは必須です。', 400);
 }
-if($title == null || !is_string($title)){
+if ($title == null || !is_string($title)) {
     Response::send('error', '無効なタイトル形式です。', 400);
 }
 
 $due_date = new DateTimeImmutable($due_date);
-if($due_date == null || !($due_date instanceof DateTimeImmutable)){
+if ($due_date == null || !($due_date instanceof DateTimeImmutable)) {
     Response::send('error', '無効な締め切り日形式です。', 400);
 }
 
@@ -89,5 +92,5 @@ try {
     Response::send('success', '宿題の追加が成功しました。', 200);
 
 } catch (Throwable $e) {
-    Response::send('error',  $e->getMessage(), 500);
+    Response::send('error', $e->getMessage(), 500);
 }

@@ -1,4 +1,7 @@
 <?php
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 require __DIR__ . '/../../vendor/autoload.php';
 use Application\UseCases\ClassUseCase;
@@ -18,8 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if(!in_array($_SERVER['REQUEST_METHOD'], ['PATCH'])) {
-    Response::send('error', 'Method not allowed. Use UPDATE', 405);
+if (!in_array($_SERVER['REQUEST_METHOD'], ['POST'])) {
+    Response::send('error', 'Method not allowed. Use POST', 405);
 }
 
 $headers = getallheaders();
@@ -31,10 +34,10 @@ ApiKeyValidator::checkTeacherKey($clientApiKey);
 
 // Expected JSON structure
 // {
-    // name: String,
-    // teacher_id: String,
-    // admission_year: Integer,
-    // major_code: String
+// name: String,
+// teacher_id: String,
+// admission_year: Integer,
+// major_code: String
 // }
 
 $input = json_decode(file_get_contents('php://input'), true);
@@ -51,28 +54,28 @@ $teacher_id = $input['teacher_id'] ?? null;
 if (!isset($name)) {
     Response::send('error', '学科名は必須です。', 400);
 }
-if($name == null || !is_string($name)){
+if ($name == null || !is_string($name)) {
     Response::send('error', '無効な学科名形式です。', 400);
 }
 
-if(!isset($teacher_id)) {
-    Response::send('error', '教師IDは必須です。',400);
+if (!isset($teacher_id)) {
+    Response::send('error', '教師IDは必須です。', 400);
 }
 
-if($teacher_id == null || !is_string($teacher_id)) {
+if ($teacher_id == null || !is_string($teacher_id)) {
     Response::send('error', '無効な教師ID形式です。', 400);
 }
 
 if (!isset($admission_year)) {
     Response::send('error', '入学年度は必須です。', 400);
 }
-if($admission_year == null || !is_int($admission_year)){
+if ($admission_year == null || !is_int($admission_year)) {
     Response::send('error', '無効な入学年度形式です。', 400);
 }
 if (!isset($major_code)) {
     Response::send('error', '専攻のコードは必須です。', 400);
 }
-if($major_code == null || !is_string($major_code)){
+if ($major_code == null || !is_string($major_code)) {
     Response::send('error', '無効な専攻のコード形式です。', 400);
 }
 

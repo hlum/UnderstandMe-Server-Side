@@ -10,7 +10,8 @@ use Domain\Repositories\ProjectRepositoryInterface;
 use Domain\Repositories\UserRepositoryInterface;
 
 
-class JobUseCase {
+class JobUseCase
+{
     private JobRepositoryInterface $jobRepository;
     private ProjectRepositoryInterface $projectRepository;
     private UserRepositoryInterface $userRepository;
@@ -26,17 +27,20 @@ class JobUseCase {
     }
 
 
-    public function add(Job $job) {
+    public function add(Job $job)
+    {
         $this->validateJob($job);
         $this->jobRepository->insert($job);
     }
 
-    public function getAllJobs(int $limit = 100, int $offset = 0): array {
+    public function getAllJobs(int $limit = 100, int $offset = 0): array
+    {
         return $this->jobRepository->getAllJobs($limit, $offset);
     }
 
 
-    public function updateStatus(string $id, Status $status): void {
+    public function updateStatus(string $id, Status $status): void
+    {
         $job = $this->jobRepository->findById($id);
         if ($job === null) {
             throw new \InvalidArgumentException("指定されたIDのジョブが存在しません。");
@@ -44,12 +48,14 @@ class JobUseCase {
         $this->jobRepository->updateStatus($id, $status);
     }
 
-    public function getJobsByStatus(Status $status): array {
+    public function getJobsByStatus(Status $status): array
+    {
         return $this->jobRepository->getJobsByStatus($status);
     }
 
 
-    public function deleteById(string $id): void {
+    public function deleteById(string $id): void
+    {
         $job = $this->jobRepository->findById($id);
         if ($job === null) {
             throw new \InvalidArgumentException("指定されたIDのジョブが存在しません。");
@@ -58,7 +64,8 @@ class JobUseCase {
     }
 
 
-    public function findById(string $id): Job {
+    public function findById(string $id): Job
+    {
         $job = $this->jobRepository->findById($id);
         if ($job === null) {
             throw new \InvalidArgumentException("指定されたIDのジョブが存在しません。");
@@ -67,7 +74,8 @@ class JobUseCase {
     }
 
 
-    public function findByUserId(string $userId): array {
+    public function findByUserId(string $userId): array
+    {
         $user = $this->userRepository->findById($userId);
         if ($user === null) {
             throw new \InvalidArgumentException("指定されたUserIDのユーザーが存在しません。");
@@ -93,7 +101,8 @@ class JobUseCase {
         return $jobs;
     }
 
-    private function validateJob(Job $job): void {
+    private function validateJob(Job $job): void
+    {
 
         if (empty($job->id) || empty($job->projectId)) {
             throw new \InvalidArgumentException("ProjectIDは必須です。");
