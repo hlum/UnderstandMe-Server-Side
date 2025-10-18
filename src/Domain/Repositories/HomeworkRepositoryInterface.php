@@ -14,4 +14,5 @@ interface HomeworkRepositoryInterface
     public function findByStudentIDWithStatus(string $studentId): array;
     public function findByIDWithStatus(string $homeworkID, string $student_id): array;
     public function findByClassIDWithStatus(string $classID, string $studentID): array;
+    public function fetchHomeworkStatusListForAllStudents(string $homeworkID): array;
 }

@@ -173,6 +173,48 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface
     }
 
 
+    //　管理画面から学生たちの提出状況を一覧で見るためのメソッド
+    public function fetchHomeworkStatusListForAllStudents(string $homeworkID): array
+    {
+        $query = "SELECT 
+            homework_id,
+            homework_title,
+            due_date,
+            class_id,
+            user_id,
+            user_email,
+            description,
+            github_file_link,
+            job_status,
+            submission_state,
+            score
+            FROM homework_submission_status_per_user
+            WHERE homework_id = ?;
+            ";
+        $types = 's';
+        $params = [$homeworkID];
+        $errorMessage = 'HomeworkIDによる提出状況の検索に失敗しました。';
+        $result = $this->executeQuery($query, $types, $params, $errorMessage);
+        $homeworksWithStatus = [];
+        while ($row = $result->fetch_assoc()) {
+            $homeworksWithStatus[] = [
+                'id' => $row['homework_id'],
+                'user_id' => $row['user_id'],
+                'user_email' => $row['user_email'],
+                'title' => $row['homework_title'],
+                'class_id' => $row['class_id'],
+                'description' => $row['description'],
+                'due_date' => $row['due_date'],
+                'github_file_link' => $row['github_file_link'],
+                'job_status' => $row['job_status'],
+                'score' => $row['score'],
+                'submission_state' => $row['submission_state']
+            ];
+        }
+        return $homeworksWithStatus;
+    }
+
+
     public function findByTeacherId(string $teacherId): array
     {
         $query = "SELECT * FROM homeworks WHERE teacher_id = ?";

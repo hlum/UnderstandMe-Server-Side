@@ -118,6 +118,11 @@ class HomeworkUseCase
         return $this->homeworkRepository->findByClassIDWithStatus($classID, $studentID);
     }
 
+    // 教師の管理画面から全生徒の宿題とステータスを取得
+    public function fetchHomeworksStatusListForAllStudents(string $homeworkID): array
+    {
+        return $this->homeworkRepository->fetchHomeworkStatusListForAllStudents($homeworkID);
+    }
 
     private function validateHomework(Homework $homework): void
     {
