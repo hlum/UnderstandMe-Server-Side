@@ -1,0 +1,96 @@
+<?php
+require __DIR__ . '/../../vendor/autoload.php';
+
+use Application\UseCases\AnswerUseCase;
+use Application\UseCases\ChoiceUseCase;
+use Application\UseCases\ResultUseCase;
+use Infrastructure\Persistence\MySQLAnswerRepository;
+use Infrastructure\Persistence\MySQLChoiceRepository;
+use Infrastructure\Persistence\MySQLQuestionRepository;
+use Infrastructure\Persistence\MySQLResultRepository;
+use Infrastructure\Persistence\MySQLUserRepository;
+use Domain\Entities\Answer;
+use Domain\Entities\Result;
+use Helpers\Response;
+use Helpers\ApiKeyValidator;
+
+
+
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
+ini_set('display_errors', '1');
+error_reporting(E_ALL);
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    Response::send('error', 'Method not allowed. Use POST', 405);
+}
+
+$headers = getallheaders();
+$clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
+ApiKeyValidator::check($clientApiKey);
+
+$input = json_decode(file_get_contents('php://input'), true);
+if (json_last_error() !== JSON_ERROR_NONE) {
+    Response::send('error', '無効なJSONデータです。', 400);
+}
+
+$questionID = $input['question_id'] ?? null;
+$homeworkID = $input['homework_id'] ?? null;
+$userID = $input['user_id'] ?? null;
+$selectedChoiceID = $input['selected_choice_id'] ?? null;
+$totalQuestions = $input['total_questions'] ?? null;
+
+if (!$questionID || !$userID || !$selectedChoiceID || !$homeworkID || !$totalQuestions) {
+    Response::send('error', '必要なフィールドが不足しています。');
+}
+
+try {
+    $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+
+    $answerRepo = new MySQLAnswerRepository($connection);
+    $userRepo = new MySQLUserRepository($connection);
+    $questionRepo = new MySQLQuestionRepository($connection);
+    $choiceRepo = new MySQLChoiceRepository($connection);
+    $resultRepo = new MySQLResultRepository($connection);
+
+    $answerUseCase = new AnswerUseCase($answerRepo, $userRepo, $questionRepo);
+    $choiceUseCase = new ChoiceUseCase($choiceRepo, $questionRepo);
+    $resultUseCase = new ResultUseCase($resultRepo);
+
+    // --- Save answer ---
+    $newAnswer = Answer::createNew($questionID, $userID, $selectedChoiceID);
+    $answerUseCase->addAnswer($newAnswer);
+
+
+    // --- Check if correct ---
+    $choice = $choiceUseCase->findById($selectedChoiceID);
+    if (!$choice)
+        Response::send('error', '選択肢が見つかりません。', 404);
+    $choiceIsCorrect = $choice->isCorrect;
+
+    // --- Update or create result ---
+    $resultInDB = $resultUseCase->fetchResultWithHomeworkIDAndUserID($homeworkID, $userID);
+
+    if (!$resultInDB) {
+        $correctAnswers = $choiceIsCorrect ? 1 : 0;
+        $score = (int) (($correctAnswers / $totalQuestions) * 100);
+        $newResult = Result::createNew($userID, $homeworkID, (int) $totalQuestions, $correctAnswers, $score);
+        $resultUseCase->saveNewResult($newResult);
+    } else {
+        $newCorrect = $resultInDB->correctAnswers + ($choiceIsCorrect ? 1 : 0);
+        $newScore = ($newCorrect / $resultInDB->totalQuestions) * 100;
+        $resultUseCase->updateResult($resultInDB->id, $newScore, $newCorrect);
+    }
+
+    Response::send('success', 'Answer and result updated successfully.');
+
+} catch (Throwable $e) {
+    Response::send('error', $e->getMessage(), 500);
+}
