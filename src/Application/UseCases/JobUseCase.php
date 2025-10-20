@@ -48,9 +48,23 @@ class JobUseCase
         $this->jobRepository->updateStatus($id, $status);
     }
 
+
     public function getJobsByStatus(Status $status): array
     {
         return $this->jobRepository->getJobsByStatus($status);
+    }
+
+
+    public function retryJob(string $homeworkID, string $userID)
+    {
+        $project = $this->projectRepository->findByHomeworkId($homeworkID, $userID);
+        if ($project === null) {
+            throw new \InvalidArgumentException("指定されたHomeworkIDのプロジェクトが存在しません。");
+        }
+
+        $job = $this->jobRepository->findByProjectId($project->id);
+
+        $this->jobRepository->updateStatus($job->id, Status::from('pending'));
     }
 
 

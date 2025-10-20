@@ -123,7 +123,7 @@ try {
     $processingJobExist = count($jobUseCase->getJobsByStatus(Status::from('processing'))) > 0;
 
     if ($processingJobExist) {
-        Response::send('info', 'プロジェクトが追加されましたが、現在別のプロジェクトの問題生成処理中です。少々お待ちください。', 202);
+        Response::send('success', 'プロジェクトが追加されましたが、現在別のプロジェクトの問題生成処理中です。少々お待ちください。', 200);
     }
 
     try {
@@ -131,7 +131,7 @@ try {
         $jobUseCase->updateStatus($job->id, Status::from('done'));
         // TODO : Userに問題生成が終了したことを知らせる。
     } catch (Throwable $e) {
-        $jobUseCase->updateStatus($job->id, Status::from('pending'));
+        $jobUseCase->updateStatus($job->id, Status::from('failed'));
 
         // Log the error but do not fail the entire request
         error_log("Jobの処理失敗 (Job ID {$job->id}): " . $e->getMessage());
