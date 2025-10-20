@@ -5,7 +5,7 @@ use Infrastructure\Persistence\MySQLJobRepository;
 use Infrastructure\Persistence\MySQLProjectRepository;
 use Infrastructure\Persistence\MySQLUserRepository;
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, OPTIONS");
+header("Access-Control-Allow-Methods: PATCH, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 
@@ -13,8 +13,6 @@ require __DIR__ . '/../../vendor/autoload.php';
 
 use Helpers\ApiKeyValidator;
 use Helpers\Response;
-use Infrastructure\Persistence\MySQLQuestionsAndChoicesRepository;
-use Application\UseCases\QuestionsAndChoicesUseCase;
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -22,8 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
-    Response::send('error', 'Method not allowed. Use GET', 405);
+if (!in_array($_SERVER['REQUEST_METHOD'], ['PATCH'])) {
+    Response::send('error', 'Method not allowed. Use PATCH', 405);
 }
 
 
@@ -33,8 +31,14 @@ $headers = getallheaders();
 $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
 ApiKeyValidator::check($clientApiKey);
 
-$homeworkID = $_GET['homework_id'] ?? null;
-$userID = $_GET['user_id'] ?? null;
+$input = json_decode(file_get_contents('php://input'), true);
+
+if (json_last_error() !== JSON_ERROR_NONE) {
+    Response::send('error', '無効なJSONデータです。', 400);
+}
+
+$homeworkID = $input['homework_id'] ?? null;
+$userID = $input['user_id'] ?? null;
 
 if (!isset($homeworkID) || !isset($userID)) {
     Response::send('error', 'homework_id と user_id は必須です。', 400);
@@ -46,9 +50,12 @@ try {
     $userRepo = new MySQLUserRepository($connection);
     $jobRepo = new MySQLJobRepository($connection);
     $projectRepo = new MySQLProjectRepository($connection);
-    $jobUseCase = new JobUseCase($jobRepository, $userRepo, $projectRepo);
+    $jobUseCase = new JobUseCase($jobRepo, $userRepo, $projectRepo);
 
     $jobUseCase->retryJob($homeworkID, $userID);
+
+    Response::send('success', 'リトライが完了しました。', 200);
+
 } catch (Throwable $e) {
     Response::send('error', 'リトライに失敗しました。', 500);
 }
