@@ -44,6 +44,12 @@ class AnswerUseCase
     }
 
 
+    public function findAnswersForHomework(string $homeworkID, string $userID): array
+    {
+        return $this->answerRepo->getAnswersForHomework($homeworkID, $userID);
+    }
+
+
 
     private function validateAnswer(Answer $answer)
     {

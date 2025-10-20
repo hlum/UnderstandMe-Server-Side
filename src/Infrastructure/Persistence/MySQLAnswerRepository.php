@@ -49,6 +49,36 @@ class MySQLAnswerRepository implements AnswerRepositoryInterface
     }
 
 
+    /**
+     * fetch answers by homeworkID and userID
+     * @param string $homeworkID
+     * @param string $userID
+     * @return Answer[]
+     */
+    public function getAnswersForHomework(string $homeworkID, string $userID): array
+    {
+        $query = '
+            SELECT a.* FROM answers a
+            JOIN questions q ON a.question_id = q.id
+            JOIN jobs j ON q.job_id = j.id
+            JOIN projects p ON j.project_id = p.id
+            WHERE p.homework_id = ? AND a.user_id = ?
+        ';
+        $types = 'ss';
+        $params = [$homeworkID, $userID];
+        $errorMessage = 'homeworkIDとuserIDによるAnswer検索に失敗しました。';
+        $result = $this->executeQuery($query, $types, $params, $errorMessage);
+
+        $answers = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $answers[] = Answer::fromDBRow($row);
+        }
+
+        return $answers;
+    }
+
+
     private function executeQuery(
         string $query,
         string $types,

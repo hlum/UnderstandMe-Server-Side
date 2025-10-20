@@ -6,4 +6,5 @@ interface AnswerRepositoryInterface
 {
     public function addAnswer(Answer $answer): void;
     public function getAnswers(string $questionID, string $userID): array;
+    public function getAnswersForHomework(string $homeworkID, string $userID): array;
 }
