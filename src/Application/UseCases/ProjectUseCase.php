@@ -82,6 +82,17 @@ class ProjectUseCase
     }
 
 
+    public function deleteByHomeworkID(string $homeworkID, string $studentID): void
+    {
+        $projectInDB = $this->projectRepository->findByHomeworkId($homeworkID, $studentID);
+        if ($projectInDB === null) {
+            return;
+        }
+
+        $this->projectRepository->deleteByHomeworkID($homeworkID, $studentID);
+    }
+
+
     private function validateProject(Project $project)
     {
         if (empty($project->id) || empty($project->homeworkId) || empty($project->userId) || empty($project->githubFileLink)) {
