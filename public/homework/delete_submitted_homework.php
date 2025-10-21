@@ -1,7 +1,13 @@
 <?php
 // 提出したProjectとJobを削除し、Homeworkの提出を取り消す
 
-require_once __DIR__ . '/../../vendor/autoload.php';
+
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
+
+require __DIR__ . '/../../vendor/autoload.php';
 use Application\UseCases\JobUseCase;
 use Application\UseCases\ProjectUseCase;
 use Helpers\Response;
@@ -10,33 +16,35 @@ use Infrastructure\Persistence\MySQLHomeworkRepository;
 use Infrastructure\Persistence\MySQLJobRepository;
 use Infrastructure\Persistence\MySQLProjectRepository;
 use Infrastructure\Persistence\MySQLUserRepository;
-
-
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
+use Helpers\ApiKeyValidator;
 
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-if (!in_array($_SERVER['REQUEST_METHOD'], ['DELETE'])) {
+if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
     Response::send('error', 'Method Not Allowed. Use DELETE', 405);
 }
 
 
-$userID = $_GET['user_id'] ?? null;
-$homeworkID = $_GET['homework_id'] ?? null;
+// API KEY Validation
+$headers = getallheaders();
+$clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
+ApiKeyValidator::check($clientApiKey);
 
-if (!isset($userID) || !isset($homeworkID)) {
-    Response::send('error', 'user_idとhomework_idは必須です。', 400);
+
+$input = json_decode(file_get_contents('php://input'), true);
+$userID = $_GET['user_id'] ?? $input['user_id'] ?? null;
+$homeworkID = $_GET['homework_id'] ?? $input['homework_id'] ?? null;
+
+if (!$userID || !$homeworkID) {
+    Response::send('error', 'Missing parameters', 400);
 }
 
 try {
@@ -57,7 +65,7 @@ try {
 
     // 次にProjectを削除する
     $projectUseCase->deleteByHomeworkID($homeworkID, $userID);
-
+    Response::send('success', '提出された宿題を削除しました', 200);
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);
 }
