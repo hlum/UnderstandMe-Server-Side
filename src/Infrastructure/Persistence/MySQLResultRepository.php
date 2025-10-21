@@ -48,6 +48,29 @@ class MySQLResultRepository implements ResultRepositoryInterface
     }
 
 
+    public function fetchResultsByUserID(string $userID, int $year): array
+    {
+        $startDate = sprintf('%04d-04-01 00:00:00', $year);
+        $endDate = sprintf('%04d-03-31 23:59:59', $year + 1);
+
+        $query = 'SELECT r.* FROM results r
+                  JOIN homeworks h ON r.homework_id = h.id
+                  WHERE r.user_id = ? AND h.due_date BETWEEN ? AND ?';
+        $types = 'sss';
+        $params = [$userID, $startDate, $endDate];
+        $errorMessage = 'userIDと年度によるResults検索に失敗しました。';
+
+        $result = $this->executeQuery($query, $types, $params, $errorMessage);
+        $results = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $results[] = Result::fromDBRow($row);
+        }
+
+        return $results;
+    }
+
+
     public function insertResult(Result $result)
     {
         $query = 'INSERT results (id, user_id, homework_id, total_questions, correct_answers, score) VALUES (?,?,?,?,?,?)';

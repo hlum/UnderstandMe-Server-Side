@@ -19,6 +19,11 @@ class ResultUseCase
         return $this->getResult($resultID);
     }
 
+    public function fetchResultsByUserID(string $userID, int $year): array
+    {
+        return $this->resultRepository->fetchResultsByUserID($userID, $year);
+    }
+
 
     public function fetchResultWithHomeworkIDAndUserID(string $homeworkID, string $userID): ?Result
     {
