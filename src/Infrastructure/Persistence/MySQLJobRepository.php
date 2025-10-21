@@ -110,6 +110,18 @@ class MySQLJobRepository implements JobRepositoryInterface
         $this->executeQuery($query, $types, $params, $errorMessage);
     }
 
+
+    public function deleteByHomeworkID(string $homeworkID, string $studentID): void
+    {
+        $query = "DELETE j FROM jobs j
+                  JOIN projects p ON j.project_id = p.id
+                  WHERE p.homework_id = ? AND p.user_id = ?";
+        $types = 'ss';
+        $params = [$homeworkID, $studentID];
+        $errorMessage = 'HomeworkIDによるJob削除に失敗しました。';
+        $this->executeQuery($query, $types, $params, $errorMessage);
+    }
+
     private function executeQuery(
         string $query,
         string $types,

@@ -78,6 +78,21 @@ class JobUseCase
     }
 
 
+    public function deleteByHomeworkID(string $homeworkID, string $studentID): void
+    {
+        $projectInDB = $this->projectRepository->findByHomeworkId($homeworkID, $studentID);
+        if ($projectInDB === null) {
+            return;
+        }
+        $jobInDB = $this->jobRepository->findByProjectId($projectInDB->id);
+        if ($jobInDB === null) {
+            return;
+        }
+
+        $this->jobRepository->deleteByHomeworkID($homeworkID, $studentID);
+    }
+
+
     public function findById(string $id): Job
     {
         $job = $this->jobRepository->findById($id);

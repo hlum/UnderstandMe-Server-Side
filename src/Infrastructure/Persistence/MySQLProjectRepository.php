@@ -80,6 +80,17 @@ class MySQLProjectRepository implements ProjectRepositoryInterface
         return $projects;
     }
 
+
+    public function deleteByHomeworkID(string $homeworkID, string $studentID)
+    {
+        $query = "DELETE FROM projects WHERE homework_id = ? AND user_id = ?";
+        $types = 'ss';
+        $params = [$homeworkID, $studentID];
+        $errorMessage = 'HomeworkIDによるProject削除に失敗しました。';
+
+        $this->executeQuery($query, $types, $params, $errorMessage);
+    }
+
     private function executeQuery(
         string $query,
         string $types,
