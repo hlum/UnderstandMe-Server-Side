@@ -1,5 +1,5 @@
 <?php
-
+ignore_user_abort(true); // continue even if user closes the connection
 require __DIR__ . '/../../vendor/autoload.php';
 use Application\UseCases\JobUseCase;
 use Application\UseCases\ProcessPendingJobsUseCase;
@@ -126,21 +126,31 @@ try {
         Response::send('success', 'プロジェクトが追加されましたが、現在別のプロジェクトの問題生成処理中です。少々お待ちください。', 200);
     }
 
+
+    // 問題生成処理スタート
     try {
-        $jobProcessor->process($job);
-        $jobUseCase->updateStatus($job->id, Status::from('done'));
-        // TODO : Userに問題生成が終了したことを知らせる。
+        $maxRetryCounts = 3;
+        while (true) {
+            try {
+                $jobProcessor->process($job);
+                $jobUseCase->updateStatus($job->id, Status::from('done'));
+                // TODO : Userに問題生成が終了したことを知らせる。
+                Response::send('success', 'プロジェクトが正常に追加されました。問題が生成されました。', 200);
+            } catch (Throwable $e) {
+                $maxRetryCounts--;
+                if ($maxRetryCounts <= 0) {
+                    throw $e;
+                }
+                // Retry after brief pause
+                sleep(2);
+            }
+
+        }
+
     } catch (Throwable $e) {
-        $jobUseCase->updateStatus($job->id, Status::from('failed'));
-
-        // Log the error but do not fail the entire request
-        error_log("Jobの処理失敗 (Job ID {$job->id}): " . $e->getMessage());
-        exit();
+        $jobUseCase->updateStatus($job->id, Status::from('pending'));
+        Response::send('success', 'プロジェクトが正常に追加されました。問題が生成されました。', 200);
     }
-
-
-    Response::send('success', 'プロジェクトが正常に追加されました。問題が生成されました。', 200);
-
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);
 }

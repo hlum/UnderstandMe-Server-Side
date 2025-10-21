@@ -38,7 +38,7 @@ $processPendingJobsUseCase = new ProcessPendingJobsUseCase(
 
 
 
-$maxRetryCounts = 5;
+$maxRetryCounts = 10;
 $currentRetry = 0;
 
 while ($currentRetry < $maxRetryCounts) {
@@ -70,12 +70,12 @@ while ($currentRetry < $maxRetryCounts) {
         error_log("Jobの処理失敗 (Attempt $currentRetry): " . $e->getMessage());
         if ($currentRetry >= $maxRetryCounts) {
             error_log("リトライのカウントを超えました。JobID: {$jobToProcess->id}. Marking as failed.");
-            $jobRepository->updateStatus($jobToProcess->$id, Status::from('failed'));
+            $jobRepository->updateStatus($jobToProcess->id, Status::from('failed'));
             // TODO : Userに失敗したことを通知で知らせる
         } else {
             echo "Retrying... ($currentRetry/$maxRetryCounts)\n";
-            $jobRepository->updateStatus($jobToProcess->$id, Status::from('pending'));
-            sleep(2); // Wait before retrying
+            $jobRepository->updateStatus($jobToProcess->id, Status::from('pending'));
+            sleep(5); // Wait before retrying
         }
     }
 }
