@@ -15,7 +15,7 @@ class OllamaQuestionGenerator implements QuestionGeneratorInterface
 
         // データの準備
         $data = [
-            'model' => 'codequiz:latest',
+            'model' => 'codequiz:v2',
             'prompt' => '作成する数:' . $numQuestions . ' コードスニペット: ' . $codeSnippet,
             'stream' => false
         ];
@@ -61,17 +61,17 @@ class OllamaQuestionGenerator implements QuestionGeneratorInterface
         $result = $result['response'] ?? null;
 
         if ($result === null) {
-            throw new \Exception('Ollama API からのレスポンスが不正です。');
+            throw new \Exception('Ollama API からのレスポンスが不正です。' . $response);
         }
 
         $result = json_decode($result, true);
 
         if ($result === null) {
-            throw new \Exception('Ollama API からのレスポンスが不正です。');
+            throw new \Exception('Ollama API からのレスポンスが不正です。' . $response);
         }
 
         if (!isset($result['questions'])) {
-            throw new \Exception('Ollama API からのレスポンスが不正です。');
+            throw new \Exception('Ollama API からのレスポンスが不正です。' . $response);
         }
 
         /* 期待されるレスポンス形式の例
@@ -106,7 +106,7 @@ class OllamaQuestionGenerator implements QuestionGeneratorInterface
             }
 
             if (!isset($answerIndex)) {
-                throw new \Exception("Ollama API からのレスポンスが不正です。answer index が見つかりません。");
+                throw new \Exception("Ollama API からのレスポンスが不正です。answer index が見つかりません。" . $response);
             }
 
             $answerIndex = (int) ($answerIndex);

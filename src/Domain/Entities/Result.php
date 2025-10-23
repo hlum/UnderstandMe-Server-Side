@@ -12,6 +12,7 @@ class Result implements JsonSerializable
     public int $totalQuestions;
     public int $correctAnswers;
     public int $score;
+    public DateTimeImmutable $evaluatedAt;
 
     private function __construct(
         string $id,
@@ -19,7 +20,8 @@ class Result implements JsonSerializable
         string $homeworkID,
         int $totalQuestions,
         int $correctAnswers,
-        int $score
+        int $score,
+        DateTimeImmutable $evaluatedAt = new DateTimeImmutable()
     ) {
         $this->id = $id;
         $this->userID = $userID;
@@ -27,6 +29,7 @@ class Result implements JsonSerializable
         $this->totalQuestions = $totalQuestions;
         $this->correctAnswers = $correctAnswers;
         $this->score = $score;
+        $this->evaluatedAt = $evaluatedAt;
     }
 
 
@@ -43,7 +46,8 @@ class Result implements JsonSerializable
             userID: $userID,
             totalQuestions: $totalQuestions,
             correctAnswers: $correctAnswers,
-            score: $score
+            score: $score,
+            evaluatedAt: new DateTimeImmutable()
         );
     }
 
@@ -55,7 +59,8 @@ class Result implements JsonSerializable
             $row['homework_id'],
             $row['total_questions'],
             $row['correct_answers'],
-            $row['score']
+            $row['score'],
+            new DateTimeImmutable($row['evaluated_at'])
         );
     }
 
@@ -69,7 +74,8 @@ class Result implements JsonSerializable
             'homework_id' => $this->homeworkID,
             'total_questions' => $this->totalQuestions,
             'correct_answers' => $this->correctAnswers,
-            'score' => $this->score
+            'score' => $this->score,
+            'evaluated_at' => $this->evaluatedAt->format('Y-m-d H:i:s'),
         ];
     }
 
