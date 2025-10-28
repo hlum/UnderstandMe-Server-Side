@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if (!in_array($_SERVER['REQUEST_METHOD'], ['PATCH'])) {
+if (!in_array($_SERVER['REQUEST_METHOD'], ['UPDATE'])) {
     Response::send('error', 'Method not allowed. Use UPDATE', 405);
 }
 
