@@ -18,8 +18,22 @@ class NotificationHandler
         }
     }
 
-
-    function sendFCMNotification($fcmToken, $title, $body)
+    /**
+     * Firebase Cloud Messaging (FCM) を使用して、特定の課題情報を含むプッシュ通知を送信するメソッド。
+     *
+     * このメソッドは、指定されたデバイストークン（$fcmToken）に対して、
+     * タイトル（$title）、本文（$body）、および課題ID（$homeworkID）を含む通知を送信します。
+     * iOS・Android 双方で動作し、通知をタップした際に対象の課題詳細画面へ遷移できるように
+     * `data` フィールドに課題IDを含めて送信します。
+     *
+     * @param string $fcmToken 通知を送信する対象デバイスの FCM トークン
+     * @param string $title 通知タイトル
+     * @param string $body 通知本文
+     * @param string $homeworkID 対象の課題を識別するID（アプリ側で画面遷移に使用）
+     * @return array レスポンス内容と HTTP ステータスコードを含む連想配列
+     *               ['response' => string, 'code' => int]
+     * @throws \Exception CURL 実行時にエラーが発生した場合に例外をスローします
+     */
     function sendFCMNotification($fcmToken, $title, $body, $homeworkID)
     {
         $projectId = $this->firebaseProjectID;
