@@ -5,12 +5,12 @@ namespace Helpers;
 
 class NotificationHandler
 {
-    public string $projectID; // Firebase Project ID
+    public string $firebaseProjectID; // Firebase Project ID
     public string $keyFilePath; // service-account.json のパス
 
-    public function __construct(string $projectID, string $keyFilePath = __DIR__ . '/../../config/service-account.json')
+    public function __construct(string $firebaseProjectID, string $keyFilePath = __DIR__ . '/../../config/service-account.json')
     {
-        $this->projectID = $projectID;
+        $this->firebaseProjectID = $firebaseProjectID;
         $this->keyFilePath = $keyFilePath;
 
         if ($this->keyFilePath === false || !file_exists($this->keyFilePath)) {
@@ -21,7 +21,7 @@ class NotificationHandler
 
     function sendFCMNotification($fcmToken, $title, $body)
     {
-        $projectId = $this->projectID;
+        $projectId = $this->firebaseProjectID;
         $keyFilePath = $this->keyFilePath;
 
         // Step 1: Get OAuth 2.0 access token
