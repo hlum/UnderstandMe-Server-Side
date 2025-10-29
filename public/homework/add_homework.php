@@ -1,4 +1,7 @@
 <?php
+
+use Application\UseCases\ClassUseCase;
+use Application\UseCases\UserUseCase;
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -11,11 +14,11 @@ use Helpers\ApiKeyValidator;
 use Infrastructure\Persistence\MySQLHomeworkRepository;
 use Infrastructure\Persistence\MySQLUserRepository;
 use Infrastructure\Persistence\MySQLClassRepository;
+use Helpers\NotificationHandler;
 
-
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+ini_set('display_errors', 0);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -23,10 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 if (!in_array($_SERVER['REQUEST_METHOD'], ['POST'])) {
-    Response::send('error', 'Method not allowed. Use UPDATE', 405);
+    Response::send('error', 'Method not allowed. Use POST', 405);
 }
-
-$headers = getallheaders();
 
 // API Key validation
 $headers = getallheaders();
@@ -67,7 +68,12 @@ if ($title == null || !is_string($title)) {
     Response::send('error', '無効なタイトル形式です。', 400);
 }
 
-$due_date = new DateTimeImmutable($due_date);
+try {
+    $due_date = $due_date ? new DateTimeImmutable($due_date) : null;
+} catch (Exception $e) {
+    Response::send('error', '無効な締め切り日形式です。', 400);
+}
+
 if ($due_date == null || !($due_date instanceof DateTimeImmutable)) {
     Response::send('error', '無効な締め切り日形式です。', 400);
 }
@@ -79,7 +85,14 @@ try {
     $userRepository = new MySQLUserRepository($connection);
     $classRepository = new MySQLClassRepository($connection);
 
+    $classUseCase = new ClassUseCase($classRepository, $userRepository);
+    $userUseCase = new UserUseCase($userRepository);
     $homeworkUseCase = new HomeworkUseCase($homeworkRepository, $userRepository, $classRepository);
+
+    // NotificationHandlerの初期化
+    $notificationHandler = new NotificationHandler(FIREBASE_PROJECT_ID, FIREBASE_SERVICE_ACCOUNT_PATH);
+
+
     $newHomework = Homework::createNew(
         $teacher_id,
         $class_id,
@@ -88,8 +101,37 @@ try {
         $due_date
     );
 
+    // 宿題を追加
     $homeworkUseCase->add($newHomework);
-    Response::send('success', '宿題の追加が成功しました。', 200);
+
+    // クラス情報を取得
+    $classToNotify = $classUseCase->findById($class_id);
+
+    // 通知対象のユーザーを取得
+    $usersToNotify = $userUseCase->findByMajorCodeAndAdmissionYear($classToNotify->majorCode, $classToNotify->admissionYear);
+
+    $errorsSendingNotifications = [];
+    // 対象のユーザーに通知を送信
+    foreach ($usersToNotify as $user) {
+        if ($user->fcmToken) {
+            $response = $notificationHandler->sendFCMNotification(
+                $user->fcmToken,
+                '新しい宿題が追加されました',
+                "{$classToNotify->name}に{$newHomework->title}の宿題が追加されました。",
+                $newHomework->id
+            );
+            if ($response['code'] !== 200) {
+                $errorsSendingNotifications[] = "学生番号: {$user->studentCode}, レスポンス: {$response['response']}";
+            }
+        }
+    }
+
+    if (!empty($errorsSendingNotifications)) {
+        // エラーログを出力
+        Response::send('error', '宿題の追加が成功しましたが、一部の通知の送信に失敗しました。', 200, json_encode($errorsSendingNotifications));
+    } else {
+        Response::send('success', '宿題の追加が成功しました。', 200, json_encode($usersToNotify));
+    }
 
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);
