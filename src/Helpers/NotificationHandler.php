@@ -20,6 +20,7 @@ class NotificationHandler
 
 
     function sendFCMNotification($fcmToken, $title, $body)
+    function sendFCMNotification($fcmToken, $title, $body, $homeworkID)
     {
         $projectId = $this->firebaseProjectID;
         $keyFilePath = $this->keyFilePath;
@@ -37,6 +38,9 @@ class NotificationHandler
                 'notification' => [
                     'title' => $title,
                     'body' => $body
+                ],
+                'data' => [
+                    'homeworkId' => $homeworkID
                 ],
                 'android' => [
                     'priority' => 'high'
