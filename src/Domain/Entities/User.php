@@ -15,7 +15,6 @@ class User implements JsonSerializable
     public ?string $studentCode;       // 学生のみ
     public ?int $admissionYear;        // 学生のみ
     public ?string $majorCode;         // 学生のみ
-    public ?string $fcmToken;
     public \DateTimeImmutable $createdAt;
 
     private function __construct(
@@ -26,7 +25,6 @@ class User implements JsonSerializable
         ?string $studentCode,
         ?int $admissionYear,
         ?string $majorCode,
-        ?string $fcmToken,
         \DateTimeImmutable $createdAt
     ) {
         // ドメインレベルでもテーブル制約を適用する
@@ -44,7 +42,6 @@ class User implements JsonSerializable
         $this->studentCode = $studentCode;
         $this->admissionYear = $admissionYear;
         $this->majorCode = $majorCode;
-        $this->fcmToken = $fcmToken;
         $this->createdAt = $createdAt;
     }
 
@@ -59,7 +56,6 @@ class User implements JsonSerializable
             'photo_url' => $this->photoURL,
             'admission_year' => $this->admissionYear,
             'major_code' => $this->majorCode,
-            'fcm_token' => $this->fcmToken,
             'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
         ];
     }
@@ -73,7 +69,6 @@ class User implements JsonSerializable
         ?string $studentCode,
         ?int $admissionYear,
         ?string $majorCode,
-        ?string $fcmToken,
         ?string $photoURL
     ): self {
         return new self(
@@ -84,7 +79,6 @@ class User implements JsonSerializable
             $studentCode,
             $admissionYear,
             $majorCode,
-            $fcmToken,
             new \DateTimeImmutable()
         );
     }
@@ -100,7 +94,6 @@ class User implements JsonSerializable
             $row['student_code'] ?? null,
             $row['admission_year'] !== null ? (int) $row['admission_year'] : null,
             $row['major_code'] ?? null,
-            $row['fcm_token'] ?? null,
             new \DateTimeImmutable($row['created_at'])
         );
     }

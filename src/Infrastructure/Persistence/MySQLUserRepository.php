@@ -23,9 +23,9 @@ class MySQLUserRepository implements UserRepositoryInterface
 
     public function insert(User $user): void
     {
-        $query = "INSERT INTO users (id, email, role, photo_url, student_code, admission_year, major_code, fcm_token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        $types = 'ssssssss';
-        $params = [$user->id, $user->email, $user->role->getValue(), $user->photoURL, $user->studentCode, $user->admissionYear, $user->majorCode, $user->fcmToken];
+        $query = "INSERT INTO users (id, email, role, photo_url, student_code, admission_year, major_code) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $types = 'sssssss';
+        $params = [$user->id, $user->email, $user->role->getValue(), $user->photoURL, $user->studentCode, $user->admissionYear, $user->majorCode];
         $error_message = 'ユーザーの保存に失敗しました';
         $this->executeQuery($query, $types, $params, $error_message);
     }
@@ -97,16 +97,6 @@ class MySQLUserRepository implements UserRepositoryInterface
         }
 
         return $users;
-    }
-
-
-    public function updateFcmToken(string $userId, ?string $fcmToken): void
-    {
-        $query = "UPDATE users SET fcm_token = ? WHERE id = ?";
-        $types = 'ss';
-        $params = [$fcmToken, $userId];
-        $error_message = 'FCMトークンの更新に失敗しました';
-        $this->executeQuery($query, $types, $params, $error_message);
     }
 
 

@@ -12,6 +12,5 @@ interface UserRepositoryInterface
     public function findById(string $id): ?User;
     public function findByStudentCode(string $studentCode): ?User;
     public function findByMajorCodeAndAdmissionYear(string $majorCode, int $admissionYear): array;
-    public function updateFcmToken(string $userId, ?string $fcmToken): void;
 
 }

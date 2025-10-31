@@ -53,7 +53,6 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 // student_code: String not nullable,
 // major_code: String not nullable,
 // admission_year: String
-// fcm_token: String nullable,
 // photo_url: String nullable (URL format)
 // }
 
@@ -62,7 +61,6 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 
 $user_id = $input['id'] ?? null;
 $email = $input['email'] ?? null;
-$fcm_token = $input['fcm_token'] ?? null;
 $photo_url = $input['photo_url'] ?? null;
 $role = Role::from($input['role'] ?? 'student');
 $student_code = $input['student_code'] ?? null;
@@ -89,10 +87,6 @@ if ($photo_url != null && !filter_var($photo_url, FILTER_VALIDATE_URL)) {
     Response::send('error', '無効なphoto_url形式です。', 400);
 }
 
-if (!isNullORValidFcmToken($fcm_token)) {
-    Response::send('error', '無効なFCMトークン形式です。', 400);
-}
-
 if (!isset($student_code)) {
     Response::send('error', 'student_codeを指定する必要があります。', 400);
 }
@@ -110,15 +104,9 @@ try {
     $userRepository = new MySQLUserRepository($connection);
     $userUseCase = new UserUseCase($userRepository);
 
-    $userUseCase->registerUser($user_id, $email, $role, $photo_url, $student_code, $admission_year, $major_code, $fcm_token);
+    $userUseCase->registerUser($user_id, $email, $role, $photo_url, $student_code, $admission_year, $major_code);
 
     Response::send('success', 'ユーザー登録が成功しました。', 200);
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);
-}
-
-
-function isNullORValidFcmToken(?string $token): bool
-{
-    return $token === null || (is_string($token) && strlen($token) > 10);
 }

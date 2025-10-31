@@ -65,6 +65,23 @@ class MySQLFCMTokenRepository implements FCMTokenRepositoryInterface
     }
 
 
+    public function findByUserId(string $userId): array
+    {
+        $query = "SELECT * FROM fcm_tokens WHERE user_id = ?";
+        $types = "s";
+        $params = [$userId];
+        $error_message = "ユーザーIDによるFCMトークンの検索に失敗しました。";
+
+        $result = $this->executeQuery($query, $types, $params, $error_message);
+        $tokens = [];
+        while ($row = $result->fetch_assoc()) {
+            $tokens[] = FCMToken::fromDBRow($row);
+        }
+
+        return $tokens;
+    }
+
+
 
     private function executeQuery(
         string $query,

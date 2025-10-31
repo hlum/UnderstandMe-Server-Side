@@ -54,4 +54,10 @@ class FCMTokenUseCase
     }
 
 
+    public function getTokensByUserId(string $userID): array
+    {
+        return $this->fcmTokenRepository->findByUserId($userID);
+    }
+
+
 }

@@ -16,7 +16,7 @@ class UserUseCase
         $this->userRepository = $userRepository;
     }
 
-    public function registerUser(string $id, string $email, Role $role, ?string $photoURL, ?string $studentCode, ?int $admissionYear, ?string $majorCode, ?string $fcmToken): User
+    public function registerUser(string $id, string $email, Role $role, ?string $photoURL, ?string $studentCode, ?int $admissionYear, ?string $majorCode): User
     {
 
         if ($photoURL != null && !filter_var($photoURL, FILTER_VALIDATE_URL)) {
@@ -44,29 +44,12 @@ class UserUseCase
         }
 
         // 新しいユーザーを作成
-        $user = User::createNew($id, $email, $role, $studentCode, $admissionYear, $majorCode, $fcmToken, $photoURL);
+        $user = User::createNew($id, $email, $role, $studentCode, $admissionYear, $majorCode, $photoURL);
 
         // ユーザーをリポジトリに保存
         $this->userRepository->insert($user);
 
         return $user;
-    }
-
-    public function updateFcmToken(string $userId, ?string $fcmToken): void
-    {
-        // ユーザーが存在するか確認
-        $user = $this->userRepository->findById($userId);
-        if ($user === null) {
-            throw new \InvalidArgumentException("指定されたユーザーIDのユーザーが存在しません");
-        }
-
-
-        if ($fcmToken == null) {
-            throw new \InvalidArgumentException("無効なfcm_tokenです。");
-        }
-
-        // FCMトークンを更新
-        $this->userRepository->updateFcmToken($userId, $fcmToken);
     }
 
     public function findById(string $user_id): User
