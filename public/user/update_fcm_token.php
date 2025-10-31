@@ -3,7 +3,8 @@
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-use Application\UseCases\UserUseCase;
+use Application\UseCases\FCMTokenUseCase;
+use Infrastructure\Persistence\MySQLFCMTokenRepository;
 use Infrastructure\Persistence\MySQLUserRepository;
 use Helpers\ApiKeyValidator;
 use Helpers\Response;
@@ -32,6 +33,8 @@ ApiKeyValidator::check($clientApiKey);
 // Expected JSON structure
 // {
 // user_id: String,
+// device_id: String,
+// device_type: String,
 // fcm_token: String nullable,
 // }
 
@@ -41,19 +44,28 @@ if (json_last_error() !== JSON_ERROR_NONE) {
     Response::send('error', '無効なJSONデータです。', 400);
 }
 
-$user_id = $input['user_id'] ?? null;
-$fcm_token = $input['fcm_token'] ?? null;
+$userID = $input['user_id'] ?? null;
+$fcmToken = $input['fcm_token'] ?? null;
+$deviceID = $input['device_id'] ?? null;
+$deviceType = $input['device_type'] ?? null;
 
-
-if (!isset($user_id)) {
+if (!isset($userID)) {
     Response::send('error', 'ユーザーIDは必須です。', 400);
 }
 
-if ($user_id == null || !is_string($user_id)) {
+if ($userID == null || !is_string($userID)) {
     Response::send('error', '無効なユーザーID形式です。', 400);
 }
 
-if (!isset($fcm_token)) {
+if (!isset($deviceID)) {
+    Response::send('error', 'デバイスIDは必須です。', 400);
+}
+
+if (!isset($deviceType)) {
+    Response::send('error', 'デバイスタイプは必須です。', 400);
+}
+
+if (!isset($fcmToken)) {
     Response::send('error', 'Fcm Tokenは必須です。', 400);
 }
 
@@ -61,9 +73,13 @@ if (!isset($fcm_token)) {
 try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $userRepository = new MySQLUserRepository($connection);
-    $userUseCase = new UserUseCase($userRepository);
-    $userUseCase->updateFcmToken($user_id, $fcm_token);
+    $fcmRepository = new MySQLFCMTokenRepository($connection);
+
+    $fcmUseCase = new FCMTokenUseCase($fcmRepository, $userRepository);
+    $fcmUseCase->registerOrUpdateFCMToken($userID, $deviceID, $deviceType, $fcmToken);
+
     Response::send('success', 'FCMトークンの更新が成功しました。', 200);
+
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);
 }
