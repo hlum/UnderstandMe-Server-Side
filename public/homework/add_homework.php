@@ -2,6 +2,7 @@
 
 use Application\UseCases\ClassUseCase;
 use Application\UseCases\UserUseCase;
+use Application\UseCases\FCMTokenUseCase;
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -14,6 +15,7 @@ use Helpers\ApiKeyValidator;
 use Infrastructure\Persistence\MySQLHomeworkRepository;
 use Infrastructure\Persistence\MySQLUserRepository;
 use Infrastructure\Persistence\MySQLClassRepository;
+use Infrastructure\Persistence\MySQLFCMTokenRepository;
 use Helpers\NotificationHandler;
 
 ini_set('display_errors', 0);
@@ -84,10 +86,12 @@ try {
     $homeworkRepository = new MySQLHomeworkRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
     $classRepository = new MySQLClassRepository($connection);
+    $fcmTokenRepository = new MySQLFCMTokenRepository($connection);
 
     $classUseCase = new ClassUseCase($classRepository, $userRepository);
     $userUseCase = new UserUseCase($userRepository);
     $homeworkUseCase = new HomeworkUseCase($homeworkRepository, $userRepository, $classRepository);
+    $fcmTokenUseCase = new FCMTokenUseCase($fcmTokenRepository, $userRepository);
 
     // NotificationHandlerの初期化
     $notificationHandler = new NotificationHandler(FIREBASE_PROJECT_ID, FIREBASE_SERVICE_ACCOUNT_PATH);
@@ -113,15 +117,20 @@ try {
     $errorsSendingNotifications = [];
     // 対象のユーザーに通知を送信
     foreach ($usersToNotify as $user) {
-        if ($user->fcmToken) {
-            $response = $notificationHandler->sendFCMNotification(
-                $user->fcmToken,
-                '新しい宿題が追加されました',
-                "{$classToNotify->name}に{$newHomework->title}の宿題が追加されました。",
-                $newHomework->id
-            );
-            if ($response['code'] !== 200) {
-                $errorsSendingNotifications[] = "学生番号: {$user->studentCode}, レスポンス: {$response['response']}";
+        // ユーザーの全てのFCMトークンを取得
+        $fcmTokens = $fcmTokenUseCase->getTokensByUserId($user->id);
+        
+        foreach ($fcmTokens as $fcmTokenEntity) {
+            if ($fcmTokenEntity->fcmToken) {
+                $response = $notificationHandler->sendFCMNotification(
+                    $fcmTokenEntity->fcmToken,
+                    '新しい宿題が追加されました',
+                    "{$classToNotify->name}に{$newHomework->title}の宿題が追加されました。",
+                    $newHomework->id
+                );
+                if ($response['code'] !== 200) {
+                    $errorsSendingNotifications[] = "学生番号: {$user->studentCode}, デバイスID: {$fcmTokenEntity->deviceId}, レスポンス: {$response['response']}";
+                }
             }
         }
     }

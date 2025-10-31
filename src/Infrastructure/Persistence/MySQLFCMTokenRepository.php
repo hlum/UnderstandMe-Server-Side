@@ -19,9 +19,10 @@ class MySQLFCMTokenRepository implements FCMTokenRepositoryInterface
 
     public function insertFCMToken(FCMToken $fcmToken): void
     {
-        $query = "INSERT INTO fcm_tokens (user_id, device_id, device_type, fcm_token) VALUES (?, ?, ?, ?)";
-        $types = "ssss";
+        $query = "INSERT INTO fcm_tokens (id, user_id, device_id, device_type, fcm_token) VALUES (?, ?, ?, ?, ?)";
+        $types = "sssss";
         $params = [
+            $fcmToken->id,
             $fcmToken->userId,
             $fcmToken->deviceId,
             $fcmToken->deviceType,
@@ -62,6 +63,23 @@ class MySQLFCMTokenRepository implements FCMTokenRepositoryInterface
         }
 
         return FCMToken::fromDBRow($row);
+    }
+
+
+    public function findByUserId(string $userId): array
+    {
+        $query = "SELECT * FROM fcm_tokens WHERE user_id = ?";
+        $types = "s";
+        $params = [$userId];
+        $error_message = "ユーザーIDによるFCMトークンの検索に失敗しました。";
+
+        $result = $this->executeQuery($query, $types, $params, $error_message);
+        $tokens = [];
+        while ($row = $result->fetch_assoc()) {
+            $tokens[] = FCMToken::fromDBRow($row);
+        }
+
+        return $tokens;
     }
 
 

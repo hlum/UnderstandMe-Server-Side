@@ -88,7 +88,7 @@ try {
     $userRepository = new MySQLUserRepository($connection);
     $userUseCase = new UserUseCase($userRepository);
 
-    $userUseCase->registerUser($user_id, $email, $role, $photo_url, null, null, null, null);
+    $userUseCase->registerUser($user_id, $email, $role, $photo_url, null, null, null);
 
     Response::send('success', 'ユーザー登録が成功しました。', 200);
 } catch (Throwable $e) {
