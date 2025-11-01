@@ -4,6 +4,8 @@ namespace Application\UseCases;
 use Domain\Entities\FCMToken;
 use Domain\Repositories\FCMTokenRepositoryInterface;
 use Domain\Repositories\UserRepositoryInterface;
+use Exception;
+use InvalidArgumentException;
 
 
 class FCMTokenUseCase
@@ -28,10 +30,9 @@ class FCMTokenUseCase
     ) {
 
         // Userの存在をチェック
-        $userInDB = $this->userRepository->findById($userID);
-
-        if (!$userInDB) {
-            throw new \Exception("指定されたユーザーは存在しません : " . $userID);
+        $userExist = $this->userExists($userID);
+        if (!$userExist) {
+            throw new Exception("Userが存在しません。" . $userID);
         }
 
         $fcmTokenInDB = $this->fcmTokenRepository->findByUserIdAndDeviceId($userID, $deviceID);
@@ -57,6 +58,35 @@ class FCMTokenUseCase
     public function getTokensByUserId(string $userID): array
     {
         return $this->fcmTokenRepository->findByUserId($userID);
+    }
+
+
+    public function deleteFCMToken(string $userID, string $deviceID): void
+    {
+        // Userの存在をチェック
+        if (!$this->userExists($userID)) {
+            throw new InvalidArgumentException("Userが存在しません。" . $userID);
+        }
+        // FCMトークンの存在をチェック
+        if (!$this->fcmTokenExists($userID, $deviceID)) {
+            throw new InvalidArgumentException("FCMトークンが存在しません。" . $userID . ", " . $deviceID);
+        }
+
+        $this->fcmTokenRepository->deleteFCMToken($userID, $deviceID);
+    }
+
+
+    private function userExists(string $userID): bool
+    {
+        $user = $this->userRepository->findById($userID);
+        return $user !== null;
+    }
+
+
+    private function fcmTokenExists(string $userID, string $deviceID): bool
+    {
+        $fcmToken = $this->fcmTokenRepository->findByUserIdAndDeviceId($userID, $deviceID);
+        return $fcmToken !== null;
     }
 
 
