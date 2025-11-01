@@ -83,6 +83,17 @@ class MySQLFCMTokenRepository implements FCMTokenRepositoryInterface
     }
 
 
+    public function deleteFCMToken(string $userId, string $deviceId): void
+    {
+        $query = "DELETE FROM fcm_tokens WHERE user_id = ? AND device_id = ?";
+        $types = "ss";
+        $params = [$userId, $deviceId];
+        $error_message = "FCMトークンの削除に失敗しました。";
+
+        $this->executeQuery($query, $types, $params, $error_message);
+    }
+
+
 
     private function executeQuery(
         string $query,

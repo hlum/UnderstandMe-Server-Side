@@ -9,5 +9,6 @@ interface FCMTokenRepositoryInterface
     public function updateFCMToken(string $userID, string $deviceID, string $newFCMToken): void;
     public function findByUserIdAndDeviceId(string $userId, string $deviceId): ?FCMToken;
     public function findByUserId(string $userId): array;
+    public function deleteFCMToken(string $userId, string $deviceId): void;
 }
 
