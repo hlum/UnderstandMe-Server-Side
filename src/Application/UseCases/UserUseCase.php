@@ -16,7 +16,7 @@ class UserUseCase
         $this->userRepository = $userRepository;
     }
 
-    public function registerUser(string $id, string $email, Role $role, ?string $photoURL, ?string $studentCode, ?int $admissionYear, ?string $majorCode): User
+    public function registerUser(string $id, string $name, string $email, Role $role, ?string $photoURL, ?string $studentCode, ?int $admissionYear, ?string $majorCode): User
     {
 
         if ($photoURL != null && !filter_var($photoURL, FILTER_VALIDATE_URL)) {
@@ -36,15 +36,8 @@ class UserUseCase
             throw new \InvalidArgumentException("この学生コードは既に登録されています", 200);
         }
 
-        // 学生コードが既に存在するか確認(RoleがStudentの場合のみ)
-        if ($role->getValue() === 'student' && $studentCode !== null) {
-            if ($this->userRepository->findByStudentCode($studentCode) !== null) {
-                throw new \InvalidArgumentException("この学生コードは既に登録されています");
-            }
-        }
-
         // 新しいユーザーを作成
-        $user = User::createNew($id, $email, $role, $studentCode, $admissionYear, $majorCode, $photoURL);
+        $user = User::createNew($id, $name, $email, $role, $studentCode, $admissionYear, $majorCode, $photoURL);
 
         // ユーザーをリポジトリに保存
         $this->userRepository->insert($user);

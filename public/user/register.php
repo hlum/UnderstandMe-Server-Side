@@ -48,6 +48,7 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 // Expected JSON structure
 // {
 // id: String,
+// name: String,
 // email: String,
 // role: String('student' or 'teacher'),
 // student_code: String not nullable,
@@ -60,6 +61,7 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 
 
 $user_id = $input['id'] ?? null;
+$name = $input['name'] ?? null;
 $email = $input['email'] ?? null;
 $photo_url = $input['photo_url'] ?? null;
 $role = Role::from($input['role'] ?? 'student');
@@ -74,6 +76,10 @@ if (empty($user_id)) {
 
 if ($user_id == null || !is_string($user_id)) {
     Response::send('error', '無効なユーザーID形式です。', 400);
+}
+
+if (empty($name)) {
+    Response::send('error', '名前は必須です。', 400);
 }
 
 if (empty($email)) {
@@ -104,7 +110,7 @@ try {
     $userRepository = new MySQLUserRepository($connection);
     $userUseCase = new UserUseCase($userRepository);
 
-    $userUseCase->registerUser($user_id, $email, $role, $photo_url, $student_code, $admission_year, $major_code);
+    $userUseCase->registerUser($user_id, $name, $email, $role, $photo_url, $student_code, $admission_year, $major_code);
 
     Response::send('success', 'ユーザー登録が成功しました。', 200);
 } catch (Throwable $e) {

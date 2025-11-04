@@ -9,6 +9,7 @@ use JsonSerializable;
 class User implements JsonSerializable
 {
     public string $id;
+    public string $name;
     public string $email;
     public ?string $photoURL;
     public Role $role;
@@ -19,6 +20,7 @@ class User implements JsonSerializable
 
     private function __construct(
         string $id,
+        string $name,
         string $email,
         ?string $photoURL,
         Role $role,
@@ -36,6 +38,7 @@ class User implements JsonSerializable
         }
 
         $this->id = $id;
+        $this->name = $name;
         $this->email = $email;
         $this->photoURL = $photoURL;
         $this->role = $role;
@@ -50,6 +53,7 @@ class User implements JsonSerializable
     {
         return [
             'id' => $this->id,
+            'name' => $this->name,
             'email' => $this->email,
             'role' => $this->role instanceof Role ? $this->role->getValue() : $this->role,
             'student_code' => $this->studentCode,
@@ -64,6 +68,7 @@ class User implements JsonSerializable
     // ファクトリーメソッド：新規ユーザー用（created_at = now）
     public static function createNew(
         string $id,
+        string $name,
         string $email,
         Role $role,
         ?string $studentCode,
@@ -73,6 +78,7 @@ class User implements JsonSerializable
     ): self {
         return new self(
             $id,
+            $name,
             $email,
             $photoURL,
             $role,
@@ -88,6 +94,7 @@ class User implements JsonSerializable
     {
         return new self(
             $row['id'],
+            $row['name'],
             $row['email'],
             $row['photo_url'] ?? null,
             Role::from($row['role']),
