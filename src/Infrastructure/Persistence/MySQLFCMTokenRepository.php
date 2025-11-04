@@ -66,6 +66,9 @@ class MySQLFCMTokenRepository implements FCMTokenRepositoryInterface
     }
 
 
+    /**
+     * @return FCMToken[]
+     */
     public function findByUserId(string $userId): array
     {
         $query = "SELECT * FROM fcm_tokens WHERE user_id = ?";
