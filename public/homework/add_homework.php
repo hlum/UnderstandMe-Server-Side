@@ -1,6 +1,7 @@
 <?php
 
 use Application\UseCases\ClassUseCase;
+use Application\UseCases\NotificationUseCase;
 use Application\UseCases\UserUseCase;
 use Application\UseCases\FCMTokenUseCase;
 header("Access-Control-Allow-Origin: *");
@@ -92,9 +93,10 @@ try {
     $userUseCase = new UserUseCase($userRepository);
     $homeworkUseCase = new HomeworkUseCase($homeworkRepository, $userRepository, $classRepository);
     $fcmTokenUseCase = new FCMTokenUseCase($fcmTokenRepository, $userRepository);
-
+    
     // NotificationHandlerの初期化
     $notificationHandler = new NotificationHandler(FIREBASE_PROJECT_ID, FIREBASE_SERVICE_ACCOUNT_PATH);
+    $notificationUseCase = new NotificationUseCase($notificationHandler, $fcmTokenUseCase);
 
 
     $newHomework = Homework::createNew(
@@ -113,43 +115,16 @@ try {
 
     // 通知対象のユーザーを取得
     $usersToNotify = $userUseCase->findByMajorCodeAndAdmissionYear($classToNotify->majorCode, $classToNotify->admissionYear);
-
-    $errorsSendingNotifications = [];
-    // 対象のユーザーに通知を送信
-    foreach ($usersToNotify as $user) {
-        // ユーザーの全てのFCMトークンを取得
-        $fcmTokens = $fcmTokenUseCase->getTokensByUserId($user->id);
-        
-        foreach ($fcmTokens as $fcmTokenEntity) {
-            if ($fcmTokenEntity->fcmToken) {
-                $response = $notificationHandler->sendFCMNotification(
-                    $fcmTokenEntity->fcmToken,
-                    '新しい宿題が追加されました',
-                    "{$classToNotify->name}に{$newHomework->title}の宿題が追加されました。",
-                    $newHomework->id
-                );
-                if ($response['code'] !== 200) {
-                    $errorsSendingNotifications[] = "学生番号: {$user->studentCode}, デバイスID: {$fcmTokenEntity->deviceId}, レスポンス: {$response['response']}";
-
-                    // 無効なトークンの場合は削除
-                    if ($response['code'] === 410 || $response['code'] === 404 || $response['code'] === 400) {
-                        try {
-                            $fcmTokenUseCase->deleteFCMToken($user->id, $fcmTokenEntity->deviceId);
-                        } catch (Throwable $e) {
-                            $errorsSendingNotifications[] = "無効なFcmTokenの削除に失敗しました。学生番号: {$user->studentCode}, デバイスID: {$fcmTokenEntity->deviceId}, エラー: {$e->getMessage()}";
-                        }
-                    }
-                }
-            }
+    foreach($usersToNotify as $user) {
+        $body = $classToNotify->name."に".$newHomework->title."が追加されました。";
+        $invalidTokens = $notificationUseCase->sendNotification($user->id, "新しい宿題が追加されました: ",$body, $newHomework->id);
+        if (!empty($invalidTokens)) {
+            Response::send('success', '課題は正常に追加されましたが、一部の学生への通知は失敗しました。', 200, json_encode($invalidTokens));
         }
     }
-
-    if (!empty($errorsSendingNotifications)) {
-        // エラーログを出力
-        Response::send('error', '宿題の追加が成功しましたが、一部の通知の送信に失敗しました。', 200, json_encode($errorsSendingNotifications));
-    } else {
-        Response::send('success', '宿題の追加が成功しました。', 200, json_encode($usersToNotify));
-    }
+    
+    Response::send('success', '宿題の追加が成功しました。', 200, json_encode($usersToNotify));
+    
 
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);
