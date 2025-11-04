@@ -24,7 +24,7 @@ class MySQLUserRepository implements UserRepositoryInterface
     public function insert(User $user): void
     {
         $query = "INSERT INTO users (id, name, email, role, photo_url, student_code, admission_year, major_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        $types = 'ssssssss';
+        $types = 'ssssssss'; // 8パラメータ: id, name, email, role, photo_url, student_code, admission_year, major_code
         $params = [$user->id, $user->name, $user->email, $user->role->getValue(), $user->photoURL, $user->studentCode, $user->admissionYear, $user->majorCode];
         $error_message = 'ユーザーの保存に失敗しました';
         $this->executeQuery($query, $types, $params, $error_message);

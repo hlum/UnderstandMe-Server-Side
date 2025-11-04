@@ -36,13 +36,6 @@ class UserUseCase
             throw new \InvalidArgumentException("この学生コードは既に登録されています", 200);
         }
 
-        // 学生コードが既に存在するか確認(RoleがStudentの場合のみ)
-        if ($role->getValue() === 'student' && $studentCode !== null) {
-            if ($this->userRepository->findByStudentCode($studentCode) !== null) {
-                throw new \InvalidArgumentException("この学生コードは既に登録されています");
-            }
-        }
-
         // 新しいユーザーを作成
         $user = User::createNew($id, $name, $email, $role, $studentCode, $admissionYear, $majorCode, $photoURL);
 
