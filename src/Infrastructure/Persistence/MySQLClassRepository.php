@@ -79,6 +79,16 @@ class MySQLClassRepository implements ClassRepositoryInterface
     }
 
 
+    public function update(ClassEntity $class): void
+    {
+        $query = "UPDATE classes SET teacher_id = ?, name = ?, admission_year = ?, major_code = ? WHERE id = ?";
+        $types = 'ssiss';
+        $params = [$class->teacher_id, $class->name, $class->admissionYear, $class->majorCode, $class->id];
+        $errorMessage = 'Classの更新に失敗しました。';
+        $this->executeQuery($query, $types, $params, $errorMessage);
+    }
+
+
     private function executeQuery(
         string $query,
         string $types,
@@ -87,7 +97,6 @@ class MySQLClassRepository implements ClassRepositoryInterface
     ): mysqli_result|bool {
 
         $stmt = $this->connection->prepare($query);
-
         if ($stmt === false) {
             throw new \RuntimeException('ステートメントの準備に失敗しました。詳細: ' . $this->connection->error);
         }
