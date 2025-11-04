@@ -11,3 +11,5 @@ config/
 
 curltest.txt
 /vendor/
+
+.vscode/

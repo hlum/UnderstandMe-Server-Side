@@ -65,6 +65,22 @@ class ClassUseCase
         return $this->classRepository->findByTeacherId($teacherId);
     }
 
+
+
+    public function updateClass(ClassEntity $updatedClass): void
+    {
+        $existingClass = $this->classRepository->findById($updatedClass->id);
+        if ($existingClass === null) {
+            throw new \InvalidArgumentException("指定されたIDのクラスが存在しません。");
+        }
+
+
+        $this->validateClass($updatedClass);
+
+        // Update the class
+        $this->classRepository->update($updatedClass);
+    }
+
     private function isTeacher(string $userId): bool
     {
         $user = $this->userRepository->findById($userId);
@@ -73,11 +89,6 @@ class ClassUseCase
 
     private function validateClass(ClassEntity $class): void
     {
-        $classInDb = $this->classRepository->findById($class->id);
-        if ($classInDb !== null) {
-            throw new \InvalidArgumentException("指定されたIDのクラスは既に存在します。");
-        }
-
         if (empty($class->id) || empty($class->name) || empty($class->admissionYear) || empty($class->majorCode)) {
             throw new \InvalidArgumentException("Classの全てのフィールドは必須です。");
         }
