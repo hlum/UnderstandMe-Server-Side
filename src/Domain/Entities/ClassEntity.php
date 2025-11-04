@@ -45,10 +45,16 @@ class ClassEntity implements JsonSerializable
         string $teacher_id,
         string $name,
         int $admissionYear,
-        string $majorCode
+        string $majorCode,
+        ?string $id = null
     ): self {
+        
+        if($id === null) {
+            $id = bin2hex(random_bytes(16));
+        }
+
         return new self(
-            bin2hex(random_bytes(16)),
+            $id,
             $teacher_id,
             $name,
             $admissionYear,
