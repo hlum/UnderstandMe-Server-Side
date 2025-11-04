@@ -130,6 +130,15 @@ try {
                 );
                 if ($response['code'] !== 200) {
                     $errorsSendingNotifications[] = "学生番号: {$user->studentCode}, デバイスID: {$fcmTokenEntity->deviceId}, レスポンス: {$response['response']}";
+
+                    // 無効なトークンの場合は削除
+                    if ($response['code'] === 410 || $response['code'] === 404 || $response['code'] === 400) {
+                        try {
+                            $fcmTokenUseCase->deleteFCMToken($user->id, $fcmTokenEntity->deviceId);
+                        } catch (Throwable $e) {
+                            $errorsSendingNotifications[] = "無効なFcmTokenの削除に失敗しました。学生番号: {$user->studentCode}, デバイスID: {$fcmTokenEntity->deviceId}, エラー: {$e->getMessage()}";
+                        }
+                    }
                 }
             }
         }
