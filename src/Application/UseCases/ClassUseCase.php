@@ -1,6 +1,10 @@
 <?php
 
 namespace Application\UseCases;
+
+use App\Application\CustomExceptions\NotFoundException;
+use App\Application\CustomExceptions\UnAuthorizedException;
+use App\Application\CustomExceptions\ValidationException;
 use Domain\Entities\ClassEntity;
 use Domain\Repositories\ClassRepositoryInterface;
 use Domain\Repositories\UserRepositoryInterface;
@@ -28,7 +32,7 @@ class ClassUseCase
     {
         $class = $this->classRepository->findById($id);
         if ($class === null) {
-            throw new \InvalidArgumentException("指定されたIDのクラスが存在しません。");
+            throw new NotFoundException("指定されたIDのクラスが存在しません。");
         }
         return $class;
     }
@@ -37,9 +41,6 @@ class ClassUseCase
     public function findByMajorCodeAndAdmissionYear(string $majorCode, int $admissionYear): array
     {
         $classes = $this->classRepository->findByMajorCodeAndAdmissionYear($majorCode, $admissionYear);
-        if (empty($classes)) {
-            throw new \InvalidArgumentException("指定された専攻コードと入学年度のクラスが存在しません。");
-        }
         return $classes;
     }
 
@@ -47,10 +48,10 @@ class ClassUseCase
     {
         $user = $this->userRepository->findById($studentId);
         if ($user === null) {
-            throw new \InvalidArgumentException("指定された学生IDのユーザーが存在しません。");
+            throw new ValidationException("指定された学生IDのユーザーが存在しません。");
         }
         if ($user->role->getValue() !== 'student') {
-            throw new \InvalidArgumentException("指定されたIDのユーザーは学生ではありません。");
+            throw new ValidationException("指定されたIDのユーザーは学生ではありません。");
         }
 
 
@@ -60,7 +61,7 @@ class ClassUseCase
     public function getClassesByTeacherId(string $teacherId): array
     {
         if (!$this->isTeacher($teacherId)) {
-            throw new \InvalidArgumentException("指定されたIDのユーザーは教師ではありません。");
+            throw new UnAuthorizedException("指定されたIDのユーザーは教師ではありません。");
         }
         return $this->classRepository->findByTeacherId($teacherId);
     }
@@ -71,7 +72,7 @@ class ClassUseCase
     {
         $existingClass = $this->classRepository->findById($updatedClass->id);
         if ($existingClass === null) {
-            throw new \InvalidArgumentException("指定されたIDのクラスが存在しません。");
+            throw new NotFoundException("指定されたIDのクラスが存在しません。");
         }
 
 
@@ -90,11 +91,11 @@ class ClassUseCase
     private function validateClass(ClassEntity $class): void
     {
         if (empty($class->id) || empty($class->name) || empty($class->admissionYear) || empty($class->majorCode)) {
-            throw new \InvalidArgumentException("Classの全てのフィールドは必須です。");
+            throw new ValidationException("Classの全てのフィールドは必須です。");
         }
 
         if (!$this->isTeacher($class->teacher_id)) {
-            throw new \InvalidArgumentException("指定された教師IDは教師ではありません。");
+            throw new UnAuthorizedException("指定された教師IDは教師ではありません。");
         }
     }
 }

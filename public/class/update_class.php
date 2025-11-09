@@ -1,6 +1,7 @@
 <?php
 require __DIR__ . '/../../vendor/autoload.php';
 
+use App\Application\CustomExceptions\AppException;
 use Helpers\Response;
 use Helpers\ApiKeyValidator;
 use Application\UseCases\ClassUseCase;
@@ -99,6 +100,8 @@ try {
 
     $classUseCase->updateClass($classToUpdate);
     Response::send('success', 'クラス情報が更新されました。', 200);
+} catch(AppException $e) {
+    Response::send('error', $e->getMessage(), $e->getStatusCode());
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);
 }
