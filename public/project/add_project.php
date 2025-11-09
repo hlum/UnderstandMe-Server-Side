@@ -130,7 +130,7 @@ try {
     // 問題生成処理スタート
     try {
         $maxRetryCounts = 3;
-        while (true) {
+        while ($maxRetryCounts > 0) {
             try {
                 $jobProcessor->process($job);
                 $jobUseCase->updateStatus($job->id, Status::from('done'));
