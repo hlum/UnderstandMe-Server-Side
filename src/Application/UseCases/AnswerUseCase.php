@@ -2,6 +2,7 @@
 
 namespace Application\UseCases;
 
+use App\Application\CustomExceptions\ValidationException;
 use Domain\Repositories\AnswerRepositoryInterface;
 use Domain\Repositories\QuestionRepositoryInterface;
 use Domain\Repositories\ResultRepositoryInterface;
@@ -55,12 +56,12 @@ class AnswerUseCase
     {
         $user = $this->userRepo->findById($answer->userID);
         if ($user === null) {
-            throw new \InvalidArgumentException('指定されたuser_idが存在しません。');
+            throw new ValidationException('指定されたuser_idが存在しません。');
         }
 
         $question = $this->questionRepo->findById($answer->questionID);
         if ($question === null) {
-            throw new \InvalidArgumentException('指定されたquestion_idが存在しません。');
+            throw new ValidationException('指定されたquestion_idが存在しません。');
         }
     }
 }
