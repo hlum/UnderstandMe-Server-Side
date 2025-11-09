@@ -1,11 +1,11 @@
 <?php
 
 namespace Application\UseCases;
+
+use App\Application\CustomExceptions\ValidationException;
 use Domain\Entities\FCMToken;
 use Domain\Repositories\FCMTokenRepositoryInterface;
 use Domain\Repositories\UserRepositoryInterface;
-use Exception;
-use InvalidArgumentException;
 
 
 class FCMTokenUseCase
@@ -32,7 +32,7 @@ class FCMTokenUseCase
         // Userの存在をチェック
         $userExist = $this->userExists($userID);
         if (!$userExist) {
-            throw new Exception("Userが存在しません。" . $userID);
+            throw new ValidationException("指定したuserIDのユーザーが存在しません。" . $userID);
         }
 
         $fcmTokenInDB = $this->fcmTokenRepository->findByUserIdAndDeviceId($userID, $deviceID);
@@ -68,11 +68,11 @@ class FCMTokenUseCase
     {
         // Userの存在をチェック
         if (!$this->userExists($userID)) {
-            throw new InvalidArgumentException("Userが存在しません。" . $userID);
+            throw new ValidationException("指定したuserIDのユーザーが存在しません。" . $userID);
         }
         // FCMトークンの存在をチェック
         if (!$this->fcmTokenExists($userID, $deviceID)) {
-            throw new InvalidArgumentException("FCMトークンが存在しません。" . $userID . ", " . $deviceID);
+            throw new ValidationException("指定したFCMトークンが存在しません。" . $userID . ", " . $deviceID);
         }
 
         $this->fcmTokenRepository->deleteFCMToken($userID, $deviceID);
