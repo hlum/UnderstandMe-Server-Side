@@ -72,8 +72,6 @@ try {
 
     // --- Check if correct ---
     $choice = $choiceUseCase->findById($selectedChoiceID);
-    if (!$choice)
-        Response::send('error', '選択肢が見つかりません。', 404);
     $choiceIsCorrect = $choice->isCorrect;
 
     // --- Update or create result ---
