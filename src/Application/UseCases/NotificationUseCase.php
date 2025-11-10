@@ -43,7 +43,7 @@ class NotificationUseCase
             }
         }
 
-         // 無効なトークンを削除
+        // 無効なトークンを削除
         $this->deleteInvalidTokens($invalidTokens);
 
         return $invalidTokens;
@@ -58,8 +58,23 @@ class NotificationUseCase
      */
     private function deleteInvalidTokens(array $tokens): void
     {
+        $failed = [];
+
         foreach ($tokens as $token) {
-            $this->fCMTokenUseCase->deleteFCMToken($token->userId, $token->deviceId);
+            try {
+                $this->fCMTokenUseCase->deleteFCMToken($token->userId, $token->deviceId);
+            } catch (\Throwable $e) {
+                $failed[] = [
+                    'userId' => $token->userId,
+                    'deviceId' => $token->deviceId,
+                    'error' => $e->getMessage(),
+                ];
+            }
+        }
+
+        if (!empty($failed)) {
+            // Log or handle the failed ones
+            error_log('Some FCM tokens failed to delete: ' . json_encode($failed));
         }
     }
 }
