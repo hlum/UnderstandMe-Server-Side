@@ -106,50 +106,7 @@ try {
 
     $job = Job::createNew($project->id, Status::from('pending'));
     $jobUseCase->add($job);
-
-
-
-    $jobProcessor = new ProcessPendingJobsUseCase(
-        $jobRepository,
-        $questionRepository,
-        $choiceRepository,
-        $questionGenerator,
-        $snippetsRepository,
-        $projectRepository
-    );
-
-
-    $processingJobExist = count($jobUseCase->getJobsByStatus(Status::from('processing'))) > 0;
-
-    if ($processingJobExist) {
-        Response::send('success', 'プロジェクトが追加されましたが、現在別のプロジェクトの問題生成処理中です。少々お待ちください。', 200);
-    }
-
-
-    // 問題生成処理スタート
-    try {
-        $maxRetryCounts = 3;
-        while ($maxRetryCounts > 0) {
-            try {
-                $jobProcessor->process($job);
-                $jobUseCase->updateStatus($job->id, Status::from('done'));
-                // TODO : Userに問題生成が終了したことを知らせる。
-                Response::send('success', 'プロジェクトが正常に追加されました。問題が生成されました。', 200);
-            } catch (Throwable $e) {
-                $maxRetryCounts--;
-                if ($maxRetryCounts <= 0) {
-                    throw $e;
-                }
-                // Retry after brief pause
-                sleep(2);
-            }
-
-        }
-
-    } catch (Throwable $e) {
-        $jobUseCase->updateStatus($job->id, Status::from('pending'));
-        Response::send('success', 'プロジェクトが正常に追加されました。問題が生成されました。', 200);
-    }
+    Response::send('success', 'プロジェクトが正常に追加され、ジョブがキューに登録されました。', 200);
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);
 }
