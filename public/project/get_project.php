@@ -40,11 +40,10 @@ try {
 
     $projectRepository = new MySQLProjectRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
-    $snippetsRepo = new GithubSnippetsRepo();
     $homeworkRepository = new MySQLHomeworkRepository($connection);
+    
     $projectUseCase = new ProjectUseCase(
         $projectRepository,
-        $snippetsRepo,
         $userRepository,
         $homeworkRepository
     );

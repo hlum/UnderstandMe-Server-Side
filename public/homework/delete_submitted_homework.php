@@ -11,11 +11,9 @@ require __DIR__ . '/../../vendor/autoload.php';
 use Application\UseCases\JobUseCase;
 use Application\UseCases\ProjectUseCase;
 use Helpers\Response;
-use Infrastructure\ExternalServices\GithubSnippetsRepo;
 use Infrastructure\Persistence\MySQLHomeworkRepository;
 use Infrastructure\Persistence\MySQLJobRepository;
 use Infrastructure\Persistence\MySQLProjectRepository;
-use Infrastructure\Persistence\MySQLUserRepository;
 use Helpers\ApiKeyValidator;
 
 
@@ -51,12 +49,11 @@ try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $jobRepository = new MySQLJobRepository($connection);
     $projectRepository = new MySQLProjectRepository($connection);
-    $snippetsRepo = new GithubSnippetsRepo();
     $homeworkRepository = new MySQLHomeworkRepository($connection);
 
 
     $jobUseCase = new JobUseCase($jobRepository, $projectRepository);
-    $projectUseCase = new ProjectUseCase($projectRepository, $snippetsRepo, $userRepository, $homeworkRepository);
+    $projectUseCase = new ProjectUseCase($projectRepository, $userRepository, $homeworkRepository);
 
     // Jobを先に削除する
     $jobUseCase->deleteByHomeworkID($homeworkID, $userID);

@@ -94,7 +94,6 @@ try {
 
     $projectUseCase = new ProjectUseCase(
         $projectRepository,
-        $snippetsRepository,
         $userRepository,
         $homeworkRepository
     );
