@@ -23,7 +23,6 @@ class Answer implements JsonSerializable
         $this->userID = $userID;
         $this->selectedChoiceID = $selectedChoiceID;
         $this->createdAt = $createdAt;
-        $this->answeredAt = $createdAt;
     }
 
 

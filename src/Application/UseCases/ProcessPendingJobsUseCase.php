@@ -70,6 +70,10 @@ class ProcessPendingJobsUseCase
                 $codeSnippet
             );
 
+            if (!isset($generatedQAndChoices) || count($generatedQAndChoices) === 0) {
+                throw new \Exception("問題の生成に失敗しました。");
+            }
+
             foreach ($generatedQAndChoices as $qAndChoices) {
                 $this->questionRepository->insert($qAndChoices->question);
                 foreach ($qAndChoices->choices as $choice) {

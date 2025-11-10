@@ -1,6 +1,7 @@
 <?php
 namespace Application\UseCases;
 
+use App\Application\CustomExceptions\NotFoundException;
 use Domain\Repositories\ResultRepositoryInterface;
 use Domain\Entities\Result;
 
@@ -13,21 +14,13 @@ class ResultUseCase
         $this->resultRepository = $resultRepository;
     }
 
-
-    public function getResult(string $resultID): Result
+    public function fetchResultWithHomeworkIDAndUserID(string $homeworkID, string $userID): Result
     {
-        return $this->getResult($resultID);
-    }
-
-    public function fetchResultsByUserID(string $userID, int $year): array
-    {
-        return $this->resultRepository->fetchResultsByUserID($userID, $year);
-    }
-
-
-    public function fetchResultWithHomeworkIDAndUserID(string $homeworkID, string $userID): ?Result
-    {
-        return $this->resultRepository->fetchResultWithHomeworkIDAndUserID($homeworkID, $userID);
+        $result = $this->resultRepository->fetchResultWithHomeworkIDAndUserID($homeworkID, $userID);
+        if ($result === null) {
+            throw new NotFoundException("指定されたHomeworkIDとUserIDの結果が存在しません。");
+        }
+        return $result;
     }
 
 

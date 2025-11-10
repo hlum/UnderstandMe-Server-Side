@@ -5,6 +5,8 @@ header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 require __DIR__ . '/../../vendor/autoload.php';
+
+use App\Application\CustomExceptions\AppException;
 use Application\UseCases\HomeworkUseCase;
 use Helpers\ApiKeyValidator;
 use Helpers\Response;
@@ -51,6 +53,8 @@ try {
     $homeworksWithStatus = $homeworkUseCase->fetchHomeworksStatusListForAllStudents($homeworkID);
 
     Response::send('success', '課題の取得成功', 200, json_encode($homeworksWithStatus));
+} catch(AppException $e) {
+    Response::send('error', $e->getMessage(), $e->getStatusCode());
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);
 }

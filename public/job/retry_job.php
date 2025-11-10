@@ -1,9 +1,9 @@
 <?php
 
+use App\Application\CustomExceptions\AppException;
 use Application\UseCases\JobUseCase;
 use Infrastructure\Persistence\MySQLJobRepository;
 use Infrastructure\Persistence\MySQLProjectRepository;
-use Infrastructure\Persistence\MySQLUserRepository;
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: PATCH, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -47,15 +47,16 @@ if (!isset($homeworkID) || !isset($userID)) {
 
 try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-    $userRepo = new MySQLUserRepository($connection);
     $jobRepo = new MySQLJobRepository($connection);
     $projectRepo = new MySQLProjectRepository($connection);
-    $jobUseCase = new JobUseCase($jobRepo, $userRepo, $projectRepo);
+    $jobUseCase = new JobUseCase($jobRepo, $projectRepo);
 
     $jobUseCase->retryJob($homeworkID, $userID);
 
     Response::send('success', 'リトライが完了しました。', 200);
 
+} catch(AppException $e) {
+    Response::send('error', $e->getMessage(), $e->getStatusCode());
 } catch (Throwable $e) {
     Response::send('error', 'リトライに失敗しました。', 500);
 }

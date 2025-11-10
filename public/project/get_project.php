@@ -1,6 +1,8 @@
 <?php
 
 require __DIR__ . '/../../vendor/autoload.php';
+
+use App\Application\CustomExceptions\AppException;
 use Helpers\ApiKeyValidator;
 use Helpers\Response;
 use Infrastructure\Persistence\MySQLProjectRepository;
@@ -40,11 +42,10 @@ try {
 
     $projectRepository = new MySQLProjectRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
-    $snippetsRepo = new GithubSnippetsRepo();
     $homeworkRepository = new MySQLHomeworkRepository($connection);
+
     $projectUseCase = new ProjectUseCase(
         $projectRepository,
-        $snippetsRepo,
         $userRepository,
         $homeworkRepository
     );
@@ -63,9 +64,12 @@ try {
         // Project IDでの検索
         $project = $projectUseCase->findById($project_id);
         $projects[] = $project;
-    } elseif (isset($homework_id)) {
+    } elseif (isset($homework_id, $user_id)) {
         // Homework IDでの検索
-        $projects[] = $projectUseCase->findByHomeworkId($homework_id);
+        $project = $projectUseCase->findByHomeworkId($homework_id, $user_id);
+        if ($project !== null) {
+            $projects[] = $project;
+        }
     } elseif (isset($user_id)) {
         // User IDでの検索
         $projects[] = $projectUseCase->findByUserId($user_id);
@@ -77,6 +81,8 @@ try {
     // 検索結果をJSON形式で返す
     Response::send('success', 'projectの取得に成功しました。', 200, json_encode($projects));
 
+} catch(AppException $e) {
+    Response::send('error', $e->getMessage(), $e->getStatusCode());
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);
 }

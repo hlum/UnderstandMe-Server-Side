@@ -17,14 +17,13 @@ use Domain\Entities\Status;
 // Dependencies
 $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 $jobRepository = new MySQLJobRepository($mysqli);
-$userRepository = new MySQLUserRepository($mysqli);
 $questionRepository = new MySQLQuestionRepository($mysqli);
 $choiceRepository = new MySQLChoiceRepository($mysqli);
 $questionGenerator = new OllamaQuestionGenerator();
 $snippetsRepository = new GithubSnippetsRepo();
 $projectRepository = new MySQLProjectRepository($mysqli);
 
-$jobUseCase = new JobUseCase($jobRepository, $userRepository, $projectRepository);
+$jobUseCase = new JobUseCase($jobRepository, $projectRepository);
 
 // Use Case
 $processPendingJobsUseCase = new ProcessPendingJobsUseCase(
@@ -48,12 +47,14 @@ while ($currentRetry < $maxRetryCounts) {
 
         if (!empty($failedJobs)) {
             $jobToProcess = $failedJobs[0];
+            echo "前回失敗したJobを再処理します。JobID: {$jobToProcess->id}\n";
         } else {
             $pendingJobs = $jobUseCase->getJobsByStatus(Status::from('pending'));
             if (empty($pendingJobs)) {
                 echo "処理待ちのJobがありません。\n";
                 exit(0);
             } else {
+                echo "新しいJobを処理します。JobID: {$pendingJobs[0]->id}\n";
                 $jobToProcess = $pendingJobs[0];
             }
         }

@@ -7,6 +7,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 require __DIR__ . '/../../vendor/autoload.php';
 
+use App\Application\CustomExceptions\AppException;
 use Helpers\ApiKeyValidator;
 use Helpers\Response;
 use Infrastructure\Persistence\MySQLAnswerRepository;
@@ -57,6 +58,9 @@ try {
     $answers = $answerUseCase->findAnswersForHomework($homeworkID, $userID);
 
     Response::send('success', '回答の取得成功', 200, json_encode($answers));
+} catch (AppException $e) {
+    Response::send('error', $e->getMessage(), $e->getStatusCode());
+
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);
 }

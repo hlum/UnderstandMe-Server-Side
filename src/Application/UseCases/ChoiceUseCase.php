@@ -1,6 +1,8 @@
 <?php
 
 namespace Application\UseCases;
+
+use App\Application\CustomExceptions\ValidationException;
 use Domain\Entities\Choice;
 use Domain\Repositories\ChoiceRepositoryInterface;
 use Domain\Repositories\QuestionRepositoryInterface;
@@ -31,7 +33,7 @@ class ChoiceUseCase
     {
         $choice = $this->choiceRepository->findById($id);
         if ($choice === null) {
-            throw new \InvalidArgumentException("指定されたIDの選択肢が存在しません。");
+            throw new ValidationException("指定されたIDの選択肢が存在しません。");
         }
         return $choice;
     }
@@ -41,7 +43,7 @@ class ChoiceUseCase
     {
         $question = $this->questionRepository->findById($questionId);
         if ($question === null) {
-            throw new \InvalidArgumentException("指定されたQuestionIDの質問が存在しません。");
+            throw new ValidationException("指定されたQuestionIDの質問が存在しません。");
         }
 
         return $this->choiceRepository->findByQuestionId($questionId);
@@ -51,25 +53,25 @@ class ChoiceUseCase
     private function validateChoice(Choice $choice)
     {
         if (empty($choice->text)) {
-            throw new \InvalidArgumentException("選択肢のテキストは必須です。");
+            throw new ValidationException("選択肢のテキストは必須です。");
         }
 
         if (empty($choice->questionId)) {
-            throw new \InvalidArgumentException("質問IDは必須です。");
+            throw new ValidationException("質問IDは必須です。");
         }
 
         if (empty($choice->id)) {
-            throw new \InvalidArgumentException("選択肢IDは必須です。");
+            throw new ValidationException("選択肢IDは必須です。");
         }
 
         $choiceInDb = $this->choiceRepository->findById($choice->id);
         if ($choiceInDb !== null) {
-            throw new \InvalidArgumentException("この選択肢IDは既に登録されています。");
+            throw new ValidationException("この選択肢IDは既に登録されています。");
         }
 
         $question = $this->questionRepository->findById($choice->questionId);
         if ($question === null) {
-            throw new \InvalidArgumentException("指定された質問IDの質問が存在しません。");
+            throw new ValidationException("指定された質問IDの質問が存在しません。");
         }
 
     }

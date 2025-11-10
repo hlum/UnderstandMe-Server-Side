@@ -4,6 +4,8 @@ header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 require __DIR__ . '/../../vendor/autoload.php';
+
+use App\Application\CustomExceptions\AppException;
 use Application\UseCases\ClassUseCase;
 use Domain\Entities\ClassEntity;
 use Helpers\Response;
@@ -95,6 +97,8 @@ try {
     $classUseCase->add($newClass);
     Response::send('success', 'クラスが正常に追加されました。', 200);
 
+} catch(AppException $e) {
+    Response::send('error', $e->getMessage(), $e->getStatusCode());
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);
 }

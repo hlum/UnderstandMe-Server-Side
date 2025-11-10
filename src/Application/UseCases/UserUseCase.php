@@ -3,6 +3,8 @@
 // src/Application/UseCases/UserUseCase.php
 namespace Application\UseCases;
 
+use App\Application\CustomExceptions\NotFoundException;
+use App\Application\CustomExceptions\ValidationException;
 use Domain\Entities\User;
 use Domain\Entities\Role;
 use Domain\Repositories\UserRepositoryInterface;
@@ -20,20 +22,20 @@ class UserUseCase
     {
 
         if ($photoURL != null && !filter_var($photoURL, FILTER_VALIDATE_URL)) {
-            throw new \InvalidArgumentException("無効なphoto_url形式です。");
+            throw new ValidationException("無効なphoto_url形式です。");
         }
 
         // 既に存在するメールアドレスか確認
         if ($this->userRepository->findById($id) !== null) {
-            throw new \InvalidArgumentException("このユーザーIDは既に登録されています", 200);
+            throw new ValidationException("このユーザーIDは既に登録されています", 200);
         }
         // 既に存在するメールアドレスか確認
         if ($this->userRepository->findByEmail($email) !== null) {
-            throw new \InvalidArgumentException("このメールアドレスは既に登録されています", 200);
+            throw new ValidationException("このメールアドレスは既に登録されています", 200);
         }
         // 既に存在する学生コードか確認
         if ($role->getValue() === 'student' && $this->userRepository->findByStudentCode($studentCode) !== null) {
-            throw new \InvalidArgumentException("この学生コードは既に登録されています", 200);
+            throw new ValidationException("この学生コードは既に登録されています", 200);
         }
 
         // 新しいユーザーを作成
@@ -49,7 +51,7 @@ class UserUseCase
     {
         $user = $this->userRepository->findById($user_id);
         if ($user === null) {
-            throw new \InvalidArgumentException(message: "指定されたユーザーIDのユーザーが存在しません", code: 200);
+            throw new NotFoundException(message: "指定されたユーザーIDのユーザーが存在しません");
         }
 
         return $user;
@@ -60,7 +62,7 @@ class UserUseCase
     {
         $user = $this->userRepository->findByEmail($email);
         if ($user === null) {
-            throw new \InvalidArgumentException(message: "指定されたユーザーIDのユーザーが存在しません", code: 200);
+            throw new NotFoundException(message: "指定されたユーザーIDのユーザーが存在しません");
         }
 
         return $user;
@@ -71,7 +73,7 @@ class UserUseCase
     {
         $user = $this->userRepository->findByStudentCode($studentCode);
         if ($user === null) {
-            throw new \InvalidArgumentException(message: "指定された学生コードのユーザーが存在しません", code: 200);
+            throw new NotFoundException(message: "指定された学生コードのユーザーが存在しません");
         }
 
         return $user;
@@ -82,7 +84,7 @@ class UserUseCase
     {
         $user = $this->userRepository->findByMajorCodeAndAdmissionYear($majorCode, $admissionYear);
         if ($user === null) {
-            throw new \InvalidArgumentException(message: "指定された学生コードのユーザーが存在しません", code: 200);
+            throw new NotFoundException(message: "指定された学生コードのユーザーが存在しません");
         }
 
         return $user;

@@ -1,6 +1,8 @@
 <?php
 
 require __DIR__ . '/../../vendor/autoload.php';
+
+use App\Application\CustomExceptions\AppException;
 use Application\UseCases\ResultUseCase;
 use Helpers\ApiKeyValidator;
 use Helpers\Response;
@@ -40,6 +42,8 @@ try {
     }
 
     Response::send('success', '結果の取得に成功しました。', 200, json_encode($result));
+} catch(AppException $e) {
+    Response::send('error', $e->getMessage(), $e->getStatusCode());
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);
 }

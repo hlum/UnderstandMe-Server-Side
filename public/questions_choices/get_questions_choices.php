@@ -6,6 +6,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 require __DIR__ . '/../../vendor/autoload.php';
 
+use App\Application\CustomExceptions\AppException;
 use Helpers\ApiKeyValidator;
 use Helpers\Response;
 use Infrastructure\Persistence\MySQLQuestionsAndChoicesRepository;
@@ -44,6 +45,8 @@ try {
     $questionsAndChoices = $questionAndChoicesUseCase->getQuestionsAndChoicesByHomeworkId($homeworkID, $userID);
 
     Response::send('success', '質問と選択肢の取得成功', 200, json_encode($questionsAndChoices));
+} catch (AppException $e) {
+    Response::send('error', $e->getMessage(), $e->getStatusCode());
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);
 }

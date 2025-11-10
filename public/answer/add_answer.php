@@ -1,6 +1,7 @@
 <?php
 require __DIR__ . '/../../vendor/autoload.php';
 
+use App\Application\CustomExceptions\AppException;
 use Application\UseCases\AnswerUseCase;
 use Application\UseCases\ChoiceUseCase;
 use Application\UseCases\ResultUseCase;
@@ -71,8 +72,6 @@ try {
 
     // --- Check if correct ---
     $choice = $choiceUseCase->findById($selectedChoiceID);
-    if (!$choice)
-        Response::send('error', '選択肢が見つかりません。', 404);
     $choiceIsCorrect = $choice->isCorrect;
 
     // --- Update or create result ---
@@ -90,6 +89,9 @@ try {
     }
 
     Response::send('success', 'Answer and result updated successfully.');
+
+} catch (AppException $e) {
+    Response::send('error', $e->getMessage(), $e->getStatusCode());
 
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);

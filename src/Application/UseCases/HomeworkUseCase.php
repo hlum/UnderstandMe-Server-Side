@@ -2,6 +2,8 @@
 
 namespace Application\UseCases;
 
+use App\Application\CustomExceptions\NotFoundException;
+use App\Application\CustomExceptions\ValidationException;
 use DateTimeImmutable;
 use Domain\Entities\Homework;
 use Domain\Entities\ClassEntity;
@@ -37,7 +39,7 @@ class HomeworkUseCase
     {
         $homework = $this->homeworkRepository->findById($id);
         if ($homework === null) {
-            throw new \InvalidArgumentException("指定されたIDの宿題が存在しません。");
+            throw new NotFoundException("指定されたIDの宿題が存在しません。");
         }
         return $homework;
     }
@@ -46,9 +48,6 @@ class HomeworkUseCase
     {
         $this->validateClass($classID);
         $homework = $this->homeworkRepository->findByClassID($classID);
-        if ($homework === null) {
-            throw new \InvalidArgumentException("指定されたClassIDの宿題が存在しません。");
-        }
         return $homework;
     }
 
@@ -57,40 +56,15 @@ class HomeworkUseCase
     {
         $this->validateTeacher($teacherId);
         $homework = $this->homeworkRepository->findByTeacherId($teacherId);
-        if ($homework === null) {
-            throw new \InvalidArgumentException("指定されたTeacherIDの宿題が存在しません。");
-        }
         return $homework;
     }
 
-    public function findByStudentId(string $studentId): array
-    {
-        $student = $this->userRepository->findById($studentId);
-        if ($student === null || $student->role->getValue() !== 'student') {
-            throw new \InvalidArgumentException("指定されたStudentIDの学生が存在しません。");
-        }
-
-        if ($student->majorCode === null || $student->admissionYear === null) {
-            throw new \InvalidArgumentException("学生のmajorCodeまたはadmissionYearが設定されていません。");
-        }
-
-        $classes = $this->classRepository->findByMajorCodeAndAdmissionYear($student->majorCode, $student->admissionYear);
-        if (empty($classes)) {
-            throw new \InvalidArgumentException("学生の専攻が見つかりません。");
-        }
-
-        $homeworks = [];
-        foreach ($classes as $class) {
-            $homeworks = array_merge($homeworks, $this->homeworkRepository->findByClassID($class->id));
-        }
-        return $homeworks;
-    }
 
     public function findByStudentIDWithStatus(string $studentId): array
     {
         $student = $this->userRepository->findById($studentId);
         if ($student === null || $student->role->getValue() !== 'student') {
-            throw new \InvalidArgumentException("指定されたStudentIDの学生が存在しません。");
+            throw new ValidationException("指定されたStudentIDの学生が存在しません。");
         }
 
         return $this->homeworkRepository->findByStudentIDWithStatus($studentId);
@@ -100,7 +74,7 @@ class HomeworkUseCase
     {
         $homework = $this->homeworkRepository->findByIDWithStatus($homeworkID, $studentID);
         if ($homework === null) {
-            throw new \InvalidArgumentException("指定されたIDの宿題が存在しません。");
+            throw new NotFoundException("指定されたIDの宿題が存在しません。");
         }
         return $homework;
     }
@@ -112,7 +86,7 @@ class HomeworkUseCase
 
         $student = $this->userRepository->findById($studentID);
         if ($student === null || $student->role->getValue() !== 'student') {
-            throw new \InvalidArgumentException("指定されたStudentIDの学生が存在しません。");
+            throw new ValidationException("指定されたStudentIDの学生が存在しません。");
         }
 
         return $this->homeworkRepository->findByClassIDWithStatus($classID, $studentID);
@@ -127,16 +101,16 @@ class HomeworkUseCase
     private function validateHomework(Homework $homework): void
     {
         if (str_word_count($homework->title) > 100) {
-            throw new \InvalidArgumentException("タイトルが長すぎます。100文字以内にしてください。");
+            throw new ValidationException("タイトルが長すぎます。100文字以内にしてください。");
         }
         if (str_word_count($homework->title) < 1) {
-            throw new \InvalidArgumentException("タイトルが短すぎます。1文字以上にしてください。");
+            throw new ValidationException("タイトルが短すぎます。1文字以上にしてください。");
         }
 
         $existingHomework = $this->homeworkRepository->findById($homework->id);
 
         if ($existingHomework !== null) {
-            throw new \InvalidArgumentException("このIDの宿題は既に存在します。");
+            throw new ValidationException("このIDの宿題は既に存在します。");
         }
 
         $this->validateTeacher($homework->teacherID);
@@ -148,7 +122,7 @@ class HomeworkUseCase
     {
         $class = $this->classRepository->findById($classID);
         if ($class === null) {
-            throw new \InvalidArgumentException("指定されたClassIDのクラスが存在しません。");
+            throw new ValidationException("指定されたClassIDのクラスが存在しません。");
         }
         return $class;
     }
@@ -157,7 +131,7 @@ class HomeworkUseCase
     {
         $teacher = $this->userRepository->findById($teacherId);
         if ($teacher === null || $teacher->role->getValue() !== 'teacher') {
-            throw new \InvalidArgumentException("指定されたTeacherIDの教師が存在しません。");
+            throw new ValidationException("指定されたTeacherIDの教師が存在しません。");
         }
     }
 
@@ -165,7 +139,7 @@ class HomeworkUseCase
     {
         $now = new \DateTime();
         if ($dueDate <= $now) {
-            throw new \InvalidArgumentException("締め切り日は現在日時よりも未来である必要があります。");
+            throw new ValidationException("締め切り日は現在日時よりも未来である必要があります。");
         }
     }
 
