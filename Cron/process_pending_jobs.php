@@ -47,12 +47,14 @@ while ($currentRetry < $maxRetryCounts) {
 
         if (!empty($failedJobs)) {
             $jobToProcess = $failedJobs[0];
+            echo "前回失敗したJobを再処理します。JobID: {$jobToProcess->id}\n";
         } else {
             $pendingJobs = $jobUseCase->getJobsByStatus(Status::from('pending'));
             if (empty($pendingJobs)) {
                 echo "処理待ちのJobがありません。\n";
                 exit(0);
             } else {
+                echo "新しいJobを処理します。JobID: {$pendingJobs[0]->id}\n";
                 $jobToProcess = $pendingJobs[0];
             }
         }
