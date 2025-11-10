@@ -65,7 +65,10 @@ try {
         $projects[] = $project;
     } elseif (isset($homework_id, $user_id)) {
         // Homework IDでの検索
-        $projects[] = $projectUseCase->findByHomeworkId($homework_id, $user_id);
+        $project = $projectUseCase->findByHomeworkId($homework_id, $user_id);
+        if ($project !== null) {
+            $projects[] = $project;
+        }
     } elseif (isset($user_id)) {
         // User IDでの検索
         $projects[] = $projectUseCase->findByUserId($user_id);
