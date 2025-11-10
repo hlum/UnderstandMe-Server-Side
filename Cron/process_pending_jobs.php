@@ -17,14 +17,13 @@ use Domain\Entities\Status;
 // Dependencies
 $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 $jobRepository = new MySQLJobRepository($mysqli);
-$userRepository = new MySQLUserRepository($mysqli);
 $questionRepository = new MySQLQuestionRepository($mysqli);
 $choiceRepository = new MySQLChoiceRepository($mysqli);
 $questionGenerator = new OllamaQuestionGenerator();
 $snippetsRepository = new GithubSnippetsRepo();
 $projectRepository = new MySQLProjectRepository($mysqli);
 
-$jobUseCase = new JobUseCase($jobRepository, $userRepository, $projectRepository);
+$jobUseCase = new JobUseCase($jobRepository, $projectRepository);
 
 // Use Case
 $processPendingJobsUseCase = new ProcessPendingJobsUseCase(

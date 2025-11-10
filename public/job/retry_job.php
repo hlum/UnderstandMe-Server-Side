@@ -47,10 +47,9 @@ if (!isset($homeworkID) || !isset($userID)) {
 
 try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-    $userRepo = new MySQLUserRepository($connection);
     $jobRepo = new MySQLJobRepository($connection);
     $projectRepo = new MySQLProjectRepository($connection);
-    $jobUseCase = new JobUseCase($jobRepo, $userRepo, $projectRepo);
+    $jobUseCase = new JobUseCase($jobRepo, $projectRepo);
 
     $jobUseCase->retryJob($homeworkID, $userID);
 

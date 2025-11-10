@@ -103,7 +103,7 @@ try {
     $projectUseCase->add($project);
 
 
-    $jobUseCase = new JobUseCase($jobRepository, $userRepository, $projectRepository);
+    $jobUseCase = new JobUseCase($jobRepository, $projectRepository);
 
     $job = Job::createNew($project->id, Status::from('pending'));
     $jobUseCase->add($job);

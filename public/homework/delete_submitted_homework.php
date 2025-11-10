@@ -50,13 +50,12 @@ if (!$userID || !$homeworkID) {
 try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $jobRepository = new MySQLJobRepository($connection);
-    $userRepository = new MySQLUserRepository($connection);
     $projectRepository = new MySQLProjectRepository($connection);
     $snippetsRepo = new GithubSnippetsRepo();
     $homeworkRepository = new MySQLHomeworkRepository($connection);
 
 
-    $jobUseCase = new JobUseCase($jobRepository, $userRepository, $projectRepository);
+    $jobUseCase = new JobUseCase($jobRepository, $projectRepository);
     $projectUseCase = new ProjectUseCase($projectRepository, $snippetsRepo, $userRepository, $homeworkRepository);
 
     // Jobを先に削除する
