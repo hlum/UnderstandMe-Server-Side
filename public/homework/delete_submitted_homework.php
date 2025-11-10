@@ -15,7 +15,7 @@ use Infrastructure\Persistence\MySQLHomeworkRepository;
 use Infrastructure\Persistence\MySQLJobRepository;
 use Infrastructure\Persistence\MySQLProjectRepository;
 use Helpers\ApiKeyValidator;
-
+use Infrastructure\Persistence\MySQLUserRepository;
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -50,6 +50,7 @@ try {
     $jobRepository = new MySQLJobRepository($connection);
     $projectRepository = new MySQLProjectRepository($connection);
     $homeworkRepository = new MySQLHomeworkRepository($connection);
+    $userRepository = new MySQLUserRepository($connection);
 
 
     $jobUseCase = new JobUseCase($jobRepository, $projectRepository);
