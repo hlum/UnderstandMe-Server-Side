@@ -43,14 +43,14 @@ class ProjectUseCase
     }
 
 
-    public function findByHomeworkId(string $homeworkId): Project
+    public function findByHomeworkId(string $homeworkId, string $userID): Project
     {
         $homework = $this->homeworkRepository->findById($homeworkId);
         if ($homework === null) {
             throw new \InvalidArgumentException("指定されたHomeworkIDの課題が存在しません。");
         }
 
-        $project = $this->projectRepository->findByHomeworkId($homeworkId);
+        $project = $this->projectRepository->findByHomeworkId($homeworkId, $userID);
         if ($project === null) {
             throw new \InvalidArgumentException("指定されたHomeworkIDのプロジェクトが存在しません。");
         }
