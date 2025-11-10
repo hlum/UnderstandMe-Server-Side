@@ -3,6 +3,7 @@
 namespace Infrastructure\Persistence;
 
 use Domain\Entities\Homework;
+use Domain\Entities\HomeworkWithStatus;
 use Domain\Repositories\HomeworkRepositoryInterface;
 use mysqli;
 use mysqli_result;
@@ -75,7 +76,10 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface
             class_id,
             github_file_link,
             job_status,
-            submission_state
+            submission_state,
+            user_id,
+            user_email,
+            score
             FROM homework_submission_status_per_user
             WHERE homework_id = ? AND user_id = ?;
             ";
@@ -86,22 +90,13 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface
         $result = $this->executeQuery($query, $types, $params, $errorMessage);
         $homeworksWithStatus = [];
         while ($row = $result->fetch_assoc()) {
-            $homeworksWithStatus[] = [
-                'id' => $row['homework_id'],
-                'title' => $row['homework_title'],
-                'description' => $row['description'],
-                'class_id' => $row['class_id'],
-                'due_date' => $row['due_date'],
-                'github_file_link' => $row['github_file_link'],
-                'job_status' => $row['job_status'],
-                'submission_state' => $row['submission_state']
-            ];
+            $homeworksWithStatus[] = HomeworkWithStatus::fromDBRow($row);
         }
         return $homeworksWithStatus;
     }
 
 
-    public function findByStudentIDWithStatus(string $studentId): array
+   public function findByStudentIDWithStatus(string $studentId): array
     {
         $query = "SELECT 
             homework_id,
@@ -111,32 +106,28 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface
             class_id,
             github_file_link,
             job_status,
-            submission_state
+            submission_state,
+            user_id,
+            user_email,
+            score
             FROM homework_submission_status_per_user
             WHERE user_id = ?;
-            ";
+        ";
 
-        $types = 's';
-        $params = [$studentId];
-        $errorMessage = 'StudentIDによるHomeworkとその提出状況の検索に失敗しました。';
-        $result = $this->executeQuery($query, $types, $params, $errorMessage);
+        $result = $this->executeQuery(
+            $query,
+            's',
+            [$studentId],
+            'StudentIDによるHomeworkとその提出状況の検索に失敗しました。'
+        );
+
         $homeworksWithStatus = [];
         while ($row = $result->fetch_assoc()) {
-            $homeworksWithStatus[] = [
-                'id' => $row['homework_id'],
-                'title' => $row['homework_title'],
-                'class_id' => $row['class_id'],
-                'description' => $row['description'],
-                'due_date' => $row['due_date'],
-                'github_file_link' => $row['github_file_link'],
-                'job_status' => $row['job_status'],
-                'submission_state' => $row['submission_state']
-            ];
+            $homeworksWithStatus[] = HomeworkWithStatus::fromDBRow($row);
         }
+
         return $homeworksWithStatus;
     }
-
-
 
     public function findByClassIDWithStatus(string $classID, string $studentID): array
     {
@@ -144,75 +135,66 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface
             homework_id,
             homework_title,
             due_date,
-            class_id,
             description,
+            class_id,
             github_file_link,
             job_status,
-            submission_state
+            submission_state,
+            user_id,
+            user_email,
+            score
             FROM homework_submission_status_per_user
             WHERE user_id = ? AND class_id = ?;
-            ";
-        $types = 'ss';
-        $params = [$studentID, $classID];
-        $errorMessage = 'ClassIDとStudentIDによるHomeworkとその提出状況の検索に失敗しました。';
-        $result = $this->executeQuery($query, $types, $params, $errorMessage);
+        ";
+
+        $result = $this->executeQuery(
+            $query,
+            'ss',
+            [$studentID, $classID],
+            'ClassIDとStudentIDによるHomeworkとその提出状況の検索に失敗しました。'
+        );
+
         $homeworksWithStatus = [];
         while ($row = $result->fetch_assoc()) {
-            $homeworksWithStatus[] = [
-                'id' => $row['homework_id'],
-                'title' => $row['homework_title'],
-                'class_id' => $row['class_id'],
-                'description' => $row['description'],
-                'due_date' => $row['due_date'],
-                'github_file_link' => $row['github_file_link'],
-                'job_status' => $row['job_status'],
-                'submission_state' => $row['submission_state']
-            ];
+            $homeworksWithStatus[] = HomeworkWithStatus::fromDBRow($row);
         }
+
         return $homeworksWithStatus;
     }
 
-
-    //　管理画面から学生たちの提出状況を一覧で見るためのメソッド
     public function fetchHomeworkStatusListForAllStudents(string $homeworkID): array
     {
         $query = "SELECT 
             homework_id,
             homework_title,
             due_date,
-            class_id,
-            user_id,
-            user_email,
             description,
+            class_id,
             github_file_link,
             job_status,
             submission_state,
+            user_id,
+            user_email,
             score
             FROM homework_submission_status_per_user
             WHERE homework_id = ?;
-            ";
-        $types = 's';
-        $params = [$homeworkID];
-        $errorMessage = 'HomeworkIDによる提出状況の検索に失敗しました。';
-        $result = $this->executeQuery($query, $types, $params, $errorMessage);
+        ";
+
+        $result = $this->executeQuery(
+            $query,
+            's',
+            [$homeworkID],
+            'HomeworkIDによる提出状況の検索に失敗しました。'
+        );
+
         $homeworksWithStatus = [];
         while ($row = $result->fetch_assoc()) {
-            $homeworksWithStatus[] = [
-                'id' => $row['homework_id'],
-                'user_id' => $row['user_id'],
-                'user_email' => $row['user_email'],
-                'title' => $row['homework_title'],
-                'class_id' => $row['class_id'],
-                'description' => $row['description'],
-                'due_date' => $row['due_date'],
-                'github_file_link' => $row['github_file_link'],
-                'job_status' => $row['job_status'],
-                'score' => $row['score'],
-                'submission_state' => $row['submission_state']
-            ];
+            $homeworksWithStatus[] = HomeworkWithStatus::fromDBRow($row);
         }
+
         return $homeworksWithStatus;
     }
+
 
 
     public function findByTeacherId(string $teacherId): array
