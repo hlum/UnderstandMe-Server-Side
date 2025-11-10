@@ -10,8 +10,9 @@ interface JobRepositoryInterface
     public function findById(string $id): ?Job;
     public function findByProjectId(string $projectId): ?Job;
     public function updateStatus(string $id, Status $status): void;
-    public function getAllJobs(int $limit = 100, int $offset = 0): array;
+    /**
+     * @return Job[]
+     */
     public function getJobsByStatus(Status $status, int $limit = 10, int $offset = 0): array;
-    public function deleteById(string $id): void;
     public function deleteByHomeworkID(string $homeworkID, string $studentID): void;
 }

@@ -7,5 +7,9 @@ interface ChoiceRepositoryInterface
 {
     public function insert(Choice $choice): void;
     public function findById(string $id): ?Choice;
+    
+    /**
+     * @return Choice[]
+     */
     public function findByQuestionId(string $questionId): array;
 }
