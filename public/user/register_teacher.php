@@ -6,7 +6,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-
+use App\Application\CustomExceptions\AppException;
 use Infrastructure\Persistence\MySQLUserRepository;
 use Application\UseCases\UserUseCase;
 use Domain\Entities\Role;
@@ -97,6 +97,8 @@ try {
     $userUseCase->registerUser($user_id, $name, $email, $role, $photo_url, null, null, null);
 
     Response::send('success', 'ユーザー登録が成功しました。', 200);
+} catch(AppException $e) {
+    Response::send('error', $e->getMessage(), $e->getStatusCode());
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);
 }

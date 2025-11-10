@@ -1,6 +1,8 @@
 <?php
 
 require __DIR__ . '/../../vendor/autoload.php';
+
+use App\Application\CustomExceptions\AppException;
 use Helpers\ApiKeyValidator;
 use Helpers\Response;
 use Infrastructure\Persistence\MySQLProjectRepository;
@@ -41,7 +43,7 @@ try {
     $projectRepository = new MySQLProjectRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
     $homeworkRepository = new MySQLHomeworkRepository($connection);
-    
+
     $projectUseCase = new ProjectUseCase(
         $projectRepository,
         $userRepository,
@@ -79,6 +81,8 @@ try {
     // 検索結果をJSON形式で返す
     Response::send('success', 'projectの取得に成功しました。', 200, json_encode($projects));
 
+} catch(AppException $e) {
+    Response::send('error', $e->getMessage(), $e->getStatusCode());
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);
 }

@@ -1,9 +1,9 @@
 <?php
 
+use App\Application\CustomExceptions\AppException;
 use Application\UseCases\JobUseCase;
 use Infrastructure\Persistence\MySQLJobRepository;
 use Infrastructure\Persistence\MySQLProjectRepository;
-use Infrastructure\Persistence\MySQLUserRepository;
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: PATCH, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -55,6 +55,8 @@ try {
 
     Response::send('success', 'リトライが完了しました。', 200);
 
+} catch(AppException $e) {
+    Response::send('error', $e->getMessage(), $e->getStatusCode());
 } catch (Throwable $e) {
     Response::send('error', 'リトライに失敗しました。', 500);
 }

@@ -3,6 +3,7 @@
 
 require __DIR__ . '/../../vendor/autoload.php';
 
+use App\Application\CustomExceptions\AppException;
 use Application\UseCases\FCMTokenUseCase;
 use Infrastructure\Persistence\MySQLFCMTokenRepository;
 use Infrastructure\Persistence\MySQLUserRepository;
@@ -80,6 +81,8 @@ try {
 
     Response::send('success', 'FCMトークンの更新が成功しました。', 200);
 
+} catch(AppException $e) {
+    Response::send('error', $e->getMessage(), $e->getStatusCode());
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);
 }

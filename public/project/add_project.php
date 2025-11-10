@@ -1,8 +1,9 @@
 <?php
 ignore_user_abort(true); // continue even if user closes the connection
 require __DIR__ . '/../../vendor/autoload.php';
+
+use App\Application\CustomExceptions\AppException;
 use Application\UseCases\JobUseCase;
-use Application\UseCases\ProcessPendingJobsUseCase;
 use Helpers\Response;
 use Helpers\ApiKeyValidator;
 use Infrastructure\ExternalServices\OllamaQuestionGenerator;
@@ -107,6 +108,8 @@ try {
     $job = Job::createNew($project->id, Status::from('pending'));
     $jobUseCase->add($job);
     Response::send('success', 'プロジェクトが正常に追加され、ジョブがキューに登録されました。', 200);
+} catch(AppException $e) {
+    Response::send('error', $e->getMessage(), $e->getStatusCode());
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);
 }

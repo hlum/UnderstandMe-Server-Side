@@ -1,5 +1,6 @@
 <?php
 
+use App\Application\CustomExceptions\AppException;
 use Application\UseCases\ClassUseCase;
 use Application\UseCases\NotificationUseCase;
 use Application\UseCases\UserUseCase;
@@ -126,6 +127,8 @@ try {
     Response::send('success', '宿題の追加が成功しました。', 200, json_encode($usersToNotify));
     
 
+} catch(AppException $e) {
+    Response::send('error', $e->getMessage(), $e->getStatusCode());
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);
 }

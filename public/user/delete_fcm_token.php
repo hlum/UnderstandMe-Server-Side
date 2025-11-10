@@ -1,5 +1,6 @@
 <?php
 
+use App\Application\CustomExceptions\AppException;
 use Application\UseCases\FCMTokenUseCase;
 use Domain\Entities\FCMToken;
 use Helpers\ApiKeyValidator;
@@ -60,8 +61,8 @@ try {
     $fcmUseCase->deleteFCMToken($userID, $deviceID);
 
     Response::send('success', 'FCMトークンが正常に削除されました。', 200);
-} catch (InvalidArgumentException $e) {
-    Response::send('error', 'エラーが発生しました。' . $e->getMessage(), 400);
+} catch (AppException $e) {
+    Response::send('error', $e->getMessage(), $e->getStatusCode());
 } catch (Throwable $e) {
     Response::send('error', '予期しないエラーが発生しました。' . $e->getMessage(), 500);
 }
