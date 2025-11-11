@@ -2,8 +2,8 @@
 
 namespace Application\UseCases;
 
-use App\Application\CustomExceptions\NotFoundException;
-use App\Application\CustomExceptions\ValidationException;
+use Application\CustomExceptions\NotFoundException;
+use Application\CustomExceptions\ValidationException;
 use Domain\Entities\Project;
 use Infrastructure\Persistence\MySQLHomeworkRepository;
 use Infrastructure\Persistence\MySQLProjectRepository;
@@ -80,17 +80,17 @@ class ProjectUseCase
 
     private function validateProject(Project $project)
     {
-        if (empty($project->id) || empty($project->homeworkId) || empty($project->userId) || empty($project->githubFileLink)) {
+        if (empty($project->id) || empty($project->homeworkID) || empty($project->userID) || empty($project->githubFileLink)) {
             throw new ValidationException("Projectの全てのフィールドは必須です。");
         }
 
 
-        $user = $this->userRepository->findById($project->userId);
+        $user = $this->userRepository->findById($project->userID);
         if ($user === null) {
             throw new ValidationException("指定されたUserIDのユーザーが存在しません。");
         }
 
-        $homework = $this->homeworkRepository->findById($project->homeworkId);
+        $homework = $this->homeworkRepository->findById($project->homeworkID);
         if ($homework === null) {
             throw new ValidationException("指定されたHomeworkIDの課題が存在しません。");
         }

@@ -1,14 +1,12 @@
 <?php
 
 namespace Application\UseCases;
-
-use App\Application\CustomExceptions\NotFoundException;
-use App\Application\CustomExceptions\ValidationException;
+use Application\CustomExceptions\NotFoundException;
+use Application\CustomExceptions\ValidationException;
 use Domain\Entities\Job;
 use Domain\Entities\Status;
 use Domain\Repositories\JobRepositoryInterface;
 use Domain\Repositories\ProjectRepositoryInterface;
-use Domain\Repositories\UserRepositoryInterface;
 
 
 class JobUseCase
@@ -82,11 +80,11 @@ class JobUseCase
     private function validateJob(Job $job): void
     {
 
-        if (empty($job->id) || empty($job->projectId)) {
+        if (empty($job->id) || empty($job->projectID)) {
             throw new ValidationException("ProjectIDは必須です。");
         }
 
-        $project = $this->projectRepository->findById($job->projectId);
+        $project = $this->projectRepository->findById($job->projectID);
         if ($project === null) {
             throw new NotFoundException("指定されたProjectIDのプロジェクトが存在しません。");
         }

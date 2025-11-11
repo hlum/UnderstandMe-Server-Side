@@ -10,20 +10,20 @@ use DateTimeImmutable;
 class Job implements JsonSerializable
 {
     public string $id;
-    public string $projectId;
+    public string $projectID;
     public Status $status;
     public ?DateTimeImmutable $createdAt;
     public DateTimeImmutable $updatedAt;
 
     private function __construct(
         string $id,
-        string $projectId,
+        string $projectID,
         Status $status,
         ?DateTimeImmutable $createdAt,
         DateTimeImmutable $updatedAt
     ) {
         $this->id = $id;
-        $this->projectId = $projectId;
+        $this->projectID = $projectID;
         $this->status = $status;
         $this->createdAt = $createdAt;
         $this->updatedAt = $updatedAt;
@@ -57,7 +57,7 @@ class Job implements JsonSerializable
     {
         return [
             'id' => $this->id,
-            'project_id' => $this->projectId,
+            'project_id' => $this->projectID,
             'status' => $this->status instanceof Status ? $this->status->getValue() : $this->status,
             'created_at' => $this->createdAt ? $this->createdAt->format('Y-m-d H:i:s') : null,
             'updated_at' => $this->updatedAt->format('Y-m-d H:i:s'),
