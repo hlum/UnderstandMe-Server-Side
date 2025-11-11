@@ -2,9 +2,9 @@
 
 namespace Application\UseCases;
 
-use App\Application\CustomExceptions\NotFoundException;
-use App\Application\CustomExceptions\UnAuthorizedException;
-use App\Application\CustomExceptions\ValidationException;
+use Application\CustomExceptions\NotFoundException;
+use Application\CustomExceptions\UnAuthorizedException;
+use Application\CustomExceptions\ValidationException;
 use Domain\Entities\ClassEntity;
 use Domain\Repositories\ClassRepositoryInterface;
 use Domain\Repositories\UserRepositoryInterface;

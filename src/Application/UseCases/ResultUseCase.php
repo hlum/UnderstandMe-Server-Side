@@ -1,7 +1,7 @@
 <?php
 namespace Application\UseCases;
 
-use App\Application\CustomExceptions\NotFoundException;
+use Application\CustomExceptions\NotFoundException;
 use Domain\Repositories\ResultRepositoryInterface;
 use Domain\Entities\Result;
 

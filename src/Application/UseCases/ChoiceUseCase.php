@@ -2,7 +2,7 @@
 
 namespace Application\UseCases;
 
-use App\Application\CustomExceptions\ValidationException;
+use Application\CustomExceptions\ValidationException;
 use Domain\Entities\Choice;
 use Domain\Repositories\ChoiceRepositoryInterface;
 use Domain\Repositories\QuestionRepositoryInterface;
