@@ -15,7 +15,7 @@ class OllamaQuestionGenerator implements QuestionGeneratorInterface
 
         // データの準備
         $data = [
-            'model' => 'codequiz:v2',
+            'model' => 'codequiz:latest',
             'prompt' => '作成する数:' . $numQuestions . ' コードスニペット: ' . $codeSnippet,
             'stream' => false
         ];
