@@ -25,21 +25,7 @@ class MySQLJobRepository implements JobRepositoryInterface
         $this->executeQuery($query, $types, $params, $errorMessage);
     }
 
-    public function getAllJobs(int $limit = 100, int $offset = 0): array
-    {
-        $query = "SELECT * FROM jobs LIMIT ? OFFSET ?";
-        $types = 'ii';
-        $params = [$limit, $offset];
-        $errorMessage = '全部のJobs取得に失敗しました。';
-        $result = $this->executeQuery($query, $types, $params, $errorMessage);
-
-        while ($row = $result->fetch_assoc()) {
-            $jobs[] = Job::fromDBRow($row);
-        }
-
-        return $jobs;
-    }
-
+    
     public function findById(string $id): ?Job
     {
         $query = "SELECT * FROM jobs WHERE id = ?";
@@ -91,6 +77,7 @@ class MySQLJobRepository implements JobRepositoryInterface
         return $jobs;
     }
 
+
     public function updateStatus(string $id, Status $status): void
     {
         $query = "UPDATE jobs SET status = ? WHERE id = ?";
@@ -99,17 +86,6 @@ class MySQLJobRepository implements JobRepositoryInterface
         $errorMessage = 'Jobのステータス更新に失敗しました。';
         $this->executeQuery($query, $types, $params, $errorMessage);
     }
-
-
-    public function deleteById(string $id): void
-    {
-        $query = "DELETE FROM jobs WHERE id = ?";
-        $types = 's';
-        $params = [$id];
-        $errorMessage = 'Jobの削除に失敗しました。';
-        $this->executeQuery($query, $types, $params, $errorMessage);
-    }
-
 
     public function deleteByHomeworkID(string $homeworkID, string $studentID): void
     {
