@@ -2,7 +2,7 @@
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-use App\Application\CustomExceptions\AppException;
+use Application\CustomExceptions\AppException;
 use Application\UseCases\HomeworkUseCase;
 use Helpers\ApiKeyValidator;
 use Helpers\Response;

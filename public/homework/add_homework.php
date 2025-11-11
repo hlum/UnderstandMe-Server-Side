@@ -1,6 +1,6 @@
 <?php
 
-use App\Application\CustomExceptions\AppException;
+use Application\CustomExceptions\AppException;
 use Application\UseCases\ClassUseCase;
 use Application\UseCases\NotificationUseCase;
 use Application\UseCases\UserUseCase;

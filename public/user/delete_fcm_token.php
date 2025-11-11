@@ -1,6 +1,6 @@
 <?php
 
-use App\Application\CustomExceptions\AppException;
+use Application\CustomExceptions\AppException;
 use Application\UseCases\FCMTokenUseCase;
 use Domain\Entities\FCMToken;
 use Helpers\ApiKeyValidator;

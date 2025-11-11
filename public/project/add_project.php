@@ -2,7 +2,7 @@
 ignore_user_abort(true); // continue even if user closes the connection
 require __DIR__ . '/../../vendor/autoload.php';
 
-use App\Application\CustomExceptions\AppException;
+use Application\CustomExceptions\AppException;
 use Application\UseCases\JobUseCase;
 use Helpers\Response;
 use Helpers\ApiKeyValidator;
