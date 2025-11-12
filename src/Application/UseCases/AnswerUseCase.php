@@ -2,10 +2,9 @@
 
 namespace Application\UseCases;
 
-use App\Application\CustomExceptions\ValidationException;
+use Application\CustomExceptions\ValidationException;
 use Domain\Repositories\AnswerRepositoryInterface;
 use Domain\Repositories\QuestionRepositoryInterface;
-use Domain\Repositories\ResultRepositoryInterface;
 use Domain\Entities\Answer;
 use Domain\Repositories\UserRepositoryInterface;
 

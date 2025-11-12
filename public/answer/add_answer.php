@@ -1,7 +1,7 @@
 <?php
 require __DIR__ . '/../../vendor/autoload.php';
 
-use App\Application\CustomExceptions\AppException;
+use Application\CustomExceptions\AppException;
 use Application\UseCases\AnswerUseCase;
 use Application\UseCases\ChoiceUseCase;
 use Application\UseCases\ResultUseCase;

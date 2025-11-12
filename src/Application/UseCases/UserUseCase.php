@@ -3,8 +3,8 @@
 // src/Application/UseCases/UserUseCase.php
 namespace Application\UseCases;
 
-use App\Application\CustomExceptions\NotFoundException;
-use App\Application\CustomExceptions\ValidationException;
+use Application\CustomExceptions\NotFoundException;
+use Application\CustomExceptions\ValidationException;
 use Domain\Entities\User;
 use Domain\Entities\Role;
 use Domain\Repositories\UserRepositoryInterface;

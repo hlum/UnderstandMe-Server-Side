@@ -2,8 +2,8 @@
 
 namespace Application\UseCases;
 
-use App\Application\CustomExceptions\NotFoundException;
-use App\Application\CustomExceptions\ValidationException;
+use Application\CustomExceptions\NotFoundException;
+use Application\CustomExceptions\ValidationException;
 use DateTimeImmutable;
 use Domain\Entities\Homework;
 use Domain\Entities\ClassEntity;

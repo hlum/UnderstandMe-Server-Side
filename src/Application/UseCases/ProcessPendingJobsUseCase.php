@@ -9,7 +9,6 @@ use Domain\Repositories\ProjectRepositoryInterface;
 use Domain\Repositories\QuestionGeneratorInterface;
 use Domain\Repositories\QuestionRepositoryInterface;
 use Domain\Repositories\SnippetsRepo;
-use Domain\Repositories\UserRepositoryInterface;
 use Domain\Entities\Status;
 
 
@@ -53,7 +52,7 @@ class ProcessPendingJobsUseCase
         $this->jobRepository->updateStatus($job->id, Status::from('processing'));
 
         try {
-            $project = $this->projectRepository->findById($job->projectId);
+            $project = $this->projectRepository->findById($job->projectID);
             $codeSnippet = $this->snippetsRepository->getRandomCodeSnippet(
                 $project->githubFileLink,
                 50

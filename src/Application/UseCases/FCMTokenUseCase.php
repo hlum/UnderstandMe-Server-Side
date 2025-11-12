@@ -2,7 +2,7 @@
 
 namespace Application\UseCases;
 
-use App\Application\CustomExceptions\ValidationException;
+use Application\CustomExceptions\ValidationException;
 use Domain\Entities\FCMToken;
 use Domain\Repositories\FCMTokenRepositoryInterface;
 use Domain\Repositories\UserRepositoryInterface;

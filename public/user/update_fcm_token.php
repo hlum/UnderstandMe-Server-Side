@@ -3,7 +3,7 @@
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-use App\Application\CustomExceptions\AppException;
+use Application\CustomExceptions\AppException;
 use Application\UseCases\FCMTokenUseCase;
 use Infrastructure\Persistence\MySQLFCMTokenRepository;
 use Infrastructure\Persistence\MySQLUserRepository;

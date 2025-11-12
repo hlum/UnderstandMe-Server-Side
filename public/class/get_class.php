@@ -5,7 +5,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-use App\Application\CustomExceptions\AppException;
+use Application\CustomExceptions\AppException;
 use Helpers\Response;
 use Helpers\ApiKeyValidator;
 use Infrastructure\Persistence\MySQLClassRepository;

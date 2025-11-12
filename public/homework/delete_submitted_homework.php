@@ -9,7 +9,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-use App\Application\CustomExceptions\AppException;
+use Application\CustomExceptions\AppException;
 use Application\UseCases\JobUseCase;
 use Application\UseCases\ProjectUseCase;
 use Helpers\Response;

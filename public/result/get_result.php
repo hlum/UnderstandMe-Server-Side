@@ -1,8 +1,6 @@
 <?php
 
 require __DIR__ . '/../../vendor/autoload.php';
-
-use Application\CustomExceptions\AppException;
 use Application\UseCases\ResultUseCase;
 use Helpers\ApiKeyValidator;
 use Helpers\Response;
@@ -26,24 +24,19 @@ $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
 ApiKeyValidator::check($clientApiKey);
 
 $userID = $_GET['user_id'] ?? null;
-$homeworkID = $_GET['homework_id'] ?? null;
+$year = $_GET['year'] ?? null;
 
-if ($userID === null || $homeworkID === null) {
-    Response::send('error', 'user_idとhomework_idは必須です。', 400);
+if ($userID === null || $year === null) {
+    Response::send('error', 'user_idとyearは必須です。', 400);
 }
 
 try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $resultRepository = new MySQLResultRepository($connection);
     $resultUseCase = new ResultUseCase($resultRepository);
-    $result = $resultUseCase->fetchResultWithHomeworkIDAndUserID($homeworkID, $userID);
-    if ($result === null) {
-        Response::send('success', "指定されたユーザーIDと宿題IDの結果が見つかりません。", 200);
-    }
+    $results = $resultUseCase->fetchResultsByUserID($userID, $year);
 
-    Response::send('success', '結果の取得に成功しました。', 200, json_encode($result));
-} catch(AppException $e) {
-    Response::send('error', $e->getMessage(), $e->getStatusCode());
+    Response::send('success', '結果の取得に成功しました。', 200, json_encode($results));
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);
 }

@@ -20,7 +20,7 @@ class MySQLJobRepository implements JobRepositoryInterface
     {
         $query = "INSERT INTO jobs (id, project_id, status) VALUES (?, ?, ?)";
         $types = 'sss';
-        $params = [$job->id, $job->projectId, $job->status->getValue()];
+        $params = [$job->id, $job->projectID, $job->status->getValue()];
         $errorMessage = 'Job保存に失敗しました。';
         $this->executeQuery($query, $types, $params, $errorMessage);
     }

@@ -22,7 +22,7 @@ class MySQLProjectRepository implements ProjectRepositoryInterface
     {
         $query = "INSERT INTO projects (id, homework_id, user_id, github_file_link) VALUES (?, ?, ?, ?)";
         $types = 'ssss';
-        $params = [$project->id, $project->homeworkId, $project->userId, $project->githubFileLink];
+        $params = [$project->id, $project->homeworkID, $project->userID, $project->githubFileLink];
         $errorMessage = 'Project保存に失敗しました。';
         $this->executeQuery($query, $types, $params, $errorMessage);
     }

@@ -56,8 +56,12 @@ class NotificationUseCase
      * @param FCMToken[] $tokens
      * @return void
      */
-    private function deleteInvalidTokens(array $tokens): void
+    private function deleteInvalidTokens(array $tokens = []): void
     {
+        if (empty($tokens)) {
+            return;
+        }
+
         $failed = [];
 
         foreach ($tokens as $token) {
