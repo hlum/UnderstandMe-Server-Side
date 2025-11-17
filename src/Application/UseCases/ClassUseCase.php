@@ -7,6 +7,7 @@ use Application\CustomExceptions\UnAuthorizedException;
 use Application\CustomExceptions\ValidationException;
 use Domain\Entities\ClassEntity;
 use Domain\Repositories\ClassRepositoryInterface;
+use Domain\Repositories\StudentClassEnrollmentRepositoryInterface;
 use Domain\Repositories\UserRepositoryInterface;
 
 
@@ -14,12 +15,16 @@ class ClassUseCase
 {
     private ClassRepositoryInterface $classRepository;
     private UserRepositoryInterface $userRepository;
+    private StudentClassEnrollmentRepositoryInterface $studentClassEnrollmentRepository;
+
     public function __construct(
         ClassRepositoryInterface $classRepository,
-        UserRepositoryInterface $userRepository
+        UserRepositoryInterface $userRepository,
+        StudentClassEnrollmentRepositoryInterface $studentClassEnrollmentRepository
     ) {
         $this->classRepository = $classRepository;
         $this->userRepository = $userRepository;
+        $this->studentClassEnrollmentRepository = $studentClassEnrollmentRepository;
     }
 
     public function add(ClassEntity $class)
@@ -44,9 +49,9 @@ class ClassUseCase
         return $classes;
     }
 
-    public function getClassesByStudentId(string $studentId): array
+    public function getClassesByStudentId(string $studentID): array
     {
-        $user = $this->userRepository->findById($studentId);
+        $user = $this->userRepository->findById($studentID);
         if ($user === null) {
             throw new ValidationException("指定された学生IDのユーザーが存在しません。");
         }
@@ -54,8 +59,21 @@ class ClassUseCase
             throw new ValidationException("指定されたIDのユーザーは学生ではありません。");
         }
 
+        // 普通の科目の取得
+        $classes = $this->classRepository->findByMajorCodeAndAdmissionYear($user->majorCode, $user->admissionYear) ?? [];
 
-        return $this->classRepository->findByMajorCodeAndAdmissionYear($user->majorCode, $user->admissionYear) ?? null;
+        // 選択科目の取得
+        $optionalClassIDs = $this->studentClassEnrollmentRepository->findClassIDsByStudentID($studentID);
+        
+        if(!empty($optionalClassIDs)) {
+            $optionalClasses = $this->classRepository->findByIDs($optionalClassIDs);
+            $classes = array_merge($classes, $optionalClasses);
+        }
+
+        // 重複があったら削除
+        $classes = array_unique($classes, SORT_REGULAR);
+
+        return $classes;
     }
 
     public function getClassesByTeacherId(string $teacherId): array
