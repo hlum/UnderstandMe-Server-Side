@@ -20,9 +20,9 @@ class MySQLClassRepository implements ClassRepositoryInterface
 
     public function insert(ClassEntity $class): void
     {
-        $query = "INSERT INTO classes (id, teacher_id, name, admission_year, major_code) VALUES (?, ?, ?, ?, ?)";
-        $types = 'sssis';
-        $params = [$class->id, $class->teacher_id, $class->name, $class->admissionYear, $class->majorCode];
+        $query = "INSERT INTO classes (id, teacher_id, name, admission_year, major_code, class_code) VALUES (?, ?, ?, ?, ?, ?)";
+        $types = 'sssiss';
+        $params = [$class->id, $class->teacher_id, $class->name, $class->admissionYear, $class->majorCode, $class->classCode];
         $errorMessage = 'Class保存に失敗しました。';
         $this->executeQuery($query, $types, $params, $errorMessage);
     }

@@ -39,7 +39,8 @@ ApiKeyValidator::checkTeacherKey($clientApiKey);
 // name: String,
 // teacher_id: String,
 // admission_year: Integer,
-// major_code: String
+// major_code: String,
+// class_code: String (optional)
 // }
 
 $input = json_decode(file_get_contents('php://input'), true);
@@ -52,6 +53,7 @@ $name = $input['name'] ?? null;
 $admission_year = $input['admission_year'] ?? null;
 $major_code = $input['major_code'] ?? null;
 $teacher_id = $input['teacher_id'] ?? null;
+$class_code = $input['class_code'] ?? null;
 
 if (!isset($name)) {
     Response::send('error', '学科名は必須です。', 400);
@@ -91,7 +93,8 @@ try {
         name: $name,
         teacher_id: $teacher_id,
         admissionYear: $admission_year,
-        majorCode: $major_code
+        majorCode: $major_code,
+        classCode: $classCode
     );
 
     $classUseCase->add($newClass);

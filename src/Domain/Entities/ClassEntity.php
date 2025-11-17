@@ -23,6 +23,7 @@ class ClassEntity implements JsonSerializable
     public string $name;
     public int $admissionYear;
     public string $majorCode;
+    public ?string $classCode;
     public DateTimeImmutable $createdAt;
 
     private function __construct(
@@ -31,6 +32,7 @@ class ClassEntity implements JsonSerializable
         string $name,
         int $admissionYear,
         string $majorCode,
+        ?string $classCode,
         DateTimeImmutable $createdAt
     ) {
         $this->id = $id;
@@ -46,6 +48,7 @@ class ClassEntity implements JsonSerializable
         string $name,
         int $admissionYear,
         string $majorCode,
+        ?string $classCode = null,
         ?string $id = null
     ): self {
         
@@ -59,6 +62,7 @@ class ClassEntity implements JsonSerializable
             $name,
             $admissionYear,
             $majorCode,
+            $classCode,
             new DateTimeImmutable()
         );
     }
@@ -71,6 +75,7 @@ class ClassEntity implements JsonSerializable
             $row['name'],
             (int) $row['admission_year'],
             $row['major_code'],
+            $row['class_code'] ?? null,
             new DateTimeImmutable($row['created_at'])
         );
     }
@@ -83,6 +88,7 @@ class ClassEntity implements JsonSerializable
             'name' => $this->name,
             'admission_year' => $this->admissionYear,
             'major_code' => $this->majorCode,
+            'class_code' => $this->classCode,
             'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
         ];
     }
