@@ -45,6 +45,23 @@ class MySQLClassRepository implements ClassRepositoryInterface
     }
 
 
+    public function findByClassCode(string $classCode): ?ClassEntity
+    {
+        $query = "SELECT * FROM classes WHERE class_code = ?";
+        $types = 's';
+        $params = [$classCode];
+        $errorMessage = "ClassCodeによるClass検索に失敗しました。";
+        $result = $this->executeQuery($query, $types, $params, $errorMessage);
+        $row = $result->fetch_assoc();
+
+        if($row === null) {
+            return null;
+        }
+
+        return ClassEntity::fromDBRow($row);
+    }
+
+
     public function findByTeacherId(string $teacherId): array
     {
         $query = "SELECT * FROM classes WHERE teacher_id = ?";
