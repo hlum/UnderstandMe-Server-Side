@@ -30,6 +30,22 @@ class MySQLStudentClassEnrollmentRepository implements StudentClassEnrollmentRep
         $this->executeQuery($query, $types, $params);
     }
 
+
+    public function findClassIDsByStudentID(string $studentID): array
+    {
+        $query = "SELECT class_id FROM student_class_enrollments WHERE student_id = ?";
+        $types = 's';
+        $params = [$studentID];
+
+        $result = $this->executeQuery($query, $types, $params);
+        $classIDs = [];
+        while ($row = $result->fetch_assoc()) {
+            $classIDs[] = $row['class_id'];
+        }
+
+        return $classIDs;
+    }
+
     private function executeQuery(
         string $query,
         string $types,
