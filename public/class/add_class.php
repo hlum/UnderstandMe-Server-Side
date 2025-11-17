@@ -1,4 +1,6 @@
 <?php
+
+use Infrastructure\Persistence\MySQLStudentClassEnrollmentRepository;
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -88,7 +90,8 @@ try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $classRepository = new MySQLClassRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
-    $classUseCase = new ClassUseCase($classRepository, $userRepository);
+    $studentClassEnrollmentRepo = new MySQLStudentClassEnrollmentRepository($connection);
+    $classUseCase = new ClassUseCase($classRepository, $userRepository, $studentClassEnrollmentRepo);
     $newClass = ClassEntity::createNew(
         name: $name,
         teacher_id: $teacher_id,

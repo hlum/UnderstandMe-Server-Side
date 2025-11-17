@@ -7,6 +7,7 @@ use Helpers\ApiKeyValidator;
 use Application\UseCases\ClassUseCase;
 use Domain\Entities\ClassEntity;
 use Infrastructure\Persistence\MySQLClassRepository;
+use Infrastructure\Persistence\MySQLStudentClassEnrollmentRepository;
 use Infrastructure\Persistence\MySQLUserRepository;
 
 header("Access-Control-Allow-Origin: *");
@@ -88,7 +89,8 @@ try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $classRepository = new MySQLClassRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
-    $classUseCase = new ClassUseCase($classRepository, $userRepository);
+    $studentClassEnrollmentRepo = new MySQLStudentClassEnrollmentRepository($connection);
+    $classUseCase = new ClassUseCase($classRepository, $userRepository, $studentClassEnrollmentRepo);
 
     $classToUpdate = ClassEntity::createNew(
         id: $id,

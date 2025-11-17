@@ -19,6 +19,7 @@ use Infrastructure\Persistence\MySQLUserRepository;
 use Infrastructure\Persistence\MySQLClassRepository;
 use Infrastructure\Persistence\MySQLFCMTokenRepository;
 use Helpers\NotificationHandler;
+use Infrastructure\Persistence\MySQLStudentClassEnrollmentRepository;
 
 ini_set('display_errors', 0);
 // ini_set('display_startup_errors', 1);
@@ -89,8 +90,9 @@ try {
     $userRepository = new MySQLUserRepository($connection);
     $classRepository = new MySQLClassRepository($connection);
     $fcmTokenRepository = new MySQLFCMTokenRepository($connection);
-
-    $classUseCase = new ClassUseCase($classRepository, $userRepository);
+    $studentClassEnrollmentRepo = new MySQLStudentClassEnrollmentRepository($connection);
+    
+    $classUseCase = new ClassUseCase($classRepository, $userRepository, $studentClassEnrollmentRepo);
     $userUseCase = new UserUseCase($userRepository);
     $homeworkUseCase = new HomeworkUseCase($homeworkRepository, $userRepository, $classRepository);
     $fcmTokenUseCase = new FCMTokenUseCase($fcmTokenRepository, $userRepository);
