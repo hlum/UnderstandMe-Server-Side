@@ -7,6 +7,13 @@ interface ClassRepositoryInterface
 {
     public function insert(ClassEntity $class): void;
     public function findById(string $id): ?ClassEntity;
+
+    /**
+     * Summary of findByIDs
+     * @param string[] $ids
+     * @return ClassEntity[]
+     */
+    public function findByIDs(array $ids): array;
     public function findByClassCode(string $classCode): ?ClassEntity;
 
     /**

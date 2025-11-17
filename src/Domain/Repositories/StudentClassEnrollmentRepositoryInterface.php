@@ -10,4 +10,9 @@ interface StudentClassEnrollmentRepositoryInterface
      * @return void
      */
     public function insert(StudentClassEnrollment $enrollment): void;
+
+    /**
+     * @return string[]
+     */
+    public function findClassIDsByStudentID(string $studentID): array;
 }
