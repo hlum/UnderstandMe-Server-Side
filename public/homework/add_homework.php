@@ -60,6 +60,10 @@ $title = $input['title'] ?? null;
 $description = $input['description'] ?? null;
 $due_date = $input['due_date'] ?? null;
 
+if(!isset($class_id)) {
+    Response::send('error', 'クラスIDは必須です。', 400);
+}
+
 if (!isset($teacher_id)) {
     Response::send('error', '教師IDは必須です。', 400);
 }
@@ -91,7 +95,7 @@ try {
     $classRepository = new MySQLClassRepository($connection);
     $fcmTokenRepository = new MySQLFCMTokenRepository($connection);
     $studentClassEnrollmentRepo = new MySQLStudentClassEnrollmentRepository($connection);
-    
+
     $classUseCase = new ClassUseCase($classRepository, $userRepository, $studentClassEnrollmentRepo);
     $userUseCase = new UserUseCase($userRepository);
     $homeworkUseCase = new HomeworkUseCase($homeworkRepository, $userRepository, $classRepository);
@@ -115,15 +119,22 @@ try {
 
     // クラス情報を取得
     $classToNotify = $classUseCase->findById($class_id);
+    $usersToNotify = [];
+    if($classToNotify->classCode === null) {
+        // 選択科目ではないから、科目コードと入学年度で対象ユーザーを取得
+        $usersToNotify = $userUseCase->findByMajorCodeAndAdmissionYear($classToNotify->majorCode, $classToNotify->admissionYear);
+    } else {
+        $studentIDs = $classUseCase->getAllStudentIDsInExtensionClass($class_id);
+        $usersToNotify = $userUseCase->findByIDs($studentIDs);
+    }
 
-    // 通知対象のユーザーを取得
-    $usersToNotify = $userUseCase->findByMajorCodeAndAdmissionYear($classToNotify->majorCode, $classToNotify->admissionYear);
     foreach($usersToNotify as $user) {
         $body = $classToNotify->name."に".$newHomework->title."が追加されました。";
         $invalidTokens = $notificationUseCase->sendNotification($user->id, "新しい宿題が追加されました: ",$body, $newHomework->id);
-        if (!empty($invalidTokens)) {
-            Response::send('success', '課題は正常に追加されましたが、一部の学生への通知は失敗しました。', 200, json_encode($invalidTokens));
-        }
+    }
+
+    if (!empty($invalidTokens)) {
+        Response::send('success', '課題は正常に追加されましたが、一部の学生への通知は失敗しました。', 200, json_encode($invalidTokens));
     }
     
     Response::send('success', '宿題の追加が成功しました。', 200, json_encode($usersToNotify));

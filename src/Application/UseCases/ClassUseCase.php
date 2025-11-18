@@ -43,6 +43,24 @@ class ClassUseCase
     }
 
 
+    /**
+     * @return string[]
+     */
+    public function getAllStudentIDsInExtensionClass(string $classID): array{
+        $class = $this->classRepository->findById($classID);
+        if(!$class) {
+            throw new ValidationException("指定したclassIDの科目はありません。");
+        }
+        if($class->classCode === null) {
+            throw new ValidationException("指定したclassIDは選択科目ではありません。");
+        }
+
+        $studentIDs = $this->studentClassEnrollmentRepository->findStudentIDsByClassID($classID);
+
+        return $studentIDs ?? [];
+    }
+
+
     public function findByMajorCodeAndAdmissionYear(string $majorCode, int $admissionYear): array
     {
         $classes = $this->classRepository->findByMajorCodeAndAdmissionYear($majorCode, $admissionYear);

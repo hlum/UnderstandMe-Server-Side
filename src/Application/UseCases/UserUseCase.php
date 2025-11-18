@@ -58,6 +58,15 @@ class UserUseCase
     }
 
 
+    public function findByIDs(array $ids): array {
+        if(empty($ids)) { return [];}
+
+        $users = $this->findByIDs($ids);
+
+        return $users;
+    }
+
+
     public function findByEmail(string $email): User
     {
         $user = $this->userRepository->findByEmail($email);

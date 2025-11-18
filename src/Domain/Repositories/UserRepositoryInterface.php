@@ -17,6 +17,13 @@ interface UserRepositoryInterface
 
     public function findById(string $id): ?User;
 
+    /**
+     * Summary of findByIDs
+     * @param string[] $ids
+     * @return User[]
+     */
+    public function findByIDs(array $ids): array;
+
 
     public function findByStudentCode(string $studentCode): ?User;
 

@@ -15,4 +15,11 @@ interface StudentClassEnrollmentRepositoryInterface
      * @return string[]
      */
     public function findClassIDsByStudentID(string $studentID): array;
+    
+    /**
+     * Summary of findStudentIDsByClassID
+     * @param string $classID
+     * @return string[]
+     */
+    public function findStudentIDsByClassID(string $classID): array;
 }

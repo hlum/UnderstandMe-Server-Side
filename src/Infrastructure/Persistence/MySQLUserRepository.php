@@ -65,6 +65,31 @@ class MySQLUserRepository implements UserRepositoryInterface
     }
 
 
+    public function findByIds(array $ids): array
+    {
+        if (empty($ids)) {
+            return []; // no IDs, return empty array
+        }
+
+        // Prepare placeholders for prepared statement (?, ?, ?, ...)
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $query = "SELECT * FROM users WHERE id IN ($placeholders)";
+
+        // All IDs are strings
+        $types = str_repeat('s', count($ids));
+        $params = $ids;
+
+        $result = $this->executeQuery($query, $types, $params, '');
+
+        $users = [];
+        while ($row = $result->fetch_assoc()) {
+            $users[] = User::fromDbRow($row);
+        }
+
+        return $users;
+    }
+
+
     public function findByStudentCode(string $studentCode): ?User
     {
         $query = "SELECT * FROM users WHERE student_code = ?";
