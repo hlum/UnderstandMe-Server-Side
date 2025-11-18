@@ -97,7 +97,7 @@ try {
         teacher_id: $teacher_id,
         admissionYear: $admission_year,
         majorCode: $major_code,
-        classCode: $classCode
+        classCode: $class_code
     );
 
     $classUseCase->add($newClass);
