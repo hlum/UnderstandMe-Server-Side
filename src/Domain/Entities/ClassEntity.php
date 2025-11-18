@@ -40,6 +40,7 @@ class ClassEntity implements JsonSerializable
         $this->name = $name;
         $this->admissionYear = $admissionYear;
         $this->majorCode = $majorCode;
+        $this->classCode = $classCode;
         $this->createdAt = $createdAt;
     }
 
