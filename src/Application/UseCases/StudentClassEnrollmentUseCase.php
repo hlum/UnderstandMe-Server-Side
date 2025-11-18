@@ -1,5 +1,5 @@
 <?php
-namespace Src\Application\UseCases;
+namespace Application\UseCases;
 
 use Application\CustomExceptions\NotFoundException;
 use Domain\Repositories\StudentClassEnrollmentRepositoryInterface;
@@ -27,8 +27,12 @@ class StudentClassEnrollmentUseCase
 
     public function enrollStudent(string $studentID, string $classCode): void
     {
-        if (empty($studentID) || empty($classID)) {
-            throw new ValidationException("学生IDまたはクラスIDが無効です。");
+        if (empty($studentID)) {
+            throw new ValidationException("student_idが無効です。");
+        }
+
+        if (empty($classCode)) {
+            throw new ValidationException("class_codeが無効です。");
         }
 
         $student = $this->userRepository->findById($studentID);
@@ -43,7 +47,12 @@ class StudentClassEnrollmentUseCase
 
         $class = $this->classRepository->findByClassCode($classCode);
         if(!$class) {
-            throw new NotFoundException("指定した科目は存在しません。");
+            throw new NotFoundException("指定したclass_codeの学科は存在しません。");
+        }
+
+        $existingEnrollments = $this->enrollmentRepository->findClassIDsByStudentID($studentID);
+        if (in_array($class->id, $existingEnrollments, true)) {
+            throw new ValidationException("学生は既にこのクラスに登録されています。");
         }
 
         $enrollment = StudentClassEnrollment::createNew($studentID, $class->id);

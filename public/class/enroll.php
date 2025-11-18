@@ -7,7 +7,7 @@ use Helpers\ApiKeyValidator;
 use Infrastructure\Persistence\MySQLClassRepository;
 use Infrastructure\Persistence\MySQLStudentClassEnrollmentRepository;
 use Infrastructure\Persistence\MySQLUserRepository;
-use Src\Application\UseCases\StudentClassEnrollmentUseCase;
+use Application\UseCases\StudentClassEnrollmentUseCase;
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
@@ -39,12 +39,12 @@ $studentID = $input['student_id'] ?? null;
 $classCode = $input['class_code'] ?? null;
 
 
-if (!$studentID) {
-    Response::send('error', '学生IDは必須です。', 400);
+if (empty($studentID)) {
+    Response::send('error', 'student_idは必須です。', 400);
 }
 
-if (!$classCode) {
-    Response::send('error', 'クラスIDは必須です。', 400);
+if (empty($classCode)) {
+    Response::send('error', 'class_codeは必須です。', 400);
 }
 
 
@@ -57,8 +57,10 @@ try {
 
     $studentClassEnrollmentUseCase = new StudentClassEnrollmentUseCase($studentClassEnrollmentRepo, $userRepo, $classRepo);
     $studentClassEnrollmentUseCase->enrollStudent($studentID, $classCode);
+
+    Response::send('success', '学生をクラスに正常に登録しました。');
 } catch (AppException $e) {
     Response::send('error', $e->getMessage(), $e->getCode());
 } catch (\Exception $e) {
-    Response::send('error', '予期しないエラーが発生しました。', 500);
+    Response::send('error', '予期しないエラーが発生しました。' . $e->getMessage(), 500);
 }
