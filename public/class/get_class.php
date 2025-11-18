@@ -10,6 +10,7 @@ use Helpers\Response;
 use Helpers\ApiKeyValidator;
 use Infrastructure\Persistence\MySQLClassRepository;
 use Application\UseCases\ClassUseCase;
+use Infrastructure\Persistence\MySQLStudentClassEnrollmentRepository;
 use Infrastructure\Persistence\MySQLUserRepository;
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -48,7 +49,8 @@ try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $classRepository = new MySQLClassRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
-    $classUseCase = new ClassUseCase($classRepository, $userRepository);
+    $studentClassEnrollmentRepo = new MySQLStudentClassEnrollmentRepository($connection);
+    $classUseCase = new ClassUseCase($classRepository, $userRepository, $studentClassEnrollmentRepo);
 
 } catch (Throwable $e) {
     Response::send('error', $e->getMessage(), 500);

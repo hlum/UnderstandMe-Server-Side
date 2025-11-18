@@ -1,4 +1,6 @@
 <?php
+
+use Infrastructure\Persistence\MySQLStudentClassEnrollmentRepository;
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -39,7 +41,8 @@ ApiKeyValidator::checkTeacherKey($clientApiKey);
 // name: String,
 // teacher_id: String,
 // admission_year: Integer,
-// major_code: String
+// major_code: String,
+// class_code: String (optional)
 // }
 
 $input = json_decode(file_get_contents('php://input'), true);
@@ -52,6 +55,7 @@ $name = $input['name'] ?? null;
 $admission_year = $input['admission_year'] ?? null;
 $major_code = $input['major_code'] ?? null;
 $teacher_id = $input['teacher_id'] ?? null;
+$class_code = $input['class_code'] ?? null;
 
 if (!isset($name)) {
     Response::send('error', '学科名は必須です。', 400);
@@ -86,12 +90,14 @@ try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $classRepository = new MySQLClassRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
-    $classUseCase = new ClassUseCase($classRepository, $userRepository);
+    $studentClassEnrollmentRepo = new MySQLStudentClassEnrollmentRepository($connection);
+    $classUseCase = new ClassUseCase($classRepository, $userRepository, $studentClassEnrollmentRepo);
     $newClass = ClassEntity::createNew(
         name: $name,
         teacher_id: $teacher_id,
         admissionYear: $admission_year,
-        majorCode: $major_code
+        majorCode: $major_code,
+        classCode: $class_code
     );
 
     $classUseCase->add($newClass);

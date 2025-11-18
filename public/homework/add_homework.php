@@ -19,10 +19,11 @@ use Infrastructure\Persistence\MySQLUserRepository;
 use Infrastructure\Persistence\MySQLClassRepository;
 use Infrastructure\Persistence\MySQLFCMTokenRepository;
 use Helpers\NotificationHandler;
+use Infrastructure\Persistence\MySQLStudentClassEnrollmentRepository;
 
 ini_set('display_errors', 0);
-// ini_set('display_startup_errors', 1);
-// error_reporting(E_ALL);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -59,17 +60,21 @@ $title = $input['title'] ?? null;
 $description = $input['description'] ?? null;
 $due_date = $input['due_date'] ?? null;
 
+if(!isset($class_id)) {
+    Response::send('error', 'class_idは必須です。', 400);
+}
+
 if (!isset($teacher_id)) {
-    Response::send('error', '教師IDは必須です。', 400);
+    Response::send('error', 'teacher_idは必須です。', 400);
 }
 if ($teacher_id == null || !is_string($teacher_id)) {
-    Response::send('error', '無効な教師ID形式です。', 400);
+    Response::send('error', '無効なteacher_id形式です。', 400);
 }
 if (!isset($title)) {
-    Response::send('error', 'タイトルは必須です。', 400);
+    Response::send('error', 'titleは必須です。', 400);
 }
 if ($title == null || !is_string($title)) {
-    Response::send('error', '無効なタイトル形式です。', 400);
+    Response::send('error', '無効なtitle形式です。', 400);
 }
 
 try {
@@ -89,8 +94,9 @@ try {
     $userRepository = new MySQLUserRepository($connection);
     $classRepository = new MySQLClassRepository($connection);
     $fcmTokenRepository = new MySQLFCMTokenRepository($connection);
+    $studentClassEnrollmentRepo = new MySQLStudentClassEnrollmentRepository($connection);
 
-    $classUseCase = new ClassUseCase($classRepository, $userRepository);
+    $classUseCase = new ClassUseCase($classRepository, $userRepository, $studentClassEnrollmentRepo);
     $userUseCase = new UserUseCase($userRepository);
     $homeworkUseCase = new HomeworkUseCase($homeworkRepository, $userRepository, $classRepository);
     $fcmTokenUseCase = new FCMTokenUseCase($fcmTokenRepository, $userRepository);
@@ -113,15 +119,22 @@ try {
 
     // クラス情報を取得
     $classToNotify = $classUseCase->findById($class_id);
+    $usersToNotify = [];
+    if($classToNotify->classCode === null) {
+        // 選択科目ではないから、科目コードと入学年度で対象ユーザーを取得
+        $usersToNotify = $userUseCase->findByMajorCodeAndAdmissionYear($classToNotify->majorCode, $classToNotify->admissionYear);
+    } else {
+        $studentIDs = $classUseCase->getAllStudentIDsInExtensionClass($class_id);
+        $usersToNotify = $userUseCase->findByIDs($studentIDs);
+    }
 
-    // 通知対象のユーザーを取得
-    $usersToNotify = $userUseCase->findByMajorCodeAndAdmissionYear($classToNotify->majorCode, $classToNotify->admissionYear);
     foreach($usersToNotify as $user) {
         $body = $classToNotify->name."に".$newHomework->title."が追加されました。";
         $invalidTokens = $notificationUseCase->sendNotification($user->id, "新しい宿題が追加されました: ",$body, $newHomework->id);
-        if (!empty($invalidTokens)) {
-            Response::send('success', '課題は正常に追加されましたが、一部の学生への通知は失敗しました。', 200, json_encode($invalidTokens));
-        }
+    }
+
+    if (!empty($invalidTokens)) {
+        Response::send('success', '課題は正常に追加されましたが、一部の学生への通知は失敗しました。', 200, json_encode($invalidTokens));
     }
     
     Response::send('success', '宿題の追加が成功しました。', 200, json_encode($usersToNotify));

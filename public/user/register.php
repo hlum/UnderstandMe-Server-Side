@@ -67,7 +67,7 @@ $photo_url = $input['photo_url'] ?? null;
 $role = Role::from($input['role'] ?? 'student');
 $student_code = $input['student_code'] ?? null;
 $major_code = $input['major_code'] ?? null;
-$admission_year = $input['admission_year'];
+$admission_year = $input['admission_year'] ?? null;
 
 
 if (empty($user_id)) {

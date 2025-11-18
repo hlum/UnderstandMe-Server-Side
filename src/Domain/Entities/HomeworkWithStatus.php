@@ -10,7 +10,7 @@ class HomeworkWithStatus implements JsonSerializable
      public string $id;
      public string $title;
      public string $classID;
-     public string $description;
+     public ?string $description;
      public string $dueDate;
      public ?string $githubFileLink;
      public ?string $jobStatus;
@@ -24,7 +24,7 @@ class HomeworkWithStatus implements JsonSerializable
     string $id,
     string $title,
     string $classID,
-    string $description,
+    ?string $description,
     string $dueDate,
     ?string $githubFileLink,
     ?string $jobStatus,

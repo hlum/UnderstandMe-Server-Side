@@ -20,9 +20,9 @@ class MySQLClassRepository implements ClassRepositoryInterface
 
     public function insert(ClassEntity $class): void
     {
-        $query = "INSERT INTO classes (id, teacher_id, name, admission_year, major_code) VALUES (?, ?, ?, ?, ?)";
-        $types = 'sssis';
-        $params = [$class->id, $class->teacher_id, $class->name, $class->admissionYear, $class->majorCode];
+        $query = "INSERT INTO classes (id, teacher_id, name, admission_year, major_code, class_code) VALUES (?, ?, ?, ?, ?, ?)";
+        $types = 'sssiss';
+        $params = [$class->id, $class->teacher_id, $class->name, $class->admissionYear, $class->majorCode, $class->classCode];
         $errorMessage = 'Class保存に失敗しました。';
         $this->executeQuery($query, $types, $params, $errorMessage);
     }
@@ -38,6 +38,50 @@ class MySQLClassRepository implements ClassRepositoryInterface
         $row = $result->fetch_assoc();
 
         if ($row === null) {
+            return null;
+        }
+
+        return ClassEntity::fromDBRow($row);
+    }
+
+
+    public function findByIds(array $ids): array
+    {
+        if (empty($ids)) {
+            return []; // no IDs, return empty array
+        }
+
+        // Prepare placeholders for prepared statement (?, ?, ?, ...)
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $query = "SELECT * FROM classes WHERE id IN ($placeholders)";
+
+        // All IDs are strings
+        $types = str_repeat('s', count($ids));
+        $params = $ids;
+
+        $errorMessage = 'IDsによるClass検索に失敗しました。';
+        $result = $this->executeQuery($query, $types, $params, $errorMessage);
+
+        $classes = [];
+        while ($row = $result->fetch_assoc()) {
+            $classes[] = ClassEntity::fromDBRow($row);
+        }
+
+        return $classes;
+    }
+
+
+
+    public function findByClassCode(string $classCode): ?ClassEntity
+    {
+        $query = "SELECT * FROM classes WHERE class_code = ?";
+        $types = 's';
+        $params = [$classCode];
+        $errorMessage = "ClassCodeによるClass検索に失敗しました。";
+        $result = $this->executeQuery($query, $types, $params, $errorMessage);
+        $row = $result->fetch_assoc();
+
+        if($row === null) {
             return null;
         }
 
@@ -61,7 +105,12 @@ class MySQLClassRepository implements ClassRepositoryInterface
         return $classes;
     }
 
-
+    /**
+     * (class_codeがついている（選択科目）は取得しない)
+     * @param string $majorCode
+     * @param int $admissionYear
+     * @return ClassEntity[]
+     */
     public function findByMajorCodeAndAdmissionYear(string $majorCode, int $admissionYear): array
     {
         $query = "SELECT * FROM classes WHERE major_code = ? AND admission_year = ?";
@@ -72,7 +121,10 @@ class MySQLClassRepository implements ClassRepositoryInterface
         $result = $this->executeQuery($query, $types, $params, $errorMessage);
         $classes = [];
         while ($row = $result->fetch_assoc()) {
-            $classes[] = ClassEntity::fromDBRow($row);
+            $class = ClassEntity::fromDBRow($row);
+            if($class->classCode === null) {
+                $classes[] = $class;
+            }
         }
 
         return $classes;
