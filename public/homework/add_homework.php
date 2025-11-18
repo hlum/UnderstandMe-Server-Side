@@ -127,7 +127,8 @@ try {
         $studentIDs = $classUseCase->getAllStudentIDsInExtensionClass($class_id);
         $usersToNotify = $userUseCase->findByIDs($studentIDs);
     }
-
+    
+    $invalidTokens = [];
     foreach($usersToNotify as $user) {
         $body = $classToNotify->name."に".$newHomework->title."が追加されました。";
         $invalidTokens = $notificationUseCase->sendNotification($user->id, "新しい宿題が追加されました: ",$body, $newHomework->id);
