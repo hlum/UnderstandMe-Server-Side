@@ -71,10 +71,6 @@ try {
         Response::send('error', 'user_id、email、student_code、admission_year+major_codeのいずれかを指定してください', 400);
     }
 
-    if (empty($users)) {
-        Response::send('error', 'ユーザーが見つかりませんでした', 404);
-    }
-
     Response::send('success', 'ユーザーの取得に成功しました', 200, json_encode($users));
 
 } catch(AppException $e) {
