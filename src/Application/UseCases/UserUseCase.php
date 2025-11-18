@@ -47,13 +47,9 @@ class UserUseCase
         return $user;
     }
 
-    public function findById(string $user_id): User
+    public function findById(string $user_id): ?User
     {
         $user = $this->userRepository->findById($user_id);
-        if ($user === null) {
-            throw new NotFoundException(message: "指定されたユーザーIDのユーザーが存在しません");
-        }
-
         return $user;
     }
 
