@@ -1,6 +1,9 @@
 <?php
 namespace Helpers;
 
+use Application\CustomExceptions\ValidationException;
+use Application\CustomExceptions\ForbiddenException;
+
 require_once __DIR__ . '/../../config/config.php';
 
 class ApiKeyValidator
@@ -8,22 +11,22 @@ class ApiKeyValidator
     public static function check(?string $clientApiKey)
     {
         if (empty($clientApiKey)) {
-            Response::send('error', 'APIキーが提供されていません。', 400);
+            throw new ValidationException('APIキーが提供されていません。');
         }
 
         if (!hash_equals(API_KEY, $clientApiKey)) {
-            Response::send('error', 'アクセスが拒否されました。無効なAPIキーです。', 403);
+            throw new ForbiddenException('アクセスが拒否されました。無効なAPIキーです。');
         }
     }
 
     public static function checkTeacherKey(?string $teacherApiKey)
     {
         if (empty($teacherApiKey)) {
-            Response::send('error', 'APIキーが提供されていません。', 400);
+            throw new ValidationException('APIキーが提供されていません。');
         }
 
         if (!hash_equals($teacherApiKey, TEACHER_API_KEY)) {
-            Response::send('error', 'アクセスが拒否されました。無効なAPIキーです。教師専用のAPIKEYが必要です。', 403);
+            throw new ForbiddenException('アクセスが拒否されました。無効なAPIキーです。教師専用のAPIKEYが必要です。');
         }
     }
 }

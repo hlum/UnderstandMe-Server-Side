@@ -3,6 +3,7 @@
 require __DIR__ . '/../../vendor/autoload.php';
 
 use Application\CustomExceptions\AppException;
+use Application\CustomExceptions\ValidationException;
 use Application\UseCases\ResultUseCase;
 use Helpers\ApiKeyValidator;
 use Helpers\Response;
@@ -15,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
-    Response::send('error', 'Method not allowed. Use GET', 405);
+    Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
 }
 
 
@@ -29,7 +30,7 @@ $userID = $_GET['user_id'] ?? null;
 $homeworkID = $_GET['homework_id'] ?? null;
 
 if ($userID === null || $homeworkID === null) {
-    Response::send('error', 'user_idとhomework_idは必須です。', 400);
+    throw new ValidationException('user_idとhomework_idは必須です。');
 }
 
 try {
@@ -43,7 +44,8 @@ try {
 
     Response::send('success', '結果の取得に成功しました。', 200, json_encode($result));
 } catch(AppException $e) {
-    Response::send('error', $e->getMessage(), $e->getStatusCode());
+    Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
 } catch (Throwable $e) {
-    Response::send('error', $e->getMessage(), 500);
+    error_log('サーバー内部エラー: ' . $e->getMessage());
+    Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
 }

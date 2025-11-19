@@ -3,6 +3,7 @@
 require __DIR__ . '/../../vendor/autoload.php';
 
 use Application\CustomExceptions\AppException;
+use Application\CustomExceptions\ValidationException;
 use Application\UseCases\HomeworkUseCase;
 use Helpers\ApiKeyValidator;
 use Helpers\Response;
@@ -19,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 
 if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
-    Response::send('error', 'Method not allowed. Use GET', 405);
+    Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
 }
 
 
@@ -55,7 +56,8 @@ try {
     $homeworkUseCase = new HomeworkUseCase($homeworkRepository, $userRepository, $classRepository);
 
 } catch (Throwable $e) {
-    Response::send('error', $e->getMessage(), 500);
+    error_log('サーバー内部エラー: ' . $e->getMessage());
+    Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
 }
 
 
@@ -68,12 +70,13 @@ try {
     } else if (isset($student_id)) {
         $homeworksWithStatus = $homeworkUseCase->findByStudentIDWithStatus($student_id);
     } else {
-        Response::send('error', 'idかstudent_idとclass_idを指定してください', 400);
+        throw new ValidationException('idかstudent_idとclass_idを指定してください');
     }
 
     Response::send('success', "課題の取得に成功しました", 200, json_encode($homeworksWithStatus));
 } catch(AppException $e) {
-    Response::send('error', $e->getMessage(), $e->getStatusCode());
+    Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
 } catch (Throwable $e) {
-    Response::send('error', $e->getMessage(), 500);
+    error_log('サーバー内部エラー: ' . $e->getMessage());
+    Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
 }

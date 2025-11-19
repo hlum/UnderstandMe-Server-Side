@@ -3,6 +3,7 @@ ignore_user_abort(true); // continue even if user closes the connection
 require __DIR__ . '/../../vendor/autoload.php';
 
 use Application\CustomExceptions\AppException;
+use Application\CustomExceptions\ValidationException;
 use Application\UseCases\JobUseCase;
 use Helpers\Response;
 use Helpers\ApiKeyValidator;
@@ -31,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 if (!in_array($_SERVER['REQUEST_METHOD'], ['PATCH'])) {
-    Response::send('error', 'Method not allowed. Use PATCH', 405);
+    Response::send('fail', 'Method not allowed. Use PATCH', 405, null, 'validation_error');
 }
 
 $headers = getallheaders();
@@ -52,7 +53,7 @@ ApiKeyValidator::check($clientApiKey);
 
 $input = json_decode(file_get_contents('php://input'), true);
 if (json_last_error() !== JSON_ERROR_NONE) {
-    Response::send('error', '無効なJSONデータです。', 400);
+    throw new ValidationException('無効なJSONデータです。');
 }
 
 $user_id = $input['user_id'] ?? null;
@@ -60,23 +61,23 @@ $homework_id = $input['homework_id'] ?? null;
 $github_file_link = $input['github_file_link'] ?? null;
 
 if (!isset($user_id)) {
-    Response::send('error', 'ユーザーIDは必須です。', 400);
+    throw new ValidationException('ユーザーIDは必須です。');
 }
 if ($user_id == null || !is_string($user_id)) {
-    Response::send('error', '無効なユーザーID形式です。', 400);
+    throw new ValidationException('無効なユーザーID形式です。');
 }
 
 if (!isset($homework_id)) {
-    Response::send('error', '課題IDは必須です。', 400);
+    throw new ValidationException('課題IDは必須です。');
 }
 if ($homework_id == null || !is_string($homework_id)) {
-    Response::send('error', '無効な課題ID形式です。', 400);
+    throw new ValidationException('無効な課題ID形式です。');
 }
 if (!isset($github_file_link)) {
-    Response::send('error', 'GitHubファイルリンクは必須です。', 400);
+    throw new ValidationException('GitHubファイルリンクは必須です。');
 }
 if ($github_file_link == null || !is_string($github_file_link) || !filter_var($github_file_link, FILTER_VALIDATE_URL)) {
-    Response::send('error', '無効なGitHubファイルリンク形式です。', 400);
+    throw new ValidationException('無効なGitHubファイルリンク形式です。');
 }
 
 
@@ -109,7 +110,8 @@ try {
     $jobUseCase->add($job);
     Response::send('success', 'プロジェクトが正常に追加され、ジョブがキューに登録されました。', 200);
 } catch(AppException $e) {
-    Response::send('error', $e->getMessage(), $e->getStatusCode());
+    Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
 } catch (Throwable $e) {
-    Response::send('error', $e->getMessage(), 500);
+    error_log('サーバー内部エラー: ' . $e->getMessage());
+    Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
 }

@@ -1,6 +1,7 @@
 <?php
 
 use Application\CustomExceptions\AppException;
+use Application\CustomExceptions\ValidationException;
 use Application\UseCases\FCMTokenUseCase;
 use Domain\Entities\FCMToken;
 use Helpers\ApiKeyValidator;
@@ -21,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 if (!in_array($_SERVER['REQUEST_METHOD'], ['DELETE'])) {
-    Response::send('error', 'Method not allowed. Use DELETE', 405);
+    Response::send('fail', 'Method not allowed. Use DELETE', 405, null, 'validation_error');
 }
 
 
@@ -38,17 +39,17 @@ ApiKeyValidator::check($clientApiKey);
 
 $input = json_decode(file_get_contents('php://input'), true);
 if (json_last_error() !== JSON_ERROR_NONE) {
-    Response::send('error', '無効なJSONデータです。', 400);
+    throw new ValidationException('無効なJSONデータです。');
 }
 
 $userID = $input['user_id'] ?? null;
 $deviceID = $input['device_id'] ?? null;
 if (!isset($userID)) {
-    Response::send('error', 'ユーザーIDは必須です。', 400);
+    throw new ValidationException('ユーザーIDは必須です。');
 }
 
 if (!isset($deviceID)) {
-    Response::send('error', 'デバイスIDは必須です。', 400);
+    throw new ValidationException('デバイスIDは必須です。');
 }
 
 
@@ -62,8 +63,9 @@ try {
 
     Response::send('success', 'FCMトークンが正常に削除されました。', 200);
 } catch (AppException $e) {
-    Response::send('error', $e->getMessage(), $e->getStatusCode());
+    Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
 } catch (Throwable $e) {
-    Response::send('error', '予期しないエラーが発生しました。' . $e->getMessage(), 500);
+    error_log('サーバー内部エラー: ' . $e->getMessage());
+    Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
 }
 

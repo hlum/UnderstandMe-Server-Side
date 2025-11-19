@@ -2,14 +2,12 @@
 
 namespace Application\CustomExceptions;
 
-class ValidationException extends AppException {
+class AuthException extends AppException {
     public function getStatusCode(): int {
-        return 400;
+        return 401;
     }
     
     public function getErrorType(): string {
-        return 'validation_error';
+        return 'auth_error';
     }
 }
-
- 

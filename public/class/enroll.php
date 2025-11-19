@@ -2,6 +2,7 @@
 require __DIR__ . '/../../vendor/autoload.php';
 
 use Application\CustomExceptions\AppException;
+use Application\CustomExceptions\ValidationException;
 use Helpers\Response;
 use Helpers\ApiKeyValidator;
 use Infrastructure\Persistence\MySQLClassRepository;
@@ -22,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    Response::send('error', 'Method not allowed. Use POST', 405);
+    Response::send('fail', 'Method not allowed. Use POST', 405, null, 'validation_error');
 }
 
 $headers = getallheaders();
@@ -31,7 +32,7 @@ ApiKeyValidator::check($clientApiKey);
 
 $input = json_decode(file_get_contents('php://input'), true);
 if (json_last_error() !== JSON_ERROR_NONE) {
-    Response::send('error', '無効なJSONデータです。', 400);
+    throw new ValidationException('無効なJSONデータです。');
 }
 
 
@@ -40,11 +41,11 @@ $classCode = $input['class_code'] ?? null;
 
 
 if (empty($studentID)) {
-    Response::send('error', 'student_idは必須です。', 400);
+    throw new ValidationException('student_idは必須です。');
 }
 
 if (empty($classCode)) {
-    Response::send('error', 'class_codeは必須です。', 400);
+    throw new ValidationException('class_codeは必須です。');
 }
 
 
@@ -60,7 +61,8 @@ try {
 
     Response::send('success', '学生をクラスに正常に登録しました。');
 } catch (AppException $e) {
-    Response::send('error', $e->getMessage(), $e->getCode());
+    Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
 } catch (\Exception $e) {
-    Response::send('error', '予期しないエラーが発生しました。' . $e->getMessage(), 500);
+    error_log('サーバー内部エラー: ' . $e->getMessage());
+    Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
 }

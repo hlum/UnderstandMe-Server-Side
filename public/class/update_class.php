@@ -2,6 +2,7 @@
 require __DIR__ . '/../../vendor/autoload.php';
 
 use Application\CustomExceptions\AppException;
+use Application\CustomExceptions\ValidationException;
 use Helpers\Response;
 use Helpers\ApiKeyValidator;
 use Application\UseCases\ClassUseCase;
@@ -22,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
  if (!in_array($_SERVER['REQUEST_METHOD'], ['UPDATE'])) {
-    Response::send('error', 'Method not allowed. Use UPDATE', 405);
+    Response::send('fail', 'Method not allowed. Use UPDATE', 405, null, 'validation_error');
 }
 
 $headers = getallheaders();
@@ -44,7 +45,7 @@ ApiKeyValidator::checkTeacherKey($clientApiKey);
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (json_last_error() !== JSON_ERROR_NONE) {
-    Response::send('error', '無効なJSONデータです。', 400);
+    throw new ValidationException('無効なJSONデータです。');
 }
 
 $id = $input['id'] ?? null;
@@ -55,35 +56,35 @@ $teacher_id = $input['teacher_id'] ?? null;
 $class_code = $input['class_code'] ?? null;
 
 if (!isset($id)) {
-    Response::send('error', 'クラスIDは必須です。', 400);
+    throw new ValidationException('クラスIDは必須です。');
 }
 
 if (!isset($name)) {
-    Response::send('error', '授業名は必須です。', 400);
+    throw new ValidationException('授業名は必須です。');
 }
 if ($name == null || !is_string($name)) {
-    Response::send('error', '無効な学科名形式です。', 400);
+    throw new ValidationException('無効な学科名形式です。');
 }
 
 if (!isset($teacher_id)) {
-    Response::send('error', '教師IDは必須です。', 400);
+    throw new ValidationException('教師IDは必須です。');
 }
 
 if ($teacher_id == null || !is_string($teacher_id)) {
-    Response::send('error', '無効な教師ID形式です。', 400);
+    throw new ValidationException('無効な教師ID形式です。');
 }
 
 if (!isset($admission_year)) {
-    Response::send('error', '入学年度は必須です。', 400);
+    throw new ValidationException('入学年度は必須です。');
 }
 if ($admission_year == null || !is_int($admission_year)) {
-    Response::send('error', '無効な入学年度形式です。', 400);
+    throw new ValidationException('無効な入学年度形式です。');
 }
 if (!isset($major_code)) {
-    Response::send('error', '専攻のコードは必須です。', 400);
+    throw new ValidationException('専攻のコードは必須です。');
 }
 if ($major_code == null || !is_string($major_code)) {
-    Response::send('error', '無効な専攻のコード形式です。', 400);
+    throw new ValidationException('無効な専攻のコード形式です。');
 }
 
 
@@ -106,7 +107,8 @@ try {
     $classUseCase->updateClass($classToUpdate);
     Response::send('success', 'クラス情報が更新されました。', 200);
 } catch(AppException $e) {
-    Response::send('error', $e->getMessage(), $e->getStatusCode());
+    Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
 } catch (Throwable $e) {
-    Response::send('error', $e->getMessage(), 500);
+    error_log('サーバー内部エラー: ' . $e->getMessage());
+    Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
 }

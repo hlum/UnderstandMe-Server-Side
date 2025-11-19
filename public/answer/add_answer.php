@@ -2,6 +2,7 @@
 require __DIR__ . '/../../vendor/autoload.php';
 
 use Application\CustomExceptions\AppException;
+use Application\CustomExceptions\ValidationException;
 use Application\UseCases\AnswerUseCase;
 use Application\UseCases\ChoiceUseCase;
 use Application\UseCases\ResultUseCase;
@@ -30,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    Response::send('error', 'Method not allowed. Use POST', 405);
+    Response::send('fail', 'Method not allowed. Use POST', 405, null, 'validation_error');
 }
 
 $headers = getallheaders();
@@ -39,7 +40,7 @@ ApiKeyValidator::check($clientApiKey);
 
 $input = json_decode(file_get_contents('php://input'), true);
 if (json_last_error() !== JSON_ERROR_NONE) {
-    Response::send('error', '無効なJSONデータです。', 400);
+    throw new ValidationException('無効なJSONデータです。');
 }
 
 $questionID = $input['question_id'] ?? null;
@@ -49,7 +50,7 @@ $selectedChoiceID = $input['selected_choice_id'] ?? null;
 $totalQuestions = $input['total_questions'] ?? null;
 
 if (!$questionID || !$userID || !$selectedChoiceID || !$homeworkID || !$totalQuestions) {
-    Response::send('error', '必要なフィールドが不足しています。');
+    throw new ValidationException('必要なフィールドが不足しています。');
 }
 
 try {
@@ -91,8 +92,9 @@ try {
     Response::send('success', 'Answer and result updated successfully.');
 
 } catch (AppException $e) {
-    Response::send('error', $e->getMessage(), $e->getStatusCode());
+    Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
 
 } catch (Throwable $e) {
-    Response::send('error', $e->getMessage(), 500);
+    error_log('サーバー内部エラー: ' . $e->getMessage());
+    Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
 }

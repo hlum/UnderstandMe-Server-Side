@@ -1,6 +1,7 @@
 <?php
 
 use Application\CustomExceptions\AppException;
+use Application\CustomExceptions\ValidationException;
 use Application\UseCases\ClassUseCase;
 use Application\UseCases\NotificationUseCase;
 use Application\UseCases\UserUseCase;
@@ -31,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 if (!in_array($_SERVER['REQUEST_METHOD'], ['POST'])) {
-    Response::send('error', 'Method not allowed. Use POST', 405);
+    Response::send('fail', 'Method not allowed. Use POST', 405, null, 'validation_error');
 }
 
 // API Key validation
@@ -51,7 +52,7 @@ ApiKeyValidator::checkTeacherKey($clientApiKey);
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (json_last_error() !== JSON_ERROR_NONE) {
-    Response::send('error', '無効なJSONデータです。', 400);
+    throw new ValidationException('無効なJSONデータです。');
 }
 
 $teacher_id = $input['teacher_id'] ?? null;
@@ -61,30 +62,30 @@ $description = $input['description'] ?? null;
 $due_date = $input['due_date'] ?? null;
 
 if(!isset($class_id)) {
-    Response::send('error', 'class_idは必須です。', 400);
+    throw new ValidationException('class_idは必須です。');
 }
 
 if (!isset($teacher_id)) {
-    Response::send('error', 'teacher_idは必須です。', 400);
+    throw new ValidationException('teacher_idは必須です。');
 }
 if ($teacher_id == null || !is_string($teacher_id)) {
-    Response::send('error', '無効なteacher_id形式です。', 400);
+    throw new ValidationException('無効なteacher_id形式です。');
 }
 if (!isset($title)) {
-    Response::send('error', 'titleは必須です。', 400);
+    throw new ValidationException('titleは必須です。');
 }
 if ($title == null || !is_string($title)) {
-    Response::send('error', '無効なtitle形式です。', 400);
+    throw new ValidationException('無効なtitle形式です。');
 }
 
 try {
     $due_date = $due_date ? new DateTimeImmutable($due_date) : null;
 } catch (Exception $e) {
-    Response::send('error', '無効な締め切り日形式です。', 400);
+    throw new ValidationException('無効な締め切り日形式です。');
 }
 
 if ($due_date == null || !($due_date instanceof DateTimeImmutable)) {
-    Response::send('error', '無効な締め切り日形式です。', 400);
+    throw new ValidationException('無効な締め切り日形式です。');
 }
 
 
@@ -128,7 +129,8 @@ try {
     
 
 } catch(AppException $e) {
-    Response::send('error', $e->getMessage(), $e->getStatusCode());
+    Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
 } catch (Throwable $e) {
-    Response::send('error', $e->getMessage(), 500);
+    error_log('サーバー内部エラー: ' . $e->getMessage());
+    Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
 }
