@@ -133,9 +133,9 @@ class MySQLClassRepository implements ClassRepositoryInterface
 
     public function update(ClassEntity $class): void
     {
-        $query = "UPDATE classes SET teacher_id = ?, name = ?, admission_year = ?, major_code = ? WHERE id = ?";
-        $types = 'ssiss';
-        $params = [$class->teacher_id, $class->name, $class->admissionYear, $class->majorCode, $class->id];
+        $query = "UPDATE classes SET teacher_id = ?, name = ?, admission_year = ?, major_code = ?, class_code = ? WHERE id = ?";
+        $types = 'ssisss';
+        $params = [$class->teacher_id, $class->name, $class->admissionYear, $class->majorCode, $class->classCode, $class->id];
         $errorMessage = 'Classの更新に失敗しました。';
         $this->executeQuery($query, $types, $params, $errorMessage);
     }
