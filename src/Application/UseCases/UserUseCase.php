@@ -54,10 +54,14 @@ class UserUseCase
     }
 
 
+    /**
+     * @param array $ids
+     * @return User[]
+     */
     public function findByIDs(array $ids): array {
         if(empty($ids)) { return [];}
 
-        $users = $this->findByIDs($ids);
+        $users = $this->userRepository->findByIDs($ids);
 
         return $users;
     }
