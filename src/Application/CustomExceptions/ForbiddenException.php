@@ -2,14 +2,12 @@
 
 namespace Application\CustomExceptions;
 
-class ValidationException extends AppException {
+class ForbiddenException extends AppException {
     public function getStatusCode(): int {
-        return 400;
+        return 403;
     }
     
     public function getErrorType(): string {
-        return 'validation_error';
+        return 'forbidden_error';
     }
 }
-
- 

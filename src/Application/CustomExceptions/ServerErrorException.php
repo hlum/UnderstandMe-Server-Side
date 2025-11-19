@@ -2,14 +2,12 @@
 
 namespace Application\CustomExceptions;
 
-class ValidationException extends AppException {
+class ServerErrorException extends AppException {
     public function getStatusCode(): int {
-        return 400;
+        return 500;
     }
     
     public function getErrorType(): string {
-        return 'validation_error';
+        return 'server_error';
     }
 }
-
- 
