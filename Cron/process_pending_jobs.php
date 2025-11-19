@@ -3,11 +3,14 @@
 require __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../config/config.php';
 
+use Application\UseCases\ClassUseCase;
 use Application\UseCases\FCMTokenUseCase;
+use Application\UseCases\HomeworkUseCase;
 use Application\UseCases\JobUseCase;
 use Application\UseCases\NotificationUseCase;
 use Application\UseCases\ProcessPendingJobsUseCase;
 use Application\UseCases\ProjectUseCase;
+use Application\UseCases\UserUseCase;
 use Domain\Entities\Job;
 use Domain\Entities\Status;
 use Helpers\NotificationHandler;
@@ -20,6 +23,8 @@ use Infrastructure\Persistence\MySQLUserRepository;
 use Infrastructure\Persistence\MySQLChoiceRepository;
 use Infrastructure\Persistence\MySQLFCMTokenRepository;
 use Infrastructure\Persistence\MySQLHomeworkRepository;
+use Infrastructure\Persistence\MySQLClassRepository;
+use Infrastructure\Persistence\MySQLStudentClassEnrollmentRepository;
 
 // Initialize dependencies
 $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
@@ -30,6 +35,8 @@ $projectRepository = new MySQLProjectRepository($mysqli);
 $userRepository = new MySQLUserRepository($mysqli);
 $fcmTokenRepository = new MySQLFCMTokenRepository($mysqli);
 $homeworkRepository = new MySQLHomeworkRepository($mysqli);
+$classRepository = new MySQLClassRepository($mysqli);
+$studentClassEnrollmentRepo = new MySQLStudentClassEnrollmentRepository($mysqli);
 
 $questionGenerator = new OllamaQuestionGenerator();
 $snippetsRepository = new GithubSnippetsRepo();
@@ -38,8 +45,18 @@ $notificationHandler = new NotificationHandler(FIREBASE_PROJECT_ID);
 // Initialize use cases
 $jobUseCase = new JobUseCase($jobRepository, $projectRepository);
 $fcmTokenUseCase = new FCMTokenUseCase($fcmTokenRepository, $userRepository);
-$notificationUseCase = new NotificationUseCase($notificationHandler, $fcmTokenUseCase);
+$classUseCase = new ClassUseCase($classRepository, $userRepository, $studentClassEnrollmentRepo);
+$userUseCase = new UserUseCase($userRepository);
+$homeworkUseCase = new HomeworkUseCase($homeworkRepository, $userRepository, $classRepository);
 $projectUseCase = new ProjectUseCase($projectRepository, $userRepository, $homeworkRepository);
+$notificationUseCase = new NotificationUseCase(
+    $notificationHandler, 
+    $fcmTokenUseCase,
+    $classUseCase,
+    $userUseCase,
+    $homeworkUseCase,
+    $projectUseCase
+);
 $processPendingJobsUseCase = new ProcessPendingJobsUseCase(
     $jobRepository,
     $questionRepository,
@@ -71,23 +88,13 @@ function getNextJob(JobUseCase $jobUseCase): ?Job
 
 function sendNotificationSafely(
     NotificationUseCase $notificationUseCase,
-    ProjectUseCase $projectUseCase,
     Job $job,
-    string $title,
-    string $body
+    bool $success
 ): array {
     try {
-        $project = $projectUseCase->findById($job->projectID);
-        $userID = $project->userID;
+        echo "通知を送信します。JobID: {$job->id}, Success: " . ($success ? 'true' : 'false') . "\n";
         
-        echo "ユーザーに通知を送信します。UserID: {$userID}\n";
-        
-        return $notificationUseCase->sendNotification(
-            $userID,
-            $title,
-            $body,
-            $project->homeworkID
-        );
+        return $notificationUseCase->notifyJobResult($job, $success);
     } catch (Throwable $e) {
         error_log("通知の送信に失敗しました: " . $e->getMessage());
         return [];
@@ -123,10 +130,8 @@ while ($currentRetry < MAX_RETRY_COUNT) {
         
         $failedDevices = sendNotificationSafely(
             $notificationUseCase,
-            $projectUseCase,
             $job,
-            "問題生成完了のお知らせ",
-            "あなたのプロジェクトの問題生成が完了しました。"
+            true
         );
         
         logFailedDevices($failedDevices);
@@ -142,10 +147,8 @@ while ($currentRetry < MAX_RETRY_COUNT) {
             
             $failedDevices = sendNotificationSafely(
                 $notificationUseCase,
-                $projectUseCase,
                 $job,
-                "問題生成失敗のお知らせ",
-                "あなたのプロジェクトの問題生成が失敗しました。再度お試しください。"
+                false
             );
             
             logFailedDevices($failedDevices);
