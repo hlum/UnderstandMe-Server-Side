@@ -103,7 +103,7 @@ try {
     
     // NotificationHandlerの初期化
     $notificationHandler = new NotificationHandler(FIREBASE_PROJECT_ID, FIREBASE_SERVICE_ACCOUNT_PATH);
-    $notificationUseCase = new NotificationUseCase($notificationHandler, $fcmTokenUseCase);
+    $notificationUseCase = new NotificationUseCase($notificationHandler, $fcmTokenUseCase, $classUseCase, $userUseCase, $homeworkUseCase, null);
 
 
     $newHomework = Homework::createNew(
@@ -117,29 +117,14 @@ try {
     // 宿題を追加
     $homeworkUseCase->add($newHomework);
 
-    // クラス情報を取得
-    $classToNotify = $classUseCase->findById($class_id);
-    $usersToNotify = [];
-    if($classToNotify->classCode === null) {
-        // 選択科目ではないから、科目コードと入学年度で対象ユーザーを取得
-        $usersToNotify = $userUseCase->findByMajorCodeAndAdmissionYear($classToNotify->majorCode, $classToNotify->admissionYear);
-    } else {
-        $studentIDs = $classUseCase->getAllStudentIDsInExtensionClass($class_id);
-        $usersToNotify = $userUseCase->findByIDs($studentIDs);
-    }
-
-    $invalidTokens = [];
-    foreach($usersToNotify as $user) {
-        $body = $classToNotify->name."に".$newHomework->title."が追加されました。";
-        $invalid = $notificationUseCase->sendNotification($user->id, "新しい宿題が追加されました: ",$body, $newHomework->id);
-        $invalidTokens = array_merge($invalidTokens, $invalid);
-    }
+    // 通知を送信（NotificationUseCaseで一元管理）
+    $invalidTokens = $notificationUseCase->notifyHomeworkAdded($newHomework);
 
     if (!empty($invalidTokens)) {
         Response::send('success', '課題は正常に追加されましたが、一部の学生への通知は失敗しました。', 200, json_encode($invalidTokens));
     }
     
-    Response::send('success', '宿題の追加が成功しました。', 200, json_encode($usersToNotify));
+    Response::send('success', '宿題の追加が成功しました。', 200);
     
 
 } catch(AppException $e) {
