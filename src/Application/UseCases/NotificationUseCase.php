@@ -137,6 +137,7 @@ class NotificationUseCase
 
     /**
      * Job（問題生成）の成功/失敗通知
+     * プロジェクトを提出した学生のみに通知を送信
      *
      * @param Job $job 完了したJob
      * @param bool $success 成功かどうか
@@ -144,20 +145,21 @@ class NotificationUseCase
      */
     public function notifyJobResult(Job $job, bool $success): array
     {
-        if ($this->projectUseCase === null || $this->homeworkUseCase === null) {
-            throw new \Exception('ProjectUseCase と HomeworkUseCase が必要です');
+        if ($this->projectUseCase === null) {
+            throw new \Exception('ProjectUseCase が必要です');
         }
 
-        // Job → Project → Homework → Class → Users の階層で対象を取得
+        // Job → Project → User の階層で対象を取得
         $project = $this->projectUseCase->findById($job->projectID);
-        $homework = $this->homeworkUseCase->findById($project->homeworkID);
+        $userID = $project->userID;
 
         $title = $success ? "問題生成完了のお知らせ" : "問題生成失敗のお知らせ";
         $body = $success 
             ? "あなたのプロジェクトの問題生成が完了しました。"
             : "あなたのプロジェクトの問題生成が失敗しました。再度お試しください。";
 
-        return $this->notifyClass($homework->classID, $title, $body, $homework->id);
+        // プロジェクトを提出した学生のみに通知
+        return $this->sendNotification($userID, $title, $body, $project->homeworkID);
     }
 
     /**
