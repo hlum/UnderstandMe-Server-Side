@@ -7,6 +7,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 require __DIR__ . '/../../vendor/autoload.php';
 
 use Application\CustomExceptions\AppException;
+use Application\CustomExceptions\ValidationException;
 use Infrastructure\Persistence\MySQLUserRepository;
 use Application\UseCases\UserUseCase;
 use Domain\Entities\Role;
@@ -26,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 if (!in_array($_SERVER['REQUEST_METHOD'], ['POST'])) {
-    Response::send('error', 'Method Not Allowed. Use POST', 405);
+    Response::send('fail', 'Method Not Allowed. Use POST', 405, null, 'validation_error');
 }
 
 // API Key validation
@@ -38,7 +39,7 @@ ApiKeyValidator::checkTeacherKey($clientApiKey);
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (json_last_error() !== JSON_ERROR_NONE) {
-    Response::send('error', '無効なJSONデータです。', 400);
+    throw new ValidationException('無効なJSONデータです。');
 }
 
 
@@ -63,26 +64,26 @@ $photo_url = $input['photo_url'] ?? null;
 $role = Role::from($input['role'] ?? 'teacher');
 
 if (empty($user_id)) {
-    Response::send('error', 'ユーザーIDは必須です。', 400);
+    throw new ValidationException('ユーザーIDは必須です。');
 }
 
 if ($user_id == null || !is_string($user_id)) {
-    Response::send('error', '無効なユーザーID形式です。', 400);
+    throw new ValidationException('無効なユーザーID形式です。');
 }
 
 if (empty($name)) {
-    Response::send('error', '名前は必須です。', 400);
+    throw new ValidationException('名前は必須です。');
 }
 
 if (empty($email)) {
-    Response::send('error', 'メールアドレスは必須です。', 400);
+    throw new ValidationException('メールアドレスは必須です。');
 }
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    Response::send('error', '無効なメールアドレス形式です。', 400);
+    throw new ValidationException('無効なメールアドレス形式です。');
 }
 
 if ($photo_url != null && !filter_var($photo_url, FILTER_VALIDATE_URL)) {
-    Response::send('error', '無効なphoto_url形式です。', 400);
+    throw new ValidationException('無効なphoto_url形式です。');
 }
 
 $student_code = mb_substr($email, 0, strpos($email, '@'));
@@ -98,7 +99,8 @@ try {
 
     Response::send('success', 'ユーザー登録が成功しました。', 200);
 } catch(AppException $e) {
-    Response::send('error', $e->getMessage(), $e->getStatusCode());
+    Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
 } catch (Throwable $e) {
-    Response::send('error', $e->getMessage(), 500);
+    error_log('サーバー内部エラー: ' . $e->getMessage());
+    Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
 }

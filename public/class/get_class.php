@@ -6,6 +6,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 require __DIR__ . '/../../vendor/autoload.php';
 
 use Application\CustomExceptions\AppException;
+use Application\CustomExceptions\ValidationException;
 use Helpers\Response;
 use Helpers\ApiKeyValidator;
 use Infrastructure\Persistence\MySQLClassRepository;
@@ -19,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
-    Response::send('error', 'Method not allowed. Use GET', 405);
+    Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
 }
 
 
@@ -53,7 +54,8 @@ try {
     $classUseCase = new ClassUseCase($classRepository, $userRepository, $studentClassEnrollmentRepo);
 
 } catch (Throwable $e) {
-    Response::send('error', $e->getMessage(), 500);
+    error_log('サーバー内部エラー: ' . $e->getMessage());
+    Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
 }
 
 
@@ -66,10 +68,10 @@ try {
     } elseif (isset($major_code) && isset($admission_year)) {
 
         if (!is_string($major_code)) {
-            Response::send('error', '無効な専攻のコード形式です。', 400);
+            throw new ValidationException('無効な専攻のコード形式です。');
         }
         if (!is_numeric($admission_year)) {
-            Response::send('error', '無効な入学年度形式です。', 400);
+            throw new ValidationException('無効な入学年度形式です。');
         }
         $admission_year = (int) $admission_year;
         $classes = $classUseCase->findByMajorCodeAndAdmissionYear($major_code, $admission_year);
@@ -77,25 +79,26 @@ try {
     } elseif (isset($teacher_id)) {
 
         if (!is_string($teacher_id)) {
-            Response::send('error', '無効な教師ID形式です。', 400);
+            throw new ValidationException('無効な教師ID形式です。');
         }
         $classes = $classUseCase->getClassesByTeacherId($teacher_id);
 
     } elseif (isset(($student_id))) {
         if (!is_string($student_id)) {
-            Response::send('error', '無効な学生ID形式です。', 400);
+            throw new ValidationException('無効な学生ID形式です。');
         }
 
         $classes = $classUseCase->getClassesByStudentId($student_id);
 
     } else {
-        Response::send('error', '少なくとも1つのクエリパラメータ（id、major_code と admission_year、student_id）を指定してください。', 400);
+        throw new ValidationException('少なくとも1つのクエリパラメータ（id、major_code と admission_year、student_id）を指定してください。');
     }
 
     Response::send('success', 'クラスの取得に成功しました。', 200, json_encode($classes));
 
 } catch(AppException $e) {
-    Response::send('error', $e->getMessage(), $e->getStatusCode());
+    Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
 } catch (Throwable $e) {
-    Response::send('error', $e->getMessage(), 500);
+    error_log('サーバー内部エラー: ' . $e->getMessage());
+    Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
 }

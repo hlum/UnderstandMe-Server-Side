@@ -7,6 +7,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 require __DIR__ . '/../../vendor/autoload.php';
 
 use Application\CustomExceptions\AppException;
+use Application\CustomExceptions\ValidationException;
 use Infrastructure\Persistence\MySQLUserRepository;
 use Application\UseCases\UserUseCase;
 use Helpers\ApiKeyValidator;
@@ -18,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
-    Response::send('error', 'Method not allowed. Use GET', 405);
+    Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
 }
 
 
@@ -41,7 +42,8 @@ try {
     $userRepository = new MySQLUserRepository($connection);
     $userUseCase = new UserUseCase($userRepository);
 } catch (Throwable $e) {
-    Response::send('error', $e->getMessage(), 500);
+    error_log('サーバー内部エラー: ' . $e->getMessage());
+    Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
 }
 
 try {
@@ -64,17 +66,18 @@ try {
         }
     } elseif (isset($admission_year) || isset($major_code)) {
         if (!(isset($admission_year) && isset($major_code))) {
-            Response::send('error', 'admission_yearとmajor_codeは両方指定する必要があります。', 400);
+            throw new ValidationException('admission_yearとmajor_codeは両方指定する必要があります。');
         }
         $users = $userUseCase->findByMajorCodeAndAdmissionYear($major_code, $admission_year);
     } else {
-        Response::send('error', 'user_id、email、student_code、admission_year+major_codeのいずれかを指定してください', 400);
+        throw new ValidationException('user_id、email、student_code、admission_year+major_codeのいずれかを指定してください');
     }
 
     Response::send('success', 'ユーザーの取得に成功しました', 200, json_encode($users));
 
 } catch(AppException $e) {
-    Response::send('error', $e->getMessage(), $e->getStatusCode());
+    Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
 } catch (Throwable $e) {
-    Response::send('error', $e->getMessage(), $e->getCode());
+    error_log('サーバー内部エラー: ' . $e->getMessage());
+    Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
 }
