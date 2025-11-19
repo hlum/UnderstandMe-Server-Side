@@ -118,6 +118,12 @@ class ClassUseCase
         $this->classRepository->update($updatedClass);
     }
 
+
+    public function findByClassCode(string $classCode): ?ClassEntity
+    {
+        return $this->classRepository->findByClassCode($classCode);
+    }
+
     private function isTeacher(string $userId): bool
     {
         $user = $this->userRepository->findById($userId);

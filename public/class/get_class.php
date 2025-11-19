@@ -33,6 +33,7 @@ ApiKeyValidator::check($clientApiKey);
 /* Possible queries
 by id
 by teacher_id
+by class_code
 by major_code and admission_year
 by student_id (get the class of a specific student)
 */
@@ -43,6 +44,7 @@ $teacher_id = $_GET['teacher_id'] ?? null;
 $major_code = $_GET['major_code'] ?? null;
 $admission_year = $_GET['admission_year'] ?? null;
 $student_id = $_GET['student_id'] ?? null;
+$class_code = $_GET['class_code'] ?? null;
 
 
 try {
@@ -87,6 +89,12 @@ try {
         }
 
         $classes = $classUseCase->getClassesByStudentId($student_id);
+
+    } elseif (isset($class_code)) {
+        $class = $classUseCase->findByClassCode($class_code);
+        if ($class !== null) {
+            $classes[] = $class;
+        }
 
     } else {
         Response::send('error', '少なくとも1つのクエリパラメータ（id、major_code と admission_year、student_id）を指定してください。', 400);
