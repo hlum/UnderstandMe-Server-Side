@@ -1,6 +1,7 @@
 <?php
 
 use Application\CustomExceptions\AppException;
+use Application\CustomExceptions\ValidationException;
 use Application\UseCases\JobUseCase;
 use Infrastructure\Persistence\MySQLJobRepository;
 use Infrastructure\Persistence\MySQLProjectRepository;
@@ -21,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 if (!in_array($_SERVER['REQUEST_METHOD'], ['PATCH'])) {
-    Response::send('error', 'Method not allowed. Use PATCH', 405);
+    Response::send('fail', 'Method not allowed. Use PATCH', 405, null, 'validation_error');
 }
 
 
@@ -34,14 +35,14 @@ ApiKeyValidator::check($clientApiKey);
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (json_last_error() !== JSON_ERROR_NONE) {
-    Response::send('error', '無効なJSONデータです。', 400);
+    throw new ValidationException('無効なJSONデータです。');
 }
 
 $homeworkID = $input['homework_id'] ?? null;
 $userID = $input['user_id'] ?? null;
 
 if (!isset($homeworkID) || !isset($userID)) {
-    Response::send('error', 'homework_id と user_id は必須です。', 400);
+    throw new ValidationException('homework_id と user_id は必須です。');
 }
 
 
@@ -56,7 +57,8 @@ try {
     Response::send('success', 'リトライが完了しました。', 200);
 
 } catch(AppException $e) {
-    Response::send('error', $e->getMessage(), $e->getStatusCode());
+    Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
 } catch (Throwable $e) {
-    Response::send('error', 'リトライに失敗しました。', 500);
+    error_log('サーバー内部エラー: ' . $e->getMessage());
+    Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
 }

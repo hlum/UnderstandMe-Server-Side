@@ -7,6 +7,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 require __DIR__ . '/../../vendor/autoload.php';
 
 use Application\CustomExceptions\AppException;
+use Application\CustomExceptions\ValidationException;
 use Application\UseCases\HomeworkUseCase;
 use Helpers\ApiKeyValidator;
 use Helpers\Response;
@@ -21,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
-    Response::send('error', 'Method not allowed. Use GET', 405);
+    Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
 }
 
 // API KEY Validation
@@ -50,7 +51,8 @@ try {
     $homeworkUseCase = new HomeworkUseCase($homeworkRepository, $userRepository, $classRepository);
 
 } catch (Throwable $e) {
-    Response::send('error', $e->getMessage(), 500);
+    error_log('サーバー内部エラー: ' . $e->getMessage());
+    Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
 }
 
 try {
@@ -66,13 +68,14 @@ try {
     } elseif (isset($teacher_id)) {
         $homeworks = $homeworkUseCase->findByTeacherId($teacher_id);
     } else {
-        Response::send('error', '少なくとも1つのクエリパラメータを指定する必要があります。', 400);
+        throw new ValidationException('少なくとも1つのクエリパラメータを指定する必要があります。');
     }
 
     Response::send('success', '宿題の取得に成功しました', 200, json_encode($homeworks));
 
 } catch(AppException $e) {
-    Response::send('error', $e->getMessage(), $e->getStatusCode());
+    Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
 } catch (Throwable $e) {
-    Response::send('error', $e->getMessage(), 500);
+    error_log('サーバー内部エラー: ' . $e->getMessage());
+    Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
 }

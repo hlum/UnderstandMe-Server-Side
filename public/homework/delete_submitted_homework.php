@@ -10,6 +10,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 require __DIR__ . '/../../vendor/autoload.php';
 
 use Application\CustomExceptions\AppException;
+use Application\CustomExceptions\ValidationException;
 use Application\UseCases\JobUseCase;
 use Application\UseCases\ProjectUseCase;
 use Helpers\Response;
@@ -29,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
-    Response::send('error', 'Method Not Allowed. Use DELETE', 405);
+    Response::send('fail', 'Method Not Allowed. Use DELETE', 405, null, 'validation_error');
 }
 
 
@@ -44,7 +45,7 @@ $userID = $_GET['user_id'] ?? $input['user_id'] ?? null;
 $homeworkID = $_GET['homework_id'] ?? $input['homework_id'] ?? null;
 
 if (!$userID || !$homeworkID) {
-    Response::send('error', 'Missing parameters', 400);
+    throw new ValidationException('Missing parameters');
 }
 
 try {
@@ -66,7 +67,8 @@ try {
     $projectUseCase->deleteByHomeworkID($homeworkID, $userID);
     Response::send('success', '提出された宿題を削除しました', 200);
 } catch(AppException $e) {
-    Response::send('error', $e->getMessage(), $e->getStatusCode());
+    Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
 } catch (Throwable $e) {
-    Response::send('error', $e->getMessage(), 500);
+    error_log('サーバー内部エラー: ' . $e->getMessage());
+    Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
 }
