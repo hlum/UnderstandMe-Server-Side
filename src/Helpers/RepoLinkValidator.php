@@ -2,33 +2,43 @@
 
 namespace Helpers;
 
+use Application\CustomExceptions\AppException;
+use Application\CustomExceptions\UnsupportedFileTypeException;
+use Application\CustomExceptions\UnSupportedRepoURL;
+
 class RepoLinkValidator {
 
     private const GITHUB_PATTERN = '#^https://github\.com/[\w.-]+/[\w.-]+(\.git)?/?$#';
     private const GOOGLE_DRIVE_PATTERN = '#^https://drive\.google\.com/file/d/([\w-]+)(/(view|edit))?(\?.*)?$#';
 
     /**
-     * Repo link 検証
-     * Google driveのリンクだったら、ZIPかどうかもチェック。
+     * リポジトリリンクの妥当性を検証
      *
      * @param string $url
-     * @return bool
+     * @throws UnSupportedRepoURL URLはGitHubまたはGoogle Driveのいずれかである必要があります
+     * @throws UnsupportedFileTypeException Google DriveのファイルがZIPでない場合にスローされます
      */
-    public function validate(string $url): bool
+    public function validate(string $url): void
     {
         $type = $this->getLinkType($url);
 
-        if ($type === 'google_drive') {
-            $fileId = $this->extractGoogleDriveFileId($url);
-            if (!$fileId) return false;
-
-            return $this->isGoogleDriveZip($fileId);
+        if ($type === 'invalid') {
+            throw new UnSupportedRepoURL("This repository URL is not supported.");
         }
 
-        return $type !== 'invalid';
+        if ($type === 'google_drive') {
+            $fileId = $this->extractGoogleDriveFileId($url);
+            if (!$fileId) {
+                throw new UnSupportedRepoURL("Invalid Google Drive link.");
+            }
+
+            if (!$this->isGoogleDriveZip($fileId)) {
+                throw new UnsupportedFileTypeException("Google Drive link is not a ZIP file.");
+            }
+        }
+
+        // GitHub URLは常に有効と見なされます
     }
-
-
 
     private function getLinkType(string $url): string
     {
@@ -37,21 +47,15 @@ class RepoLinkValidator {
         return 'invalid';
     }
 
-
-
     private function isValidGithubLink(string $url): bool
     {
         return preg_match(self::GITHUB_PATTERN, $url) === 1;
     }
 
-
-
     private function isValidGoogleDriveLink(string $url): bool
     {
         return preg_match(self::GOOGLE_DRIVE_PATTERN, $url) === 1;
     }
-
-
 
     private function extractGoogleDriveFileId(string $url): ?string
     {
@@ -61,20 +65,17 @@ class RepoLinkValidator {
         return null;
     }
 
-
-
     /**
-     * Google Drive ファイルが ZIP かどうかを判定
+     * Google DriveのファイルがZIPである場合にtrueを返す
      */
     private function isGoogleDriveZip(string $fileId): bool
     {
         $baseUrl = "https://drive.google.com/uc?export=download&id={$fileId}";
         $cookieFile = tempnam(sys_get_temp_dir(), 'gdcookie');
 
-        // Step 1: initial request
         $html = $this->curlGet($baseUrl, $cookieFile);
 
-        // Step 2: check for confirm token (large file / virus scan)
+        // 大容量ファイル確認
         if (preg_match('/confirm=([0-9A-Za-z_]+)/', $html, $matches)) {
             $token = $matches[1];
             $downloadUrl = $baseUrl . "&confirm={$token}";
@@ -82,13 +83,11 @@ class RepoLinkValidator {
             $downloadUrl = $baseUrl;
         }
 
-        // Step 3: read first 4 bytes
         $fp = $this->curlInitRange($downloadUrl, $cookieFile, 0, 4);
         $bytes = fread($fp, 4);
         fclose($fp);
         unlink($cookieFile);
 
-        // Step 4: check ZIP magic number
         return $bytes === "\x50\x4B\x03\x04";
     }
 

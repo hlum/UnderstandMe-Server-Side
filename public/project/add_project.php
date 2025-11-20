@@ -1,4 +1,6 @@
 <?php
+
+use Helpers\RepoLinkValidator;
 ignore_user_abort(true); // continue even if user closes the connection
 require __DIR__ . '/../../vendor/autoload.php';
 
@@ -91,7 +93,10 @@ try {
     $questionRepository = new MySQLQuestionRepository($connection);
     $choiceRepository = new MySQLChoiceRepository($connection);
     $questionGenerator = new OllamaQuestionGenerator();
+    $repoLinkValidator = new RepoLinkValidator();
 
+    // URLを検証し、適切なエラーをスルーする
+    $repoLinkValidator->validate($github_file_link);
 
     $projectUseCase = new ProjectUseCase(
         $projectRepository,
