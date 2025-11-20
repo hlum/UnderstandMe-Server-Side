@@ -14,8 +14,8 @@ use Application\UseCases\UserUseCase;
 use Domain\Entities\Job;
 use Domain\Entities\Status;
 use Helpers\NotificationHandler;
-use Infrastructure\ExternalServices\GithubSnippetsRepo;
 use Infrastructure\ExternalServices\OllamaQuestionGenerator;
+use Infrastructure\ExternalServices\SnippetRepository;
 use Infrastructure\Persistence\MySQLJobRepository;
 use Infrastructure\Persistence\MySQLProjectRepository;
 use Infrastructure\Persistence\MySQLQuestionRepository;
@@ -39,7 +39,7 @@ $classRepository = new MySQLClassRepository($mysqli);
 $studentClassEnrollmentRepo = new MySQLStudentClassEnrollmentRepository($mysqli);
 
 $questionGenerator = new OllamaQuestionGenerator();
-$snippetsRepository = new GithubSnippetsRepo();
+$snippetsRepository = new SnippetRepository();
 $notificationHandler = new NotificationHandler(FIREBASE_PROJECT_ID);
 
 // Initialize use cases
