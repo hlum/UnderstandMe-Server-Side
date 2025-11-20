@@ -8,7 +8,7 @@ use Helpers\ApiKeyValidator;
 use Helpers\Response;
 use Infrastructure\Persistence\MySQLProjectRepository;
 use Infrastructure\Persistence\MySQLUserRepository;
-use Infrastructure\ExternalServices\GithubSnippetsRepo;
+use Infrastructure\ExternalServices\SnippetRepositoryImpl;
 use Infrastructure\Persistence\MySQLHomeworkRepository;
 use Application\UseCases\ProjectUseCase;
 
@@ -22,7 +22,6 @@ if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
 }
 
 
-$headers = getallheaders();
 // API KEY Validation
 $headers = getallheaders();
 $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;

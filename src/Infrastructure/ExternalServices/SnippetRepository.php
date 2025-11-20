@@ -1,20 +1,18 @@
 <?php
-
 namespace Infrastructure\ExternalServices;
-
+require_once __DIR__ . '/../../../config/config.php';
 use Domain\Repositories\SnippetsRepo;
 use FilesystemIterator;
-use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use RuntimeException;
 use InvalidArgumentException;
 
-class GithubSnippetsRepo implements SnippetsRepo
+class SnippetRepository implements SnippetsRepo
 {
-    private string $repoUrl;
-    private string $cloneDir;
 
-    private const CODE_EXTENSIONS = [
+
+     private const CODE_EXTENSIONS = [
         'php',
         'js',
         'ts',
@@ -99,8 +97,6 @@ class GithubSnippetsRepo implements SnippetsRepo
         'Makefile'
     ];
 
-    private const MIN_FILE_LINES = 20;
-
     /**
      * ランダムなコードをリポジトリから取得する
      * 
@@ -113,76 +109,30 @@ class GithubSnippetsRepo implements SnippetsRepo
         string $repoUrl,
         int $lines = SnippetsRepo::DEFAULT_SNIPPET_LINES
     ): ?string {
-        $this->validateRepoUrl($repoUrl);
-        $this->repoUrl = $repoUrl;
-        $this->cloneDir = $this->generateTempDir();
+        $downloaderFactory = new DownloaderFactory();
+        $downloader = $downloaderFactory->create($repoUrl);
 
         if ($lines <= 0) {
             throw new InvalidArgumentException('Linesの指定は 1 以上にしてください。');
         }
 
         try {
-            $this->cloneRepo();
-            $snippet = $this->extractSnippet($lines);
+            $cloneDir = $downloader->download($repoUrl);
+            $snippet = $this->extractSnippet($lines, $cloneDir);
+            $this->cleanup($cloneDir);
             return $snippet;
         } finally {
-            $this->cleanup();
+            $this->cleanup($cloneDir);
         }
     }
 
-    /**
-     * RepositoryのURLが正しいか検証する
-     */
-    private function validateRepoUrl(string $url): void
-    {
-        if (empty($url)) {
-            throw new InvalidArgumentException('Repository URLは必須です');
-        }
 
-        // git URLの基本的な検証
-        if (!preg_match('#^(https?://|git@)#i', $url)) {
-            throw new InvalidArgumentException('無効なリポジトリURLの形式');
-        }
-    }
-
-    /**
-     * 一意の一時ディレクトリパスを生成する
-     */
-    private function generateTempDir(): string
-    {
-        return sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'repo_' . uniqid('', true);
-    }
-
-    /**
-     * Repositoryを一時ディレクトリにクローンする
-     */
-    private function cloneRepo(): void
-    {
-        $cmd = sprintf(
-            'git clone --depth=1 --quiet %s %s 2>&1',
-            escapeshellarg($this->repoUrl),
-            escapeshellarg($this->cloneDir)
-        );
-
-        exec($cmd, $output, $status);
-
-        if ($status !== 0) {
-            throw new RuntimeException(
-                "リポジトリのクローンに失敗しました: " . implode("\n", $output)
-            );
-        }
-
-        if (!is_dir($this->cloneDir)) {
-            throw new RuntimeException('クロンのリポジトリが生成されませんでした。');
-        }
-    }
-
-    /**
+     /**
      * Repositoryからコードを抽出する
      */
-    private function extractSnippet(int $snippetLines): ?string
+    private function extractSnippet(int $snippetLines, string $cloneDir): ?string
     {
-        $files = $this->getCodeFiles($this->cloneDir);
+        $files = $this->getCodeFiles($cloneDir);
         $rankedFiles = $this->rankFiles($files);
 
         if (empty($rankedFiles)) {
@@ -195,7 +145,9 @@ class GithubSnippetsRepo implements SnippetsRepo
         return $this->extractRandomSnippet($topFile, $snippetLines);
     }
 
-    /**
+
+
+     /**
      * ファイルを難しさやサイズでランク付けする
      */
     private function rankFiles(array $files): array
@@ -216,6 +168,7 @@ class GithubSnippetsRepo implements SnippetsRepo
         return $ranked;
     }
 
+
     /**
      * ファイルを解析して行数と複雑さを評価する
      */
@@ -234,7 +187,7 @@ class GithubSnippetsRepo implements SnippetsRepo
 
         $lines = substr_count($content, "\n") + 1;
 
-        if ($lines < self::MIN_FILE_LINES) {
+        if ($lines < MIN_FILE_LINES) {
             return null;
         }
 
@@ -360,28 +313,26 @@ class GithubSnippetsRepo implements SnippetsRepo
         return $count;
     }
 
-    /**
+
+       /**
      * クローンしたリポジトリの一時ディレクトリを削除する
      */
-    private function cleanup(): void
+    private function cleanup(string $cloneDir): void
     {
-        if (!isset($this->cloneDir) || !is_dir($this->cloneDir)) {
+        if (!isset($cloneDir) || !is_dir($cloneDir)) {
             return;
         }
 
         // Platformによって異なる削除方法
         if (DIRECTORY_SEPARATOR === '\\') {
             // Windows
-            exec(sprintf('rd /s /q %s 2>&1', escapeshellarg($this->cloneDir)));
+            exec(sprintf('rd /s /q %s 2>&1', escapeshellarg($cloneDir)));
         } else {
             // Unix-like
-            exec(sprintf('rm -rf %s 2>&1', escapeshellarg($this->cloneDir)));
+            exec(sprintf('rm -rf %s 2>&1', escapeshellarg($cloneDir)));
         }
     }
 
-    public function __destruct()
-    {
-        // 削除が例外を投げても無視する
-        $this->cleanup();
-    }
+
+
 }

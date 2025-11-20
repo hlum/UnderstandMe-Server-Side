@@ -11,7 +11,7 @@ use Infrastructure\ExternalServices\OllamaQuestionGenerator;
 use Infrastructure\Persistence\MySQLChoiceRepository;
 use Infrastructure\Persistence\MySQLJobRepository;
 use Infrastructure\Persistence\MySQLProjectRepository;
-use Infrastructure\ExternalServices\GithubSnippetsRepo;
+use Infrastructure\ExternalServices\SnippetRepositoryImpl;
 use Application\UseCases\ProjectUseCase;
 use Domain\Entities\Project;
 use Infrastructure\Persistence\MySQLQuestionRepository;
@@ -86,7 +86,6 @@ try {
 
     $projectRepository = new MySQLProjectRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
-    $snippetsRepository = new GithubSnippetsRepo();
     $homeworkRepository = new MySQLHomeworkRepository($connection);
     $jobRepository = new MySQLJobRepository($connection);
     $questionRepository = new MySQLQuestionRepository($connection);
