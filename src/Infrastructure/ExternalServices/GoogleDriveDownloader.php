@@ -1,6 +1,8 @@
 <?php
 namespace Infrastructure\ExternalServices;
 
+use Application\CustomExceptions\UnsupportedFileTypeException;
+use Application\CustomExceptions\UnSupportedRepoURL;
 use Domain\Repositories\RepoDownloader;
 use RuntimeException;
 use ZipArchive;
@@ -128,7 +130,7 @@ class GoogleDriveDownloader implements RepoDownloader
         $errorCode = $zip->open($zipFilePath);
         
         if ($errorCode !== true) {
-            throw new RuntimeException("ZIP ファイルを開けません: $zipFilePath"." (Error code: $errorCode)");
+            throw new UnsupportedFileTypeException("ZIP ファイルを開けません: $zipFilePath"." (Error code: $errorCode)");
         }
 
         $zip->extractTo($extractTo);
@@ -138,7 +140,7 @@ class GoogleDriveDownloader implements RepoDownloader
     private function validateRepoUrl(string $url): void
     {
         if (!str_contains($url, "drive.google.com")) {
-            throw new \InvalidArgumentException("無効なGoogle DriveのURL: $url");
+            throw new UnSupportedRepoURL("無効なGoogle DriveのURL: $url");
         }
     }
 
