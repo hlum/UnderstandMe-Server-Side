@@ -18,10 +18,10 @@ class GithubDownloaderTest extends TestCase
         $path = $downloader->download($url);
 
         // フォルダが作られているか
-        $this->assertDirectoryExists($path);
+        $this->assertDirectoryExists($path, "Downloaded directory does not exist.");
 
         // フォルダ内に最低 1 ファイルは存在するはず
         $files = scandir($path);
-        $this->assertGreaterThan(2, count($files)); // . と .. を除く
+        $this->assertGreaterThan(2, count($files), "Downloaded directory is empty."); // . と .. を除く
     }
 }
