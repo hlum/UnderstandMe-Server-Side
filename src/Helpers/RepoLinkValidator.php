@@ -7,7 +7,7 @@ use Application\CustomExceptions\UnSupportedRepoURL;
 
 class RepoLinkValidator {
 
-    private const GITHUB_PATTERN = '#^https://github\.com/[\w.-]+/[\w.-]+(\.git|/)?$#';
+    private const GITHUB_PATTERN = '#^https://github\.com/([\w.-]+)/([\w.-]+)(\.git|/)?$#';
     private const GOOGLE_DRIVE_PATTERN = '#^https://drive\.google\.com/file/d/([\w-]+)(/(view|edit))?(\?.*)?$#';
 
     /**
@@ -51,7 +51,17 @@ class RepoLinkValidator {
 
     private function isValidGithubLink(string $url): bool
     {
-        return preg_match(self::GITHUB_PATTERN, $url) === 1;
+        if (preg_match(self::GITHUB_PATTERN, $url, $matches) !== 1) {
+            return false;
+        }
+        
+        // Check if the repo name ends with a dot followed by something other than "git"
+        $repoName = $matches[2] ?? '';
+        if (preg_match('/\.\w+$/', $repoName) && !preg_match('/\.git$/', $url)) {
+            return false;
+        }
+        
+        return true;
     }
 
     private function isValidGoogleDriveLink(string $url): bool
@@ -82,6 +92,8 @@ class RepoLinkValidator {
             CURLOPT_SSL_VERIFYPEER => true,
             CURLOPT_TIMEOUT => 10,
             CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            CURLOPT_VERBOSE => false,
+            CURLOPT_HEADER => false,
         ]);
         
         curl_exec($ch);
@@ -107,6 +119,8 @@ class RepoLinkValidator {
             CURLOPT_SSL_VERIFYPEER => true,
             CURLOPT_TIMEOUT => 15,
             CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            CURLOPT_VERBOSE => false,
+            CURLOPT_HEADER => false,
         ]);
         
         $response = curl_exec($ch);
@@ -147,6 +161,8 @@ class RepoLinkValidator {
             CURLOPT_RANGE => "0-3", // Get first 4 bytes
             CURLOPT_TIMEOUT => 15,
             CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            CURLOPT_VERBOSE => false,
+            CURLOPT_HEADER => false,
         ]);
         
         $bytes = curl_exec($ch);
