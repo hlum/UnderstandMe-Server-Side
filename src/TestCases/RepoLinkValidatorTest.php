@@ -2,67 +2,78 @@
 
 use PHPUnit\Framework\TestCase;
 use Helpers\RepoLinkValidator;
+use Application\CustomExceptions\UnSupportedRepoURL;
+use Application\CustomExceptions\UnsupportedFileTypeException;
 
 class RepoLinkValidatorTest extends TestCase
 {
+    private RepoLinkValidator $validator;
+
+    protected function setUp(): void
+    {
+        $this->validator = new RepoLinkValidator();
+    }
+
     /**
-     * 実際に Google Drive から ZIP をダウンロードし、展開されるかを確認
+     * Valid Google Drive ZIP should pass without exception
      */
-    public function testValidCase()
+    public function testValidGoogleDriveZip(): void
     {
-        $validator = new RepoLinkValidator();
+        $url = "https://drive.google.com/file/d/188nthRbTF51QhJ2x7eja8NCGcwcYqOyP/view?usp=sharing";
 
-        $url = "https://drive.google.com/file/d/1_8eNj07rNS7B-JyCZ-lj1GtRYG03Ye-M/view?usp=sharing";
-
-        $isValid = $validator->validate($url);
-
-        $this->assertTrue($isValid);
+        try {
+            $this->validator->validate($url);
+            $this->assertTrue(true); // No exception thrown, test passed
+        } catch (\Exception $e) {
+            $this->fail("Exception thrown for valid Google Drive ZIP: " . $e->getMessage());
+        }
     }
 
-
-    public function testInvalidCase()
+    /**
+     * Invalid Google Drive ID should throw UnSupportedRepoURL
+     */
+    public function testInvalidGoogleDriveId(): void
     {
-        $validator = new RepoLinkValidator();
+        $url = "https://drive.google.com/file/d/INVALID_ID/view?usp=sharing";
 
-        $url = "https://drive.google.com/file/d/invalid_file_id/view?usp=sharing";
-
-        $isValid = $validator->validate($url);
-
-        $this->assertFalse($isValid);
+        $this->expectException(UnSupportedRepoURL::class);
+        $this->validator->validate($url);
     }
 
-
-    public function testGithubValidCase()
+    /**
+     * Google Drive file is not ZIP should throw UnsupportedFileTypeException
+     */
+    public function testGoogleDriveNotZip(): void
     {
-        $validator = new RepoLinkValidator();
+        $url = "https://drive.google.com/file/d/1MDsDhNwj61Bg_NKY7xJx8EEizE8cdh8Y/view?usp=sharing";
 
+        $this->expectException(UnsupportedFileTypeException::class);
+        $this->validator->validate($url);
+    }
+
+    /**
+     * Valid GitHub URL should pass without exception
+     */
+    public function testValidGithubUrl(): void
+    {
         $url = "https://github.com/hlum/UnderstandMe-Server-Side.git";
 
-        $isValid = $validator->validate($url);
-        $this->assertTrue($isValid);
+        try {
+            $this->validator->validate($url);
+            $this->assertTrue(true); // No exception thrown
+        } catch (\Exception $e) {
+            $this->fail("Exception thrown for valid GitHub URL: " . $e->getMessage());
+        }
     }
 
-
-    public function testGithubInvalidCase()
+    /**
+     * Invalid GitHub URL should throw UnSupportedRepoURL
+     */
+    public function testInvalidGithubUrl(): void
     {
-        $validator = new RepoLinkValidator();
+        $url = "https://github.com/hlum/UnderstandMe-Server-Side.gi";
 
-        $url = "https://github.com/hlum/Invalid-Repository.git/extra/path";
-        $isValid = $validator->validate($url);
-        $this->assertFalse($isValid);
+        $this->expectException(UnSupportedRepoURL::class);
+        $this->validator->validate($url);
     }
-
-
-    public function testInvalidBigFileDriveLink()
-    {
-        $validator = new RepoLinkValidator();
-
-        $url = "https://drive.google.com/file/d/1Tz-0OA4XUg6w1M1MiXvxxgPelwtTxCAi/view?usp=sharing";
-
-        $isValid = $validator->validate($url);
-
-        $this->assertFalse($isValid);
-    }
-        
-
 }
