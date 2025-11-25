@@ -27,7 +27,6 @@ if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
 }
 
 
-$headers = getallheaders();
 // API KEY Validation
 $headers = getallheaders();
 $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
@@ -38,12 +37,12 @@ $homeworkID = $_GET['homework_id'] ?? null;
 $userID = $_GET['user_id'] ?? null;
 
 
-if (!isset($homeworkID) || !isset($userID)) {
-    throw new ValidationException('homework_id と user_id は必須です。');
-}
 
 
 try {
+    if (!isset($homeworkID) || !isset($userID)) {
+        throw new ValidationException('homework_id と user_id は必須です。');
+    }
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
     $answerRepository = new MySQLAnswerRepository($connection);
