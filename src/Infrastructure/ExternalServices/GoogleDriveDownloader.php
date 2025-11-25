@@ -5,7 +5,6 @@ use Application\CustomExceptions\UnsupportedFileTypeException;
 use Application\CustomExceptions\UnSupportedRepoURL;
 use Domain\Repositories\RepoDownloader;
 use RuntimeException;
-use ZipArchive;
 
 class GoogleDriveDownloader implements RepoDownloader
 {
@@ -126,15 +125,28 @@ class GoogleDriveDownloader implements RepoDownloader
 
     private function unzipDownloadedFile(string $zipFilePath, string $extractTo): void
     {
-        $zip = new ZipArchive();
-        $errorCode = $zip->open($zipFilePath);
-        
-        if ($errorCode !== true) {
-            throw new UnsupportedFileTypeException("ZIP ファイルを開けません: $zipFilePath"." (Error code: $errorCode)");
+        // Ensure destination directory exists
+        if (!is_dir($extractTo) && !mkdir($extractTo, 0777, true)) {
+            throw new \RuntimeException("展開先ディレクトリを作成できません: $extractTo");
         }
 
-        $zip->extractTo($extractTo);
-        $zip->close();
+        // Build safe command
+        $cmd = sprintf(
+            'unzip -o %s -d %s 2>&1',
+            escapeshellarg($zipFilePath),
+            escapeshellarg($extractTo)
+        );
+
+        // Execute
+        exec($cmd, $output, $returnCode);
+
+        // If unzip fails, throw exception with output
+        if ($returnCode !== 0) {
+            $errorMessage = implode("\n", $output);
+            throw new UnsupportedFileTypeException(
+                "unzip コマンドで展開失敗: $zipFilePath\nError: $errorMessage"
+            );
+        }
     }
 
     private function validateRepoUrl(string $url): void
