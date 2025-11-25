@@ -3,12 +3,12 @@
 namespace Infrastructure\ExternalServices;
 
 use Domain\Repositories\SnippetsRepo;
-use Infrastructure\ExternalServices\DownloaderFactory;
 use InvalidArgumentException;
 use RuntimeException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use FilesystemIterator;
+use Infrastructure\ExternalServices\DownloaderFactory;
 
 class SnippetRepository implements SnippetsRepo
 {
@@ -28,14 +28,14 @@ class SnippetRepository implements SnippetsRepo
         '.gitignore', '.env', '.env.example', 'composer.lock', 'package-lock.json'
     ];
 
-
     /**
      * リポジトリからコードスニペットを取得する
      */
-   public function getRandomCodeSnippet(string $repo_url, int $lines = self::DEFAULT_SNIPPET_LINES): ?string
+    function getRandomCodeSnippet(string $repo_url, int $lines = self::DEFAULT_SNIPPET_LINES): ?string
     {
         $downloaderFactory = new DownloaderFactory();
         $downloader = $downloaderFactory->create($repo_url);
+
         $cloneDir = null;
 
         if ($lines <= 0) {
@@ -81,21 +81,36 @@ class SnippetRepository implements SnippetsRepo
             }
 
             $remainingLines = $targetLines - $currentLineCount;
-            $snippet = $this->extractRandomSnippet($fileData['file'], $remainingLines);
             
-            if ($snippet !== null) {
-                // 空行を除去してスニペットを追加
-                $snippetLines = $this->removeEmptyLines($snippet);
-                
-                if (!empty($snippetLines)) {
-                    // ファイル名をコメントとして追加（オプション）
-                    $filename = basename($fileData['file']);
-                    $mergedSnippet[] = "// File: {$filename}";
-                    $mergedSnippet = array_merge($mergedSnippet, $snippetLines);
-                    $mergedSnippet[] = ""; // ファイル間の区切り
-                    
-                    $currentLineCount = count($mergedSnippet);
+            // ファイルの実際の行数（空行除去後）を取得
+            $allLines = file($fileData['file'], FILE_IGNORE_NEW_LINES);
+            if (empty($allLines)) {
+                continue;
+            }
+            
+            $nonEmptyFileLines = $this->removeEmptyLines(implode("\n", $allLines));
+            $fileLineCount = count($nonEmptyFileLines);
+            
+            // ファイル全体が必要な行数より少ない場合は全体を含める
+            if ($fileLineCount <= $remainingLines) {
+                $snippetLines = $nonEmptyFileLines;
+            } else {
+                // ランダムな部分を抽出
+                $snippet = $this->extractRandomSnippet($fileData['file'], $remainingLines);
+                if ($snippet === null) {
+                    continue;
                 }
+                $snippetLines = $this->removeEmptyLines($snippet);
+            }
+            
+            if (!empty($snippetLines)) {
+                // ファイル名をコメントとして追加（オプション）
+                $filename = basename($fileData['file']);
+                $mergedSnippet[] = "// File: {$filename}";
+                $mergedSnippet = array_merge($mergedSnippet, $snippetLines);
+                $mergedSnippet[] = ""; // ファイル間の区切り
+                
+                $currentLineCount = count($mergedSnippet);
             }
         }
 
