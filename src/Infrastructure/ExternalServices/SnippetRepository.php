@@ -9,23 +9,197 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use FilesystemIterator;
 use Infrastructure\ExternalServices\DownloaderFactory;
+use Throwable;
 
 class SnippetRepository implements SnippetsRepo
 {
-    private const CODE_EXTENSIONS = [
-        'php', 'java', 'kt', 'swift', 'cpp', 'c', 'py', 'js', 'jsx', 'ts', 'tsx', 'rb', 'go', 'rs'
+private const CODE_EXTENSIONS = [
+        // Web - Frontend
+        'php', 'js', 'jsx', 'ts', 'tsx', 'vue', 'svelte', 'html', 'htm', 'css', 'scss', 'sass', 'less', 'styl',
+        
+        // Web - Backend
+        'asp', 'aspx', 'jsp', 'erb', 'ejs', 'hbs', 'handlebars', 'twig', 'blade',
+        
+        // Mobile
+        'java', 'kt', 'kts', 'swift', 'dart', 'm', 'mm',
+        
+        // Systems Programming
+        'c', 'cpp', 'cc', 'cxx', 'h', 'hpp', 'hxx', 'rs', 'go', 'zig',
+        
+        // Scripting
+        'py', 'rb', 'pl', 'pm', 'lua', 'sh', 'bash', 'zsh', 'fish', 'ps1', 'psm1', 'bat', 'cmd',
+        
+        // Functional/Academic
+        'hs', 'lhs', 'ml', 'mli', 'fs', 'fsi', 'fsx', 'ex', 'exs', 'erl', 'hrl', 'clj', 'cljs', 'cljc', 'scala', 'sc',
+        
+        // JVM Languages
+        'groovy', 'gradle', 'kts',
+        
+        // .NET
+        'cs', 'vb', 'fs',
+        
+        // Other
+        'r', 'jl', 'nim', 'v', 'sol', 'move', 'cairo'
     ];
 
     private const IGNORE_EXTENSIONS = [
-        'json', 'xml', 'yml', 'yaml', 'md', 'txt', 'lock', 'log', 'csv'
+        // Data/Config
+        'json', 'xml', 'yml', 'yaml', 'toml', 'ini', 'cfg', 'conf', 'config', 'properties', 'env',
+        
+        // Documentation
+        'md', 'markdown', 'rst', 'txt', 'adoc', 'asciidoc', 'textile',
+        
+        // Logs
+        'log', 'logs', 'out', 'err',
+        
+        // Lock files
+        'lock',
+        
+        // Data files
+        'csv', 'tsv', 'dat', 'data', 'sql', 'db', 'sqlite', 'sqlite3',
+        
+        // Build/Package
+        'map', 'min', 'bundle', 'chunk',
+        
+        // Archives
+        'zip', 'tar', 'gz', 'bz2', '7z', 'rar', 'tgz',
+        
+        // Images
+        'jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'ico', 'webp', 'tiff', 'tif', 'psd', 'ai',
+        
+        // Media
+        'mp3', 'mp4', 'avi', 'mov', 'wmv', 'flv', 'wav', 'ogg', 'webm',
+        
+        // Fonts
+        'ttf', 'otf', 'woff', 'woff2', 'eot',
+        
+        // Documents
+        'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
+        
+        // Certificates
+        'pem', 'crt', 'key', 'p12', 'pfx', 'cer',
+        
+        // Other
+        'bak', 'tmp', 'temp', 'cache', 'swp', 'swo', 'DS_Store'
     ];
 
     private const IGNORE_DIRS = [
-        'vendor', 'node_modules', '.git', 'build', 'dist', 'out', 'target', '.idea', '.vscode'
+        // Dependencies
+        'vendor', 'node_modules', 'bower_components', 'jspm_packages', 'packages',
+        
+        // Version Control
+        '.git', '.svn', '.hg', '.bzr',
+        
+        // Build/Output
+        'build', 'dist', 'out', 'target', 'bin', 'obj', 'output', 'release', 'debug',
+        
+        // Cache
+        'cache', '.cache', '.parcel-cache', '.next', '.nuxt', '.vuepress', '.docusaurus',
+        '__pycache__', '.pytest_cache', '.mypy_cache', '.tox', '.eggs',
+        
+        // IDE/Editor
+        '.idea', '.vscode', '.vs', '.eclipse', '.settings', '.metadata', '.netbeans',
+        
+        // Temp
+        'tmp', 'temp', '.tmp', '.temp',
+        
+        // Logs
+        'logs', 'log',
+        
+        // Coverage
+        'coverage', '.coverage', '.nyc_output', 'htmlcov',
+        
+        // Platform Specific
+        '.gradle', '.m2', '.ivy2', '.bundle', '.terraform', '.serverless',
+        
+        // Mobile
+        '.expo', '.expo-shared', 'ios/Pods', 'android/.gradle',
+        
+        // Testing
+        '.pytest_cache', '.phpunit.result.cache', 'TestResults',
+        
+        // Documentation
+        'docs/_build', 'site', '_site', 'public',
+        
+        // Other
+        'backup', 'backups', '.sass-cache', '.turbo', 'out-tsc'
     ];
 
     private const IGNORE_FILES = [
-        '.gitignore', '.env', '.env.example', 'composer.lock', 'package-lock.json'
+        // Version Control
+        '.gitignore', '.gitattributes', '.gitmodules', '.gitkeep', '.hgignore', '.svnignore',
+        
+        // Environment
+        '.env', '.env.*', '.envrc', '.env.local', '.env.development', '.env.production', '.env.test',
+        
+        // Lock Files
+        'composer.lock', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'poetry.lock', 
+        'Gemfile.lock', 'Pipfile.lock', 'cargo.lock', 'go.sum', 'mix.lock', 'pubspec.lock',
+        
+        // Documentation
+        'README.md', 'README.txt', 'README', 'CHANGELOG.md', 'CHANGELOG', 'CONTRIBUTING.md',
+        'AUTHORS', 'CONTRIBUTORS', 'HISTORY.md', 'NEWS.md', 'RELEASES.md',
+        
+        // License
+        'LICENSE', 'LICENSE.txt', 'LICENSE.md', 'COPYING', 'COPYRIGHT',
+        
+        // CI/CD
+        '.travis.yml', '.gitlab-ci.yml', 'appveyor.yml', 'circle.yml', 'azure-pipelines.yml',
+        'bitbucket-pipelines.yml', 'Jenkinsfile', '.circleci', 'cloudbuild.yaml',
+        
+        // Docker
+        'Dockerfile', 'Dockerfile.*', 'docker-compose.yml', 'docker-compose.*.yml', '.dockerignore',
+        
+        // Build Tools
+        'Makefile', 'makefile', 'GNUmakefile', 'Rakefile', 'Gruntfile.js', 'Gulpfile.js',
+        'webpack.config.js', 'rollup.config.js', 'vite.config.js', 'vite.config.ts',
+        'esbuild.config.js', 'tsconfig.json', 'jsconfig.json', 'babel.config.js', '.babelrc',
+        
+        // Linting/Formatting
+        '.eslintrc', '.eslintrc.*', '.eslintignore', '.prettierrc', '.prettierrc.*', '.prettierignore',
+        '.stylelintrc', '.stylelintrc.*', '.editorconfig', '.jshintrc', '.jscsrc', 'phpcs.xml',
+        'phpstan.neon', 'psalm.xml', '.php-cs-fixer.php', 'pylint.rc', '.flake8', 'tslint.json',
+        
+        // IDE
+        '.idea', '.vscode', '*.iml', '*.code-workspace', '.project', '.classpath', '.settings',
+        
+        // Config Files
+        'config.php', 'config.js', 'config.json', 'firebase.json', 'firebase.js', 'firebase-config.js',
+        'vercel.json', 'netlify.toml', '.nvmrc', '.node-version', '.ruby-version', '.python-version',
+        
+        // Web Server
+        '.htaccess', '.htpasswd', 'nginx.conf', 'web.config',
+        
+        // Package Managers
+        'composer.json', 'package.json', 'bower.json', 'requirements.txt', 'Pipfile', 'Gemfile',
+        'go.mod', 'Cargo.toml', 'build.gradle', 'pom.xml', 'pubspec.yaml', 'mix.exs',
+        
+        // CMake
+        'CMakeLists.txt', 'CMakeCache.txt',
+        
+        // System
+        '.DS_Store', 'Thumbs.db', 'desktop.ini', 'ehthumbs.db',
+        
+        // PHP
+        'phpunit.xml', 'phpunit.xml.dist', 'behat.yml',
+        
+        // JavaScript/Node
+        '.npmrc', '.yarnrc', '.nvmrc', 'jest.config.js', 'vitest.config.js',
+        
+        // Python
+        'setup.py', 'setup.cfg', 'MANIFEST.in', 'pyproject.toml', 'tox.ini',
+        
+        // Ruby
+        '.rspec', 'Gemfile', '.rubocop.yml',
+        
+        // Coverage
+        '.coveragerc', 'coverage.xml', '.lcov',
+        
+        // Security
+        '.snyk', 'SECURITY.md',
+        
+        // Other
+        'renovate.json', '.editorconfig', 'sonar-project.properties', 'codeship-services.yml'
     ];
 
     /**
@@ -47,8 +221,13 @@ class SnippetRepository implements SnippetsRepo
             $snippet = $this->extractSnippet($lines, $cloneDir);
             $this->cleanup($cloneDir);
             return $snippet;
+        } catch(Throwable $e) {
+            echo 'Snippet取得エラー: ' . $e->getMessage();
+            throw new RuntimeException('コードスニペットの取得に失敗しました。');
         } finally {
-            $this->cleanup($cloneDir);
+            if (isset($cloneDir)) {
+                $this->cleanup($cloneDir);
+            }
         }
     }
 
