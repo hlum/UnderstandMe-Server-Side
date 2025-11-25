@@ -1,123 +1,49 @@
 <?php
+
 namespace Infrastructure\ExternalServices;
-require_once __DIR__ . '/../../../config/config.php';
+
 use Domain\Repositories\SnippetsRepo;
-use FilesystemIterator;
+use Infrastructure\ExternalServices\DownloaderFactory;
+use InvalidArgumentException;
+use RuntimeException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use RuntimeException;
-use InvalidArgumentException;
+use FilesystemIterator;
 
 class SnippetRepository implements SnippetsRepo
 {
-
-
-     private const CODE_EXTENSIONS = [
-        'php',
-        'js',
-        'ts',
-        'tsx',
-        'jsx',
-        'java',
-        'kt',
-        'swift',
-        'cpp',
-        'c',
-        'cs',
-        'rb',
-        'py',
-        'go',
-        'rs',
-        'vue',
-        'scala',
-        'ino',
-        'h'
-    ];
-
-    private const IGNORE_DIRS = [
-        'node_modules',
-        'vendor',
-        'Pods',
-        'build',
-        'dist',
-        'target',
-        '.git',
-        '.idea',
-        '.gradle',
-        '.vscode',
-        '__pycache__',
-        'coverage',
-        '.next'
+    private const CODE_EXTENSIONS = [
+        'php', 'java', 'kt', 'swift', 'cpp', 'c', 'py', 'js', 'jsx', 'ts', 'tsx', 'rb', 'go', 'rs'
     ];
 
     private const IGNORE_EXTENSIONS = [
-        'xcodeproj',
-        'build',
-        'vscode',
-        'xcassets',
-        'readme',
-        'plist',
-        'json',
-        'mp3',
-        'png',
-        'jpg',
-        'jpeg',
-        'gif',
-        'svg',
-        'lock',
-        'log',
-        'bundle',
-        'mp4',
-        'zip',
-        'jar',
-        'wav',
-        'sh',
-        'md',
-        'xml',
-        'yml',
-        'yaml',
-        'toml',
-        'ico',
-        'woff',
-        'woff2',
-        'ttf'
+        'json', 'xml', 'yml', 'yaml', 'md', 'txt', 'lock', 'log', 'csv'
+    ];
+
+    private const IGNORE_DIRS = [
+        'vendor', 'node_modules', '.git', 'build', 'dist', 'out', 'target', '.idea', '.vscode'
     ];
 
     private const IGNORE_FILES = [
-        'README.md',
-        'LICENSE',
-        '.gitignore',
-        'composer.json',
-        'package.json',
-        'yarn.lock',
-        'package-lock.json',
-        'Podfile',
-        'CMakeLists.txt',
-        'Gemfile',
-        'Makefile'
+        '.gitignore', '.env', '.env.example', 'composer.lock', 'package-lock.json'
     ];
 
+
     /**
-     * ランダムなコードをリポジトリから取得する
-     * 
-     * @param string $repoUrl リポジトリのURL
-     * @param int $lines 何行のコードを取得するか
-     * @return string|null コードを返すか、適切なファイルが見つからない場合はnullを返す
-     * @throws RuntimeException クローンまたは処理に失敗した場合
+     * リポジトリからコードスニペットを取得する
      */
-    public function getRandomCodeSnippet(
-        string $repoUrl,
-        int $lines = SnippetsRepo::DEFAULT_SNIPPET_LINES
-    ): ?string {
+   public function getRandomCodeSnippet(string $repo_url, int $lines = self::DEFAULT_SNIPPET_LINES): ?string
+    {
         $downloaderFactory = new DownloaderFactory();
-        $downloader = $downloaderFactory->create($repoUrl);
+        $downloader = $downloaderFactory->create($repo_url);
+        $cloneDir = null;
 
         if ($lines <= 0) {
             throw new InvalidArgumentException('Linesの指定は 1 以上にしてください。');
         }
 
         try {
-            $cloneDir = $downloader->download($repoUrl);
+            $cloneDir = $downloader->download($repo_url);
             $snippet = $this->extractSnippet($lines, $cloneDir);
             $this->cleanup($cloneDir);
             return $snippet;
@@ -126,8 +52,7 @@ class SnippetRepository implements SnippetsRepo
         }
     }
 
-
-     /**
+    /**
      * Repositoryからコードを抽出する
      */
     private function extractSnippet(int $snippetLines, string $cloneDir): ?string
@@ -139,15 +64,63 @@ class SnippetRepository implements SnippetsRepo
             return null;
         }
 
-        // 最も高くランク付けされたファイルを選択
-        $topFile = $rankedFiles[0]['file'];
-
-        return $this->extractRandomSnippet($topFile, $snippetLines);
+        return $this->extractMergedSnippets($rankedFiles, $snippetLines);
     }
 
+    /**
+     * 複数のファイルからスニペットをマージして必要な行数を満たす
+     */
+    private function extractMergedSnippets(array $rankedFiles, int $targetLines): string
+    {
+        $mergedSnippet = [];
+        $currentLineCount = 0;
 
+        foreach ($rankedFiles as $fileData) {
+            if ($currentLineCount >= $targetLines) {
+                break;
+            }
 
-     /**
+            $remainingLines = $targetLines - $currentLineCount;
+            $snippet = $this->extractRandomSnippet($fileData['file'], $remainingLines);
+            
+            if ($snippet !== null) {
+                // 空行を除去してスニペットを追加
+                $snippetLines = $this->removeEmptyLines($snippet);
+                
+                if (!empty($snippetLines)) {
+                    // ファイル名をコメントとして追加（オプション）
+                    $filename = basename($fileData['file']);
+                    $mergedSnippet[] = "// File: {$filename}";
+                    $mergedSnippet = array_merge($mergedSnippet, $snippetLines);
+                    $mergedSnippet[] = ""; // ファイル間の区切り
+                    
+                    $currentLineCount = count($mergedSnippet);
+                }
+            }
+        }
+
+        // 最終的な行数調整
+        $mergedSnippet = array_slice($mergedSnippet, 0, $targetLines);
+
+        return implode("\n", $mergedSnippet);
+    }
+
+    /**
+     * 文字列またはスニペットから空行を除去する
+     */
+    private function removeEmptyLines(string $snippet): array
+    {
+        $lines = explode("\n", $snippet);
+        
+        // 空行と空白のみの行を除去
+        $nonEmptyLines = array_filter($lines, function($line) {
+            return trim($line) !== '';
+        });
+
+        return array_values($nonEmptyLines);
+    }
+
+    /**
      * ファイルを難しさやサイズでランク付けする
      */
     private function rankFiles(array $files): array
@@ -156,7 +129,6 @@ class SnippetRepository implements SnippetsRepo
 
         foreach ($files as $file) {
             $fileData = $this->analyzeFile($file);
-
             if ($fileData !== null) {
                 $ranked[] = $fileData;
             }
@@ -168,14 +140,12 @@ class SnippetRepository implements SnippetsRepo
         return $ranked;
     }
 
-
     /**
      * ファイルを解析して行数と複雑さを評価する
      */
     private function analyzeFile(string $file): ?array
     {
         $ext = pathinfo($file, PATHINFO_EXTENSION);
-
         if (!in_array($ext, self::CODE_EXTENSIONS, true)) {
             return null;
         }
@@ -186,11 +156,6 @@ class SnippetRepository implements SnippetsRepo
         }
 
         $lines = substr_count($content, "\n") + 1;
-
-        if ($lines < MIN_FILE_LINES) {
-            return null;
-        }
-
         $complexity = $this->estimateComplexity($content, $ext);
         $score = $lines + ($complexity * 2);
 
@@ -205,9 +170,14 @@ class SnippetRepository implements SnippetsRepo
     /**
      * ファイルからランダムなコードスニペットを抽出する
      */
-    private function extractRandomSnippet(string $file, int $snippetLines): string
+    private function extractRandomSnippet(string $file, int $snippetLines): ?string
     {
         $allLines = file($file, FILE_IGNORE_NEW_LINES);
+        
+        if (empty($allLines)) {
+            return null;
+        }
+
         $total = count($allLines);
 
         if ($total <= $snippetLines) {
@@ -235,12 +205,10 @@ class SnippetRepository implements SnippetsRepo
         );
 
         $files = [];
-
         foreach ($iterator as $file) {
             if ($file->isDir() || !$this->shouldIncludeFile($file)) {
                 continue;
             }
-
             $files[] = $file->getPathname();
         }
 
@@ -313,8 +281,7 @@ class SnippetRepository implements SnippetsRepo
         return $count;
     }
 
-
-       /**
+    /**
      * クローンしたリポジトリの一時ディレクトリを削除する
      */
     private function cleanup(string $cloneDir): void
@@ -332,7 +299,4 @@ class SnippetRepository implements SnippetsRepo
             exec(sprintf('rm -rf %s 2>&1', escapeshellarg($cloneDir)));
         }
     }
-
-
-
 }
