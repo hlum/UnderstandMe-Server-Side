@@ -100,9 +100,6 @@ private const CODE_EXTENSIONS = [
         // IDE/Editor
         '.idea', '.vscode', '.vs', '.eclipse', '.settings', '.metadata', '.netbeans',
         
-        // Temp
-        'tmp', 'temp', '.tmp', '.temp',
-        
         // Logs
         'logs', 'log',
         
@@ -219,6 +216,7 @@ private const CODE_EXTENSIONS = [
         try {
             $cloneDir = $downloader->download($repo_url);
             $snippet = $this->extractSnippet($lines, $cloneDir);
+
             $this->cleanup($cloneDir);
             return $snippet;
         } catch(Throwable $e) {
@@ -237,9 +235,16 @@ private const CODE_EXTENSIONS = [
     private function extractSnippet(int $snippetLines, string $cloneDir): ?string
     {
         $files = $this->getCodeFiles($cloneDir);
+
+        if(empty($files)) {
+            echo "コードファイルが見つかりませんでした。\n";
+            return null;
+        }
+
         $rankedFiles = $this->rankFiles($files);
 
         if (empty($rankedFiles)) {
+            echo "ランキングしたファイルがありません。\n";
             return null;
         }
 
@@ -419,24 +424,28 @@ private const CODE_EXTENSIONS = [
 
         // Skip ignored files
         if (in_array($basename, self::IGNORE_FILES, true)) {
+            echo "無視されたファイル: {$basename}\n";
             return false;
         }
 
         // Skip ignored directories
         foreach (self::IGNORE_DIRS as $ignoreDir) {
             if (str_contains($filePath, DIRECTORY_SEPARATOR . $ignoreDir . DIRECTORY_SEPARATOR)) {
+                echo "無視されたディレクトリ内のファイル: {$filePath}\n";
                 return false;
             }
         }
 
         // Skip test/spec files
         if (preg_match('/\b(?:test|spec|__tests__|\.test\.|\.spec\.)\b/i', $basename)) {
+            echo "テストファイルを無視: {$basename}\n";
             return false;
         }
 
         // Skip ignored extensions
         $extension = strtolower($file->getExtension());
         if (in_array($extension, self::IGNORE_EXTENSIONS, true)) {
+            echo "無視された拡張子のファイル: {$filePath}\n";
             return false;
         }
 
