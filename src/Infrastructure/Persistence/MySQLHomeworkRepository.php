@@ -79,6 +79,7 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface
             submission_state,
             user_id,
             user_email,
+            user_student_id,
             score
             FROM homework_submission_status_per_user
             WHERE homework_id = ? AND user_id = ?;
@@ -109,6 +110,7 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface
             submission_state,
             user_id,
             user_email,
+            user_student_id,
             score
             FROM homework_submission_status_per_user
             WHERE user_id = ?;
@@ -142,6 +144,7 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface
             submission_state,
             user_id,
             user_email,
+            user_student_id,
             score
             FROM homework_submission_status_per_user
             WHERE user_id = ? AND class_id = ?;
@@ -175,6 +178,7 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface
             submission_state,
             user_id,
             user_email,
+            user_student_id,
             score
             FROM homework_submission_status_per_user
             WHERE homework_id = ?;

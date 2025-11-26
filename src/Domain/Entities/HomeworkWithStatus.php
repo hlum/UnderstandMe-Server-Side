@@ -17,6 +17,7 @@ class HomeworkWithStatus implements JsonSerializable
      public string $submissionState;
      public string $userID;
      public string $userEmail;
+     public string $userStudentID;
      public ?int $score;
 
 
@@ -31,6 +32,7 @@ class HomeworkWithStatus implements JsonSerializable
     string $submissionState,
     string $userID,
     string $userEmail,
+    string $userStudentID,
     ?int $score = null
 ) {
     $this->id = $id;
@@ -43,6 +45,7 @@ class HomeworkWithStatus implements JsonSerializable
     $this->submissionState = $submissionState;
     $this->userID = $userID;
     $this->userEmail = $userEmail;
+    $this->userStudentID = $userStudentID;
     $this->score = $score;
 }
 
@@ -61,6 +64,7 @@ class HomeworkWithStatus implements JsonSerializable
         submissionState: $row['submission_state'],
         userID: $row['user_id'],
         userEmail: $row['user_email'],
+        userStudentID: $row['user_student_id'] ?? '',
         score: isset($row['score']) ? (int)$row['score'] : null
     );
 }
@@ -79,6 +83,7 @@ class HomeworkWithStatus implements JsonSerializable
             'submission_state' => $this->submissionState,
             'user_id' => $this->userID,
             'user_email' => $this->userEmail,
+            'user_student_id' => $this->userStudentID,
             'score' => $this->score,
         ];
     }
