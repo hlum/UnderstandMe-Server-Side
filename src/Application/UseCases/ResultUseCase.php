@@ -32,6 +32,12 @@ class ResultUseCase
     }
 
 
+    public function updateScore(string $homeworkID, string $studentID, int $newScore): void
+    {
+        $this->resultRepository->updateScore($homeworkID, $studentID, $newScore);
+    }
+
+
     public function saveNewResult(Result $result)
     {
         $this->resultRepository->insertResult($result);

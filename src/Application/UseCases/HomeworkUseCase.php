@@ -103,9 +103,16 @@ class HomeworkUseCase
         if (str_word_count($homework->title) > 100) {
             throw new ValidationException("タイトルが長すぎます。100文字以内にしてください。");
         }
-        if (str_word_count($homework->title) < 1) {
+        $length = mb_strlen($homework->title);
+
+        if ($length > 100) {
+            throw new ValidationException("タイトルが長すぎます。100文字以内にしてください。");
+        }
+
+        if ($length < 1) {
             throw new ValidationException("タイトルが短すぎます。1文字以上にしてください。");
         }
+
 
         $existingHomework = $this->homeworkRepository->findById($homework->id);
 
