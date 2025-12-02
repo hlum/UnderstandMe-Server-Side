@@ -11,6 +11,9 @@ use Domain\Repositories\UserRepositoryInterface;
 use Domain\Repositories\ClassRepositoryInterface;
 
 use Domain\Repositories\HomeworkRepositoryInterface;
+use Exception;
+
+use function PHPUnit\Framework\isEmpty;
 
 class HomeworkUseCase
 {
@@ -99,6 +102,68 @@ class HomeworkUseCase
     }
 
 
+    public function update(string $id, array $fieldsToUpdate): void
+    {
+        $existingHomework = $this->homeworkRepository->findById($id);
+        if ($existingHomework === null) {
+            throw new NotFoundException("指定されたIDの宿題が存在しません。");
+        }
+
+        if(empty($fieldsToUpdate)) {
+            throw new ValidationException("更新するフィールドが指定されていません。");
+        }
+
+        $allowedFields = ['title', 'description', 'due_date'];
+
+        foreach ($fieldsToUpdate as $key => $value) {
+            if (!in_array($key, $allowedFields, true)) {
+                throw new ValidationException("更新できないフィールド: $key");
+            }
+        }
+
+        if (isset($fieldsToUpdate['title'])) {
+            $length = mb_strlen($fieldsToUpdate['title']);
+            if ($length > 100) {
+                throw new ValidationException("タイトルが長すぎます。100文字以内にしてください。");
+            }
+            if ($length < 1) {
+                throw new ValidationException("タイトルが短すぎます。1文字以上にしてください。");
+            }
+        }
+
+        if (array_key_exists('description', $fieldsToUpdate)) {
+
+            if ($fieldsToUpdate['description'] === null) {
+            // nullはOK — 長さをチェックする必要はありません
+            } else {
+                // nullでない場合、文字列であることを確認
+                if (!is_string($fieldsToUpdate['description'])) {
+                    throw new ValidationException("説明の形式が正しくありません。");
+                }
+
+                $descriptionLength = mb_strlen($fieldsToUpdate['description']);
+                if ($descriptionLength > 1000) {
+                    throw new ValidationException("説明が長すぎます。1000文字以内にしてください。");
+                }
+            }
+        }
+
+
+        if (isset($fieldsToUpdate['due_date'])) {
+            try {
+                $dueDate = new DateTimeImmutable($fieldsToUpdate['due_date']);
+            } catch (Exception $e) {
+                throw new ValidationException("日付の形式が正しくありません。YYYY-MM-DD形式にしてください。");
+            }
+
+            $this->validateDueDate($dueDate);
+        }
+
+
+        $this->homeworkRepository->update($id, $fieldsToUpdate);
+    }
+
+
     public function deleteByID(string $id) {
         $homework = $this->homeworkRepository->findById($id);
         if ($homework === null) {
@@ -106,7 +171,7 @@ class HomeworkUseCase
         }
         $this->homeworkRepository->deleteById($id);
     }
-    
+
 
     private function validateHomework(Homework $homework): void
     {

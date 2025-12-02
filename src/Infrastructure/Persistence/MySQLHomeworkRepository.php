@@ -220,6 +220,33 @@ class MySQLHomeworkRepository implements HomeworkRepositoryInterface
     }
 
 
+    public function update(string $id, array $fields): void
+    {
+        $setClauses = [];
+        $params = [];
+        $types = '';
+        if (empty($fields)) {
+            return;
+        }
+
+        foreach ($fields as $field => $value) {
+            $setClauses[] = "$field = ?";
+            $params[] = $value;
+            $types .= is_null($value) ? 's' : 's'; // mysqli has no NULL type; keep 's'
+        }
+
+
+        $params[] = $id;
+        $types .= 's';
+
+        $setClause = implode(', ', $setClauses);
+        $query = "UPDATE homeworks SET $setClause WHERE id = ?";
+
+        $errorMessage = 'Homeworkの更新に失敗しました。';
+        $this->executeQuery($query, $types, $params, $errorMessage);
+    }
+
+
     public function deleteById(string $id): void
     {
         $query = "DELETE FROM homeworks WHERE id = ?";

@@ -11,7 +11,7 @@ class HomeworkWithStatus implements JsonSerializable
      public string $title;
      public string $classID;
      public ?string $description;
-     public string $dueDate;
+     public ?string $dueDate;
      public ?string $githubFileLink;
      public ?string $jobStatus;
      public string $submissionState;
@@ -26,7 +26,7 @@ class HomeworkWithStatus implements JsonSerializable
     string $title,
     string $classID,
     ?string $description,
-    string $dueDate,
+    ?string $dueDate,
     ?string $githubFileLink,
     ?string $jobStatus,
     string $submissionState,
@@ -58,7 +58,7 @@ class HomeworkWithStatus implements JsonSerializable
         title: $row['homework_title'],
         classID: $row['class_id'],
         description: $row['description'],
-        dueDate: $row['due_date'],
+        dueDate: $row['due_date'] ?? null,
         githubFileLink: $row['github_file_link'] ?? null,
         jobStatus: $row['job_status'],
         submissionState: $row['submission_state'],
