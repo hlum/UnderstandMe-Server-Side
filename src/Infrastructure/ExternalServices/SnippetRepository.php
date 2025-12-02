@@ -80,7 +80,7 @@ private const CODE_EXTENSIONS = [
         'pem', 'crt', 'key', 'p12', 'pfx', 'cer',
         
         // Other
-        'bak', 'tmp', 'temp', 'cache', 'swp', 'swo', 'DS_Store'
+        'bak', 'cache', 'swp', 'swo', 'DS_Store'
     ];
 
     private const IGNORE_DIRS = [
@@ -116,7 +116,7 @@ private const CODE_EXTENSIONS = [
         '.pytest_cache', '.phpunit.result.cache', 'TestResults',
         
         // Documentation
-        'docs/_build', 'site', '_site', 'public',
+        'docs/_build', 'site', '_site',
         
         // Other
         'backup', 'backups', '.sass-cache', '.turbo', 'out-tsc'

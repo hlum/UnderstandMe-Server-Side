@@ -26,6 +26,11 @@ interface HomeworkRepositoryInterface
      */
     public function findByClassID(string $classID): array;
 
+    /**
+    * @param array $fields 更新するフィールドとその値の連想配列 (title, description, due_date)
+     */
+    public function update(string $id, array $fields): void;
+
 
     public function deleteById(string $id): void;
 

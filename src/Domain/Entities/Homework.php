@@ -12,7 +12,7 @@ class Homework implements JsonSerializable
     public string $classID;
     public string $title;
     public ?string $description;
-    public DateTimeImmutable $dueDate;
+    public ?DateTimeImmutable $dueDate;
     public DateTimeImmutable $createdAt;
 
     private function __construct(
@@ -21,7 +21,7 @@ class Homework implements JsonSerializable
         string $classID,
         string $title,
         ?string $description,
-        DateTimeImmutable $dueDate,
+        ?DateTimeImmutable $dueDate,
         DateTimeImmutable $createdAt
     ) {
         $this->id = $id;
@@ -39,7 +39,7 @@ class Homework implements JsonSerializable
         string $classID,
         string $title,
         ?string $description,
-        DateTimeImmutable $dueDate
+        ?DateTimeImmutable $dueDate
     ): self {
         return new self(
             bin2hex(random_bytes(16)),
@@ -61,7 +61,7 @@ class Homework implements JsonSerializable
             $row['class_id'],
             $row['title'],
             $row['description'],
-            new DateTimeImmutable($row['due_date']),
+            isset($row['due_date']) ? new DateTimeImmutable($row['due_date']) : null,
             new DateTimeImmutable($row['created_at'])
         );
     }
@@ -74,7 +74,7 @@ class Homework implements JsonSerializable
             'class_id' => $this->classID,
             'title' => $this->title,
             'description' => $this->description,
-            'due_date' => $this->dueDate->format('Y-m-d H:i:s'),
+            'due_date' => $this->dueDate ? $this->dueDate->format('Y-m-d H:i:s') : null,
             'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
         ];
     }
