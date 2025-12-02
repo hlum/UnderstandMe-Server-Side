@@ -98,6 +98,16 @@ class HomeworkUseCase
         return $this->homeworkRepository->fetchHomeworkStatusListForAllStudents($homeworkID);
     }
 
+
+    public function deleteByID(string $id) {
+        $homework = $this->homeworkRepository->findById($id);
+        if ($homework === null) {
+            throw new NotFoundException("指定されたIDの宿題が存在しません。");
+        }
+        $this->homeworkRepository->deleteById($id);
+    }
+    
+
     private function validateHomework(Homework $homework): void
     {
         if (str_word_count($homework->title) > 100) {
