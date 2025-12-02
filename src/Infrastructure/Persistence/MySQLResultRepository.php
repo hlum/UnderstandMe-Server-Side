@@ -77,6 +77,17 @@ class MySQLResultRepository implements ResultRepositoryInterface
     }
 
 
+    public function updateScore(string $homeworkID, string $studentID, int $newScore)
+    {
+        $query = "UPDATE results SET score= ? WHERE homework_id = ? AND user_id = ?";
+        $types = "iss";
+        $params = [$newScore, $homeworkID, $studentID];
+        $errorMessage = "スコアの更新に失敗しました。";
+
+        $this->executeQuery($query, $types, $params, $errorMessage);
+    }
+
+
     private function executeQuery(
         string $query,
         string $types,

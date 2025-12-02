@@ -50,6 +50,19 @@ class ChoiceUseCase
     }
 
 
+    public function updateCorrectChoice(string $correctChoiceID, string $questionID) {
+        $choiceExists = $this->choiceRepository->findById($correctChoiceID);
+        if ($choiceExists === null) {
+            throw new ValidationException("指定されたIDの選択肢が存在しません。");
+        }
+        $question = $this->questionRepository->findById($questionID);
+        if ($question === null) {
+            throw new ValidationException("指定されたQuestionIDの質問が存在しません。");
+        }
+        $this->choiceRepository->updateCorrectAnswer($correctChoiceID, $questionID);
+    }
+
+
     private function validateChoice(Choice $choice)
     {
         if (empty($choice->text)) {

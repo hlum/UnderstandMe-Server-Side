@@ -13,4 +13,6 @@ interface ResultRepositoryInterface
      */
     public function fetchResultsByUserID(string $userID, int $year): array;
     public function updateResult(string $resultID, int $score, int $correctAnswers);
+
+    public function updateScore(string $homeworkID, string $studentID, int $newScore);
 }

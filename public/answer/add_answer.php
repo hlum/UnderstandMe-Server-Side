@@ -49,12 +49,14 @@ $userID = $input['user_id'] ?? null;
 $selectedChoiceID = $input['selected_choice_id'] ?? null;
 $totalQuestions = $input['total_questions'] ?? null;
 
-if (!$questionID || !$userID || !$selectedChoiceID || !$homeworkID || !$totalQuestions) {
+if (!$questionID || !$userID || !$homeworkID || !$totalQuestions) {
     throw new ValidationException('必要なフィールドが不足しています。');
 }
 
 try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+    // データの一貫性を保つためにトランザクションを開始
+    $connection->begin_transaction();
 
     $answerRepo = new MySQLAnswerRepository($connection);
     $userRepo = new MySQLUserRepository($connection);
@@ -67,13 +69,18 @@ try {
     $resultUseCase = new ResultUseCase($resultRepo);
 
     // --- Save answer ---
-    $newAnswer = Answer::createNew($questionID, $userID, $selectedChoiceID);
-    $answerUseCase->addAnswer($newAnswer);
+    if (isset($selectedChoiceID)) {
+        $newAnswer = Answer::createNew($questionID, $userID, $selectedChoiceID);
+        $answerUseCase->addAnswer($newAnswer);
+    }
 
 
     // --- Check if correct ---
-    $choice = $choiceUseCase->findById($selectedChoiceID);
-    $choiceIsCorrect = $choice->isCorrect;
+    $choiceIsCorrect = false;
+    if (isset($selectedChoiceID)) {
+        $choice = $choiceUseCase->findById($selectedChoiceID);
+        $choiceIsCorrect = $choice->isCorrect;
+    }
 
     // --- Update or create result ---
     $resultInDB = $resultUseCase->fetchResultWithHomeworkIDAndUserID($homeworkID, $userID);
@@ -89,12 +96,24 @@ try {
         $resultUseCase->updateResult($resultInDB->id, $newScore, $newCorrect);
     }
 
+    // すべて成功した場合、トランザクションをコミット
+    $connection->commit();
+
     Response::send('success', 'Answer and result updated successfully.');
 
 } catch (AppException $e) {
     Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
-
+    if (isset($connection)){
+        $connection->rollback();
+    }
 } catch (Throwable $e) {
+    if (isset($connection)){
+        $connection->rollback();
+    }
     error_log('サーバー内部エラー: ' . $e->getMessage());
     Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
+} finally {
+    if (isset($connection)){
+        $connection->close();
+    }
 }

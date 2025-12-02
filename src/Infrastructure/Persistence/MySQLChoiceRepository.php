@@ -61,6 +61,24 @@ class MySQLChoiceRepository implements ChoiceRepositoryInterface
     }
 
 
+    public function updateCorrectAnswer(string $newCorrectChoiceID, string $questionID)
+    {
+        $this->removeExistingCorrectChoice($questionID);
+        $query = "UPDATE choices SET is_correct = 1 WHERE id = ?";
+        $types = 's';
+        $params = [$newCorrectChoiceID];
+        $this->executeQuery($query, $types, $params, "");
+    }
+
+
+    private function removeExistingCorrectChoice(string $questionID) {
+        $query = "UPDATE choices SET is_correct = 0 WHERE question_id = ?";
+        $types = 's';
+        $params = [$questionID];
+        $this->executeQuery($query, $types, $params, "");
+    }
+
+
     private function executeQuery(
         string $query,
         string $types,
