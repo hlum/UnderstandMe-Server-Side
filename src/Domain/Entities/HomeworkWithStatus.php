@@ -2,6 +2,7 @@
 
 namespace Domain\Entities;
 
+use DateTimeImmutable;
 use JsonSerializable;
 
 
@@ -19,6 +20,8 @@ class HomeworkWithStatus implements JsonSerializable
      public string $userEmail;
      public string $userStudentID;
      public ?int $score;
+     public ?DateTimeImmutable $submittedAt;
+     public DateTimeImmutable $createdAt;
 
 
  private function __construct(
@@ -33,6 +36,8 @@ class HomeworkWithStatus implements JsonSerializable
     string $userID,
     string $userEmail,
     string $userStudentID,
+    ?DateTimeImmutable $submittedAt,
+    DateTimeImmutable $createdAt,
     ?int $score = null
 ) {
     $this->id = $id;
@@ -47,6 +52,8 @@ class HomeworkWithStatus implements JsonSerializable
     $this->userEmail = $userEmail;
     $this->userStudentID = $userStudentID;
     $this->score = $score;
+    $this->submittedAt = $submittedAt;
+    $this->createdAt = $createdAt;
 }
 
 
@@ -65,7 +72,9 @@ class HomeworkWithStatus implements JsonSerializable
         userID: $row['user_id'],
         userEmail: $row['user_email'],
         userStudentID: $row['user_student_id'] ?? '',
-        score: isset($row['score']) ? (int)$row['score'] : null
+        score: isset($row['score']) ? (int)$row['score'] : null,
+        submittedAt: isset($row['submitted_at']) ? new DateTimeImmutable($row['submitted_at']) : null,
+        createdAt: new DateTimeImmutable($row['created_at'])
     );
 }
 
@@ -85,6 +94,8 @@ class HomeworkWithStatus implements JsonSerializable
             'user_email' => $this->userEmail,
             'user_student_id' => $this->userStudentID,
             'score' => $this->score,
+            'submitted_at' => $this->submittedAt?->format('Y-m-d'),
+            'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
         ];
     }
 }
