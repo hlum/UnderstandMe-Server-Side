@@ -29,7 +29,7 @@ class MySQLClassRepository implements ClassRepositoryInterface
 
     public function findById(string $id): ?ClassEntity
     {
-        $query = "SELECT * FROM classes WHERE id = ?";
+        $query = "SELECT classes.*, users.name AS teacher_name FROM classes JOIN users ON classes.teacher_id = users.id WHERE classes.id = ?";
         $types = 's';
         $params = [$id];
         $errorMessage = 'IdによるClass検索に失敗しました。';
@@ -53,7 +53,7 @@ class MySQLClassRepository implements ClassRepositoryInterface
 
         // Prepare placeholders for prepared statement (?, ?, ?, ...)
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
-        $query = "SELECT * FROM classes WHERE id IN ($placeholders)";
+        $query = "SELECT classes.*, users.name AS teacher_name FROM classes JOIN users ON classes.teacher_id = users.id WHERE classes.id IN ($placeholders)";
 
         // All IDs are strings
         $types = str_repeat('s', count($ids));
@@ -74,7 +74,7 @@ class MySQLClassRepository implements ClassRepositoryInterface
 
     public function findByClassCode(string $classCode): ?ClassEntity
     {
-        $query = "SELECT * FROM classes WHERE class_code = ?";
+        $query = "SELECT classes.*, users.name AS teacher_name FROM classes JOIN users ON classes.teacher_id = users.id WHERE classes.class_code = ?";
         $types = 's';
         $params = [$classCode];
         $errorMessage = "ClassCodeによるClass検索に失敗しました。";
@@ -91,7 +91,7 @@ class MySQLClassRepository implements ClassRepositoryInterface
 
     public function findByTeacherId(string $teacherId): array
     {
-        $query = "SELECT * FROM classes WHERE teacher_id = ?";
+        $query = "SELECT classes.*, users.name AS teacher_name FROM classes JOIN users ON classes.teacher_id = users.id WHERE classes.teacher_id = ?";
         $types = 's';
         $params = [$teacherId];
         $errorMessage = 'TeacherIdによるClass検索に失敗しました。';
@@ -113,7 +113,7 @@ class MySQLClassRepository implements ClassRepositoryInterface
      */
     public function findByMajorCodeAndAdmissionYear(string $majorCode, int $admissionYear): array
     {
-        $query = "SELECT * FROM classes WHERE major_code = ? AND admission_year = ?";
+        $query = "SELECT classes.*, users.name AS teacher_name FROM classes JOIN users ON classes.teacher_id = users.id WHERE classes.major_code = ? AND classes.admission_year = ?";
         $types = 'si';
         $params = [$majorCode, $admissionYear];
         $errorMessage = 'MajorCodeとAdmissionYearによるClass検索に失敗しました。';

@@ -24,6 +24,7 @@ class ClassEntity implements JsonSerializable
     public int $admissionYear;
     public string $majorCode;
     public ?string $classCode;
+    public ?string $teacherName;
     public DateTimeImmutable $createdAt;
 
     private function __construct(
@@ -33,6 +34,7 @@ class ClassEntity implements JsonSerializable
         int $admissionYear,
         string $majorCode,
         ?string $classCode,
+        ?string $teacherName,
         DateTimeImmutable $createdAt
     ) {
         $this->id = $id;
@@ -41,6 +43,7 @@ class ClassEntity implements JsonSerializable
         $this->admissionYear = $admissionYear;
         $this->majorCode = $majorCode;
         $this->classCode = $classCode;
+        $this->teacherName = $teacherName;
         $this->createdAt = $createdAt;
     }
 
@@ -64,6 +67,7 @@ class ClassEntity implements JsonSerializable
             $admissionYear,
             $majorCode,
             $classCode,
+            null, // teacherName はdatabaseから取得するため、初期値はnull
             new DateTimeImmutable()
         );
     }
@@ -77,6 +81,7 @@ class ClassEntity implements JsonSerializable
             (int) $row['admission_year'],
             $row['major_code'],
             $row['class_code'] ?? null,
+            $row['teacher_name'] ?? null,
             new DateTimeImmutable($row['created_at'])
         );
     }
@@ -90,6 +95,7 @@ class ClassEntity implements JsonSerializable
             'admission_year' => $this->admissionYear,
             'major_code' => $this->majorCode,
             'class_code' => $this->classCode,
+            'teacher_name' => $this->teacherName,
             'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
         ];
     }
