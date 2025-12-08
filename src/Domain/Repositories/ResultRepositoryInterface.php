@@ -15,4 +15,5 @@ interface ResultRepositoryInterface
     public function updateResult(string $resultID, int $score, int $correctAnswers);
 
     public function updateScore(string $homeworkID, string $studentID, int $newScore);
+    public function deleteByHomeworkID(string $homeworkID, string $userID): void;
 }

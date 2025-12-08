@@ -88,6 +88,17 @@ class MySQLResultRepository implements ResultRepositoryInterface
     }
 
 
+    public function deleteByHomeworkID(string $homeworkID, string $userID): void
+    {
+        $query = "DELETE FROM results WHERE homework_id = ? AND user_id = ?";
+        $types = 'ss';
+        $params = [$homeworkID, $userID];
+        $errorMessage = 'Resultの削除に失敗しました。';
+
+        $this->executeQuery($query, $types, $params, $errorMessage);
+    }
+
+
     private function executeQuery(
         string $query,
         string $types,

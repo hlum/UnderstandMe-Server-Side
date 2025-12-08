@@ -43,6 +43,17 @@ class ResultUseCase
         $this->resultRepository->insertResult($result);
     }
 
+    public function deleteResultByHomeworkIDAndUserID(string $homeworkID, string $userID): void
+    {
+        $resultInDB = $this->resultRepository->fetchResultWithHomeworkIDAndUserID($homeworkID, $userID);
+
+        if ($resultInDB === null) {
+            return;
+        }
+
+        $this->resultRepository->deleteByHomeworkID($homeworkID, $userID);
+    }
+
 
     public function updateResult(string $resultID, int $score, int $correctAnswers): void
     {
