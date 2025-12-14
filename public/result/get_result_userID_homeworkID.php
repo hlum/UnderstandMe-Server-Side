@@ -42,7 +42,7 @@ try {
         Response::send('success', "指定されたユーザーIDと宿題IDの結果が見つかりません。", 200);
     }
 
-    Response::send('success', '結果の取得に成功しました。', 200, json_encode($result));
+    Response::send('success', '結果の取得に成功しました。', 200, $result);
 } catch(AppException $e) {
     Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
 } catch (Throwable $e) {

@@ -80,7 +80,7 @@ try {
     }
 
     // 検索結果をJSON形式で返す
-    Response::send('success', 'projectの取得に成功しました。', 200, json_encode($projects));
+    Response::send('success', 'projectの取得に成功しました。', 200, $projects);
 
 } catch(AppException $e) {
     Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());

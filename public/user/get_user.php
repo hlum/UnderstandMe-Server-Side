@@ -23,25 +23,29 @@ if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
 }
 
 
-$headers = getallheaders();
-// API KEY Validation
-$headers = getallheaders();
-$clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-ApiKeyValidator::check($clientApiKey);
-
-
-$major_code = $_GET['major_code'] ?? null;
-$admission_year = $_GET['admission_year'] ?? null;
-$user_id = $_GET['id'] ?? null;
-$email = $_GET['email'] ?? null;
-$student_code = $_GET['student_code'] ?? null;
 
 
 try {
+    $headers = getallheaders();
+    // API KEY Validation
+    $headers = getallheaders();
+    $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
+    ApiKeyValidator::check($clientApiKey);
+
+
+    $major_code = $_GET['major_code'] ?? null;
+    $admission_year = $_GET['admission_year'] ?? null;
+    $user_id = $_GET['id'] ?? null;
+    $email = $_GET['email'] ?? null;
+    $student_code = $_GET['student_code'] ?? null;
+
+
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $userRepository = new MySQLUserRepository($connection);
     $userUseCase = new UserUseCase($userRepository);
-} catch (Throwable $e) {
+} catch(AppException $e) {
+    Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
+}catch (Throwable $e) {
     error_log('サーバー内部エラー: ' . $e->getMessage());
     Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
 }
@@ -73,7 +77,7 @@ try {
         throw new ValidationException('user_id、email、student_code、admission_year+major_codeのいずれかを指定してください');
     }
 
-    Response::send('success', 'ユーザーの取得に成功しました', 200, json_encode($users));
+    Response::send('success', 'ユーザーの取得に成功しました', 200,$users);
 
 } catch(AppException $e) {
     Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());

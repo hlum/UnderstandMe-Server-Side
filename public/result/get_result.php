@@ -37,7 +37,7 @@ try {
     $resultUseCase = new ResultUseCase($resultRepository);
     $results = $resultUseCase->fetchResultsByUserID($userID, $year);
 
-    Response::send('success', '結果の取得に成功しました。', 200, json_encode($results));
+    Response::send('success', '結果の取得に成功しました。', 200, $results);
 } catch (Throwable $e) {
     error_log('サーバー内部エラー: ' . $e->getMessage());
     Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');

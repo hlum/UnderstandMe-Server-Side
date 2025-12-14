@@ -102,7 +102,7 @@ try {
         throw new ValidationException('少なくとも1つのクエリパラメータ（id、major_code と admission_year、student_id）を指定してください。');
     }
 
-    Response::send('success', 'クラスの取得に成功しました。', 200, json_encode($classes));
+    Response::send('success', 'クラスの取得に成功しました。', 200, $classes);
 
 } catch(AppException $e) {
     Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());

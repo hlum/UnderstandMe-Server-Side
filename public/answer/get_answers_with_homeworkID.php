@@ -57,7 +57,7 @@ try {
 
     $answers = $answerUseCase->findAnswersForHomework($homeworkID, $userID);
 
-    Response::send('success', '回答の取得成功', 200, json_encode($answers));
+    Response::send('success', '回答の取得成功', 200, $answers);
 } catch (AppException $e) {
     Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
 

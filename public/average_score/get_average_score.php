@@ -40,7 +40,7 @@ try {
     $averageScoreUseCase = new AverageScoreUseCase($averageScoreRepository);
     $averageScores = $averageScoreUseCase->fetch($student_id);
 
-    Response::send('success', '平均スコアの取得成功', 200, json_encode($averageScores));
+    Response::send('success', '平均スコアの取得成功', 200, $averageScores);
 } catch (Exception $e) {
     Response::send('fail', 'サーバーエラーが発生しました。', 500, null, 'server_error');
 }

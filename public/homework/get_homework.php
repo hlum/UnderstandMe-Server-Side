@@ -71,7 +71,7 @@ try {
         throw new ValidationException('少なくとも1つのクエリパラメータを指定する必要があります。');
     }
 
-    Response::send('success', '宿題の取得に成功しました', 200, json_encode($homeworks));
+    Response::send('success', '宿題の取得に成功しました', 200, $homeworks);
 
 } catch(AppException $e) {
     Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());

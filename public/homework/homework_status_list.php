@@ -54,7 +54,7 @@ try {
 try {
     $homeworksWithStatus = $homeworkUseCase->fetchHomeworksStatusListForAllStudents($homeworkID);
 
-    Response::send('success', '課題の取得成功', 200, json_encode($homeworksWithStatus));
+    Response::send('success', '課題の取得成功', 200, $homeworksWithStatus);
 } catch(AppException $e) {
     Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
 } catch (Throwable $e) {

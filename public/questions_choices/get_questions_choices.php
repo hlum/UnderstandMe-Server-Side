@@ -45,7 +45,7 @@ try {
     $questionAndChoicesUseCase = new QuestionsAndChoicesUseCase($questionsAndChoicesRepository);
     $questionsAndChoices = $questionAndChoicesUseCase->getQuestionsAndChoicesByHomeworkId($homeworkID, $userID);
 
-    Response::send('success', '質問と選択肢の取得成功', 200, json_encode($questionsAndChoices));
+    Response::send('success', '質問と選択肢の取得成功', 200, $questionsAndChoices);
 } catch (AppException $e) {
     Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
 } catch (Throwable $e) {
