@@ -71,42 +71,42 @@ $major_code = $input['major_code'] ?? null;
 $admission_year = $input['admission_year'] ?? null;
 
 
-if (empty($user_id)) {
-    throw new ValidationException('ユーザーIDは必須です。');
-}
-
-if ($user_id == null || !is_string($user_id)) {
-    throw new ValidationException('無効なユーザーID形式です。');
-}
-
-if (empty($name)) {
-    throw new ValidationException('名前は必須です。');
-}
-
-if (empty($email)) {
-    throw new ValidationException('メールアドレスは必須です。');
-}
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    throw new ValidationException('無効なメールアドレス形式です。');
-}
-
-if ($photo_url != null && !filter_var($photo_url, FILTER_VALIDATE_URL)) {
-    throw new ValidationException('無効なphoto_url形式です。');
-}
-
-if (!isset($student_code)) {
-    throw new ValidationException('student_codeを指定する必要があります。');
-}
-
-if (!isset($major_code)) {
-    throw new ValidationException('major_codeを指定する必要があります。');
-}
-
-if (!isset($admission_year)) {
-    throw new ValidationException('admission_yearを指定する必要があります。');
-}
-
 try {
+    if (empty($user_id)) {
+        throw new ValidationException('ユーザーIDは必須です。');
+    }
+
+    if ($user_id == null || !is_string($user_id)) {
+        throw new ValidationException('無効なユーザーID形式です。');
+    }
+
+    if (empty($name)) {
+        throw new ValidationException('名前は必須です。');
+    }
+
+    if (empty($email)) {
+        throw new ValidationException('メールアドレスは必須です。');
+    }
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        throw new ValidationException('無効なメールアドレス形式です。');
+    }
+
+    if ($photo_url != null && !filter_var($photo_url, FILTER_VALIDATE_URL)) {
+        throw new ValidationException('無効なphoto_url形式です。');
+    }
+
+    if (!isset($student_code)) {
+        throw new ValidationException('student_codeを指定する必要があります。');
+    }
+
+    if (!isset($major_code)) {
+        throw new ValidationException('major_codeを指定する必要があります。');
+    }
+
+    if (!isset($admission_year)) {
+        throw new ValidationException('admission_yearを指定する必要があります。');
+    }
+
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $userRepository = new MySQLUserRepository($connection);
     $userUseCase = new UserUseCase($userRepository);

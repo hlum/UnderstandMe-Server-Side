@@ -37,10 +37,13 @@ try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $resultRepository = new MySQLResultRepository($connection);
     $resultUseCase = new ResultUseCase($resultRepository);
-    $result = $resultUseCase->fetchResultWithHomeworkIDAndUserID($homeworkID, $userID);
-    if ($result === null) {
-        Response::send('success', "指定されたユーザーIDと宿題IDの結果が見つかりません。", 200);
+    $resultFetched = $resultUseCase->fetchResultWithHomeworkIDAndUserID($homeworkID, $userID);
+
+    if ($resultFetched === null) {
+        Response::send('success', "指定されたユーザーIDと宿題IDの結果が見つかりません。", 200, data: []);
     }
+
+    $result[] = $resultFetched;
 
     Response::send('success', '結果の取得に成功しました。', 200, $result);
 } catch(AppException $e) {
