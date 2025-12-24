@@ -21,29 +21,6 @@ error_reporting(E_ALL);
 
 
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-if (!in_array($_SERVER['REQUEST_METHOD'], ['POST'])) {
-    Response::send('fail', 'Method Not Allowed. Use POST', 405, null, 'validation_error');
-}
-
-// API Key validation
-$headers = getallheaders();
-$clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-ApiKeyValidator::check($clientApiKey);
-
-
-// POSTされたJSONデータを取得
-$input = json_decode(file_get_contents('php://input'), true);
-
-if (json_last_error() !== JSON_ERROR_NONE) {
-    throw new ValidationException('無効なJSONデータです。');
-}
-
-
 
 
 // Expected JSON structure
@@ -61,17 +38,40 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 
 
 
-$user_id = $input['id'] ?? null;
-$name = $input['name'] ?? null;
-$email = $input['email'] ?? null;
-$photo_url = $input['photo_url'] ?? null;
-$role = Role::from($input['role'] ?? 'student');
-$student_code = $input['student_code'] ?? null;
-$major_code = $input['major_code'] ?? null;
-$admission_year = $input['admission_year'] ?? null;
-
-
 try {
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(200);
+        exit();
+    }
+
+    if (!in_array($_SERVER['REQUEST_METHOD'], ['POST'])) {
+        Response::send('fail', 'Method Not Allowed. Use POST', 405, null, 'validation_error');
+    }
+
+    // API Key validation
+    $headers = getallheaders();
+    $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
+    ApiKeyValidator::check($clientApiKey);
+
+
+    // POSTされたJSONデータを取得
+    $input = json_decode(file_get_contents('php://input'), true);
+
+
+    $user_id = $input['id'] ?? null;
+    $name = $input['name'] ?? null;
+    $email = $input['email'] ?? null;
+    $photo_url = $input['photo_url'] ?? null;
+    $role = Role::from($input['role'] ?? 'student');
+    $student_code = $input['student_code'] ?? null;
+    $major_code = $input['major_code'] ?? null;
+    $admission_year = $input['admission_year'] ?? null;
+
+
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new ValidationException('無効なJSONデータです。');
+    }
+
     if (empty($user_id)) {
         throw new ValidationException('ユーザーIDは必須です。');
     }
