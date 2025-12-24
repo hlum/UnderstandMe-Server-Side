@@ -1,13 +1,18 @@
-FROM php:8.1.33-apache
+FROM php:8.3-apache
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
+    libxml2-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+RUN docker-php-ext-install dom mysqli pdo pdo_mysql
+
+# Composer を公式イメージからコピー
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
 
 # Install required build tools
 RUN apt-get update && apt-get install -y \
@@ -26,4 +31,3 @@ COPY xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
-

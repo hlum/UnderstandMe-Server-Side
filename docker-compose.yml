@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
     php-apache:
         build: ./php
@@ -12,7 +10,7 @@ services:
             - mysql
         networks:
             - backend
-
+        restart: unless-stopped
     mysql:
         image: mysql:8.0
         container_name: mysql_understand_me
@@ -29,6 +27,7 @@ services:
             - ./db:/var/lib/mysql
         networks:
             - backend
+        restart: unless-stopped
 
 networks:
     backend:
