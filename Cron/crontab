@@ -1,0 +1,2 @@
+* * * * * /usr/local/bin/php /var/www/html/Cron/process_pending_jobs.php >> /proc/1/fd/1 2>/proc/1/fd/2
+
