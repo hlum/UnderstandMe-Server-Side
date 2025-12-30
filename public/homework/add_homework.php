@@ -26,70 +26,74 @@ ini_set('display_errors', 0);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+
+
+
+try {
+
+
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
-}
+    }
 
-if (!in_array($_SERVER['REQUEST_METHOD'], ['POST'])) {
-    Response::send('fail', 'Method not allowed. Use POST', 405, null, 'validation_error');
-}
+    if (!in_array($_SERVER['REQUEST_METHOD'], ['POST'])) {
+        Response::send('fail', 'Method not allowed. Use POST', 405, null, 'validation_error');
+    }
 
-// API Key validation
-$headers = getallheaders();
-$clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-ApiKeyValidator::checkTeacherKey($clientApiKey);
+    // API Key validation
+    $headers = getallheaders();
+    $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
+    ApiKeyValidator::checkTeacherKey($clientApiKey);
 
-// Expected JSON structure
-// {
-// teacher_id: String,
-// class_id: String nullable,
-// title: String,
-// description: String nullable,
-// due_date: String nullable // ISO 8601 date format "2025-10-01T23:59:00Z"
-// }
+    // Expected JSON structure
+    // {
+    // teacher_id: String,
+    // class_id: String nullable,
+    // title: String,
+    // description: String nullable,
+    // due_date: String nullable // ISO 8601 date format "2025-10-01T23:59:00Z"
+    // }
 
-$input = json_decode(file_get_contents('php://input'), true);
+    $input = json_decode(file_get_contents('php://input'), true);
 
-if (json_last_error() !== JSON_ERROR_NONE) {
-    throw new ValidationException('無効なJSONデータです。');
-}
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new ValidationException('無効なJSONデータです。');
+    }
 
-$teacher_id = $input['teacher_id'] ?? null;
-$class_id = $input['class_id'] ?? null;
-$title = $input['title'] ?? null;
-$description = $input['description'] ?? null;
-$due_date = $input['due_date'] ?? null;
+    $teacher_id = $input['teacher_id'] ?? null;
+    $class_id = $input['class_id'] ?? null;
+    $title = $input['title'] ?? null;
+    $description = $input['description'] ?? null;
+    $due_date = $input['due_date'] ?? null;
 
-if(!isset($class_id)) {
-    throw new ValidationException('class_idは必須です。');
-}
+    if(!isset($class_id)) {
+        throw new ValidationException('class_idは必須です。');
+    }
 
-if (!isset($teacher_id)) {
-    throw new ValidationException('teacher_idは必須です。');
-}
-if ($teacher_id == null || !is_string($teacher_id)) {
-    throw new ValidationException('無効なteacher_id形式です。');
-}
-if (!isset($title)) {
-    throw new ValidationException('titleは必須です。');
-}
-if ($title == null || !is_string($title)) {
-    throw new ValidationException('無効なtitle形式です。');
-}
+    if (!isset($teacher_id)) {
+        throw new ValidationException('teacher_idは必須です。');
+    }
+    if ($teacher_id == null || !is_string($teacher_id)) {
+        throw new ValidationException('無効なteacher_id形式です。');
+    }
+    if (!isset($title)) {
+        throw new ValidationException('titleは必須です。');
+    }
+    if ($title == null || !is_string($title)) {
+        throw new ValidationException('無効なtitle形式です。');
+    }
 
-try {
-    $due_date = $due_date ? new DateTimeImmutable($due_date) : null;
-} catch (Exception $e) {
-    throw new ValidationException('無効な締め切り日形式です。');
-}
+    try {
+        $due_date = $due_date ? new DateTimeImmutable($due_date) : null;
+    } catch (Exception $e) {
+        throw new ValidationException('無効な締め切り日形式です。');
+    }
 
-if ($due_date == null || !($due_date instanceof DateTimeImmutable)) {
-    throw new ValidationException('無効な締め切り日形式です。');
-}
+    if ($due_date == null || !($due_date instanceof DateTimeImmutable)) {
+        throw new ValidationException('無効な締め切り日形式です。');
+    }
 
-
-try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $homeworkRepository = new MySQLHomeworkRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
