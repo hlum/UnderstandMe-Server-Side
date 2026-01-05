@@ -1,27 +1,18 @@
 #!/bin/sh
 set -e
 
-APP_DIR="/var/www/html"
+APP="/var/www/html"
 
-echo "🔐 Setting permissions at container startup..."
+# General permissions
+find "$APP" -type d -exec chmod 755 {} \;
+find "$APP" -type f -exec chmod 644 {} \;
 
-# Directories
-find "$APP_DIR" -type d -exec chmod 755 {} \;
-
-# Files
-find "$APP_DIR" -type f -exec chmod 644 {} \;
-
-# Config files (read-only, stricter)
-if [ -d "$APP_DIR/config" ]; then
-  chmod 750 "$APP_DIR/config"
-  find "$APP_DIR/config" -type f -exec chmod 640 {} \;
+# Secure config
+if [ -d "$APP/config" ]; then
+  chown -R root:www-data "$APP/config"
+  chmod 750 "$APP/config"
+  chmod 640 "$APP/config/config.php"
+  chmod 600 "$APP/config/service-account.json"
 fi
-
-# Service account JSON (extra strict)
-if [ -f "$APP_DIR/config/service-account.json" ]; then
-  chmod 600 "$APP_DIR/config/service-account.json"
-fi
-
-echo "✅ Permissions applied"
 
 exec "$@"
