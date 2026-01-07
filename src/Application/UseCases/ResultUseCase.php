@@ -20,9 +20,9 @@ class ResultUseCase
         return $this->getResult($resultID);
     }
 
-    public function fetchResultsByUserID(string $userID, int $year): array
+    public function fetchResultsByUserID(string $userID): array
     {
-        return $this->resultRepository->fetchResultsByUserID($userID, $year);
+        return $this->resultRepository->fetchResultsByUserID($userID);
     }
 
 

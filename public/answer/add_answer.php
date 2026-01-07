@@ -30,30 +30,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    Response::send('fail', 'Method not allowed. Use POST', 405, null, 'validation_error');
-}
 
-$headers = getallheaders();
-$clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-ApiKeyValidator::check($clientApiKey);
-
-$input = json_decode(file_get_contents('php://input'), true);
-if (json_last_error() !== JSON_ERROR_NONE) {
-    throw new ValidationException('無効なJSONデータです。');
-}
-
-$questionID = $input['question_id'] ?? null;
-$homeworkID = $input['homework_id'] ?? null;
-$userID = $input['user_id'] ?? null;
-$selectedChoiceID = $input['selected_choice_id'] ?? null;
-$totalQuestions = $input['total_questions'] ?? null;
-
-if (!$questionID || !$userID || !$homeworkID || !$totalQuestions) {
-    throw new ValidationException('必要なフィールドが不足しています。');
-}
 
 try {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        Response::send('fail', 'Method not allowed. Use POST', 405, null, 'validation_error');
+    }
+
+    $headers = getallheaders();
+    $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
+    ApiKeyValidator::check($clientApiKey);
+
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new ValidationException('無効なJSONデータです。');
+    }
+
+    $questionID = $input['question_id'] ?? null;
+    $homeworkID = $input['homework_id'] ?? null;
+    $userID = $input['user_id'] ?? null;
+    $selectedChoiceID = $input['selected_choice_id'] ?? null;
+    $totalQuestions = $input['total_questions'] ?? null;
+
+    if (!$questionID || !$userID || !$homeworkID || !$totalQuestions) {
+        throw new ValidationException('必要なフィールドが不足しています。');
+    }
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     // データの一貫性を保つためにトランザクションを開始
     $connection->begin_transaction();

@@ -25,17 +25,17 @@ $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
 ApiKeyValidator::check($clientApiKey);
 
 $userID = $_GET['user_id'] ?? null;
-$year = $_GET['year'] ?? null;
 
-if ($userID === null || $year === null) {
-    throw new ValidationException('user_idとyearは必須です。');
+
+if ($userID === null) {
+    throw new ValidationException('user_idは必須です。');
 }
 
 try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $resultRepository = new MySQLResultRepository($connection);
     $resultUseCase = new ResultUseCase($resultRepository);
-    $results = $resultUseCase->fetchResultsByUserID($userID, $year);
+    $results = $resultUseCase->fetchResultsByUserID($userID);
 
     Response::send('success', '結果の取得に成功しました。', 200, $results);
 } catch (Throwable $e) {
