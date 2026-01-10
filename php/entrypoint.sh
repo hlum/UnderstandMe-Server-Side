@@ -12,7 +12,7 @@ if [ -d "$APP/config" ]; then
   chown -R root:www-data "$APP/config"
   chmod 750 "$APP/config"
   chmod 640 "$APP/config/config.php"
-  chmod 600 "$APP/config/service-account.json"
+  chmod 640 "$APP/config/service-account.json"
 fi
 
 exec "$@"
