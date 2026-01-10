@@ -36,7 +36,7 @@ services:
             - "13306:3306"
         volumes:
             - mysql_data:/var/lib/mysql
-            - ./db/init:/docker-entrypoint-initdb.d
+            - ./mysqlEntry/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
         networks:
             - backend
         restart: unless-stopped
