@@ -2,6 +2,7 @@
 
 namespace Helpers;
 
+use Exception;
 
 class NotificationHandler
 {
@@ -49,15 +50,16 @@ class NotificationHandler
         $postData = [
             'message' => [
                 'token' => $fcmToken,
-                'notification' => [
-                    'title' => $title,
-                    'body' => $body
-                ],
                 'data' => [
                     'homeworkId' => $homeworkID
                 ],
                 'android' => [
-                    'priority' => 'high'
+                    'priority' => 'high',
+                    'notification' => [
+                        'title' => $title,
+                        'body' => $body,
+                        'click_action' => 'OPEN_HOMEWORK_DETAIL'
+                    ]
                 ],
                 'apns' => [
                     'headers' => [
@@ -65,12 +67,18 @@ class NotificationHandler
                     ],
                     'payload' => [
                         'aps' => [
+                            'alert' => [
+                                'title' => $title,
+                                'body' => $body
+                            ],
                             'sound' => 'default'
                         ]
                     ]
                 ]
             ]
         ];
+
+
 
         $headers = [
             "Authorization: Bearer {$accessToken}",
@@ -98,39 +106,47 @@ class NotificationHandler
         return ['response' => $response, 'code' => $httpCode];
     }
 
-    function generateJWT($keyFilePath, $projectId)
-    {
-        try {
+    function generateJWT(string $keyFilePath, string $projectId): string
+        {
+            $json = file_get_contents($keyFilePath);
+            if ($json === false) {
+                throw new Exception("Service account file read failed");
+            }
 
-            $serviceAccount = json_decode(file_get_contents($keyFilePath), true);
+            $serviceAccount = json_decode($json, true);
+            if (!$serviceAccount || empty($serviceAccount['private_key'])) {
+                throw new Exception("Invalid service account JSON");
+            }
 
             $now = time();
-            $expiration = $now + 3600;
-
             $header = ['alg' => 'RS256', 'typ' => 'JWT'];
             $claim = [
-                'iss' => $serviceAccount['client_email'],
+                'iss'   => $serviceAccount['client_email'],
                 'scope' => 'https://www.googleapis.com/auth/firebase.messaging',
-                'aud' => 'https://oauth2.googleapis.com/token',
-                'iat' => $now,
-                'exp' => $expiration
+                'aud'   => 'https://oauth2.googleapis.com/token',
+                'iat'   => $now,
+                'exp'   => $now + 3600
             ];
 
             $jwtHeader = $this->base64UrlEncode(json_encode($header));
-            $jwtClaim = $this->base64UrlEncode(json_encode($claim));
+            $jwtClaim  = $this->base64UrlEncode(json_encode($claim));
+            $data      = $jwtHeader . '.' . $jwtClaim;
 
-            $signatureInput = $jwtHeader . '.' . $jwtClaim;
-
-            // Sign with private key
             $privateKey = openssl_pkey_get_private($serviceAccount['private_key']);
-            openssl_sign($signatureInput, $signature, $privateKey, 'sha256WithRSAEncryption');
+            if ($privateKey === false) {
+                throw new Exception('Private key load failed: ' . openssl_error_string());
+            }
+
+            $success = openssl_sign($data, $signature, $privateKey, OPENSSL_ALGO_SHA256);
             openssl_free_key($privateKey);
 
-            return $signatureInput . '.' . $this->base64UrlEncode($signature);
-        } catch (\Exception $e) {
-            throw new \Exception("❌ JWT生成に失敗しました: " . $e->getMessage());
+            if (!$success) {
+                throw new Exception('JWT signing failed: ' . openssl_error_string());
+            }
+
+            return $data . '.' . $this->base64UrlEncode($signature);
         }
-    }
+
 
     function getAccessToken($jwt)
     {
