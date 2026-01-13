@@ -47,6 +47,16 @@ class MySQLUserRepository implements UserRepositoryInterface
     }
 
 
+    public function deleteByID(string $user_id): void
+    {
+        $query = "DELETE FROM users WHERE id = ?";
+        $types = 's';
+        $params = [$user_id];
+        $error_message = "IDによるユーザーの削除に失敗しました";
+        $this->executeQuery($query, $types, $params, $error_message);
+    }
+
+
     public function findById(string $id): ?User
     {
         $query = "SELECT * FROM users WHERE id = ?";

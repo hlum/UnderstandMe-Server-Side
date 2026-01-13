@@ -33,4 +33,6 @@ interface UserRepositoryInterface
      */
     public function findByMajorCodeAndAdmissionYear(string $majorCode, int $admissionYear): array;
 
+    public function deleteByID(string $user_id): void;
+
 }

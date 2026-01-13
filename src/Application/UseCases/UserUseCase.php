@@ -66,6 +66,17 @@ class UserUseCase
         return $users;
     }
 
+    
+    public function deleteUserByID(string $user_id): void
+    {
+        $user = $this->userRepository->findById($user_id);
+        if ($user === null) {
+            throw new NotFoundException(message: "指定されたユーザーIDのユーザーが存在しません");
+        }
+
+        $this->userRepository->deleteByID($user_id);
+    }
+
 
     public function findByEmail(string $email): User
     {
