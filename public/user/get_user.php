@@ -18,15 +18,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
-    Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
-}
-
-
-
 
 try {
-    $headers = getallheaders();
+    if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
+        Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
+    }
     // API KEY Validation
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;

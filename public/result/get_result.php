@@ -1,6 +1,12 @@
 <?php
 
 require __DIR__ . '/../../vendor/autoload.php';
+
+
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
 use Application\CustomExceptions\ValidationException;
 use Application\UseCases\ResultUseCase;
 use Helpers\ApiKeyValidator;

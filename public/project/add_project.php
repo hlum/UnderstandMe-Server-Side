@@ -1,7 +1,14 @@
 <?php
 
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: PATCH, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
+
 use Helpers\RepoLinkValidator;
 ignore_user_abort(true); // continue even if user closes the connection
+
+
 require __DIR__ . '/../../vendor/autoload.php';
 
 use Application\CustomExceptions\AppException;
@@ -37,7 +44,6 @@ if (!in_array($_SERVER['REQUEST_METHOD'], ['PATCH'])) {
     Response::send('fail', 'Method not allowed. Use PATCH', 405, null, 'validation_error');
 }
 
-$headers = getallheaders();
 
 // API Key validation
 $headers = getallheaders();
