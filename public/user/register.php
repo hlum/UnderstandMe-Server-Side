@@ -111,6 +111,11 @@ try {
     $userRepository = new MySQLUserRepository($connection);
     $userUseCase = new UserUseCase($userRepository);
 
+    // if the major code is zz then it is guest so we will create a random student code
+    if($major_code == "zz") {
+        $student_code = bin2hex(random_bytes(4));
+    }
+
     $userUseCase->registerUser($user_id, $name, $email, $role, $photo_url, $student_code, $admission_year, $major_code);
 
     Response::send('success', 'ユーザー登録が成功しました。', 200);
