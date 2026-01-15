@@ -117,6 +117,9 @@ CREATE TABLE answers (
     user_id CHAR(36) NOT NULL,
     selected_choice_id CHAR(36) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uq_answers_user_question UNIQUE (user_id, question_id),
+
     CONSTRAINT fk_answers_question FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE,
     CONSTRAINT fk_answers_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_answers_choice FOREIGN KEY (selected_choice_id) REFERENCES choices(id) ON DELETE CASCADE

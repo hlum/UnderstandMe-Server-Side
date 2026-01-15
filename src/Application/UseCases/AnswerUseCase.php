@@ -62,5 +62,13 @@ class AnswerUseCase
         if ($question === null) {
             throw new ValidationException('指定されたquestion_idが存在しません。');
         }
+
+
+        $existingAnswers = $this->answerRepo->getAnswers($answer->questionID, $answer->userID);
+        
+        if (count($existingAnswers) > 0) {
+            throw new ValidationException('このユーザーは既にこの質問に対して回答しています。');
+        }
+
     }
 }
