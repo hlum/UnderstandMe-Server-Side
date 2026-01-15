@@ -70,12 +70,6 @@ const MAX_RETRY_COUNT = 10;
 
 function getNextJob(JobUseCase $jobUseCase): ?Job
 {
-    $failedJobs = $jobUseCase->getJobsByStatus(Status::from('failed'));
-    if (!empty($failedJobs)) {
-        echo "前回失敗したJobを再処理します。JobID: {$failedJobs[0]->id}\n";
-        return $failedJobs[0];
-    }
-
     $pendingJobs = $jobUseCase->getJobsByStatus(Status::from('pending'));
     if (empty($pendingJobs)) {
         echo "処理待ちのJobがありません。\n";
