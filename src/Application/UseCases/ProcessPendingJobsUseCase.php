@@ -39,7 +39,7 @@ class ProcessPendingJobsUseCase
         $this->projectRepository = $projectRepository;
     }
 
-    public function process(Job $job)
+    public function process(Job $job, int $snippetLineCount)
     {
         $job = $this->jobRepository->findById($job->id);
 
@@ -55,7 +55,7 @@ class ProcessPendingJobsUseCase
             $project = $this->projectRepository->findById($job->projectID);
             $codeSnippet = $this->snippetsRepository->getRandomCodeSnippet(
                 $project->githubFileLink,
-                50
+                $snippetLineCount
             );
 
 
@@ -76,6 +76,8 @@ class ProcessPendingJobsUseCase
             foreach ($generatedQAndChoices as $qAndChoices) {
                 $this->questionRepository->insert($qAndChoices->question);
                 
+                shuffle($qAndChoices->choices);
+
                 $this->choiceRepository->insertBatch($qAndChoices->choices);
             }
 
