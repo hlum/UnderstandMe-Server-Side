@@ -3,6 +3,11 @@ set -e
 
 APP="/var/www/html"
 
+# Install/update composer dependencies
+echo "Installing Composer dependencies..."
+cd "$APP"
+composer install --no-interaction --optimize-autoloader
+
 # General permissions
 find "$APP" -type d -exec chmod 755 {} \;
 find "$APP" -type f -exec chmod 644 {} \;
