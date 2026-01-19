@@ -137,6 +137,7 @@ CREATE TABLE results (
 
     CONSTRAINT fk_results_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_results_homework FOREIGN KEY (homework_id) REFERENCES homeworks(id) ON DELETE CASCADE,
+    CONSTRAINT fk_results_user_project FOREIGN KEY (user_id, homework_id) REFERENCES projects(user_id, homework_id) ON DELETE CASCADE,
     CONSTRAINT uq_result UNIQUE (user_id, homework_id)
 );
 
