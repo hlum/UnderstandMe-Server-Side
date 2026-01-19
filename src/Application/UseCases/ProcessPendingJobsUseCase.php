@@ -75,9 +75,8 @@ class ProcessPendingJobsUseCase
 
             foreach ($generatedQAndChoices as $qAndChoices) {
                 $this->questionRepository->insert($qAndChoices->question);
-                foreach ($qAndChoices->choices as $choice) {
-                    $this->choiceRepository->insert($choice);
-                }
+                
+                $this->choiceRepository->insertBatch($qAndChoices->choices);
             }
 
             $this->jobRepository->updateStatus($job->id, Status::from('done'));

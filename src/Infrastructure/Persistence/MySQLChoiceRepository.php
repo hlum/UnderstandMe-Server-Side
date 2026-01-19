@@ -25,6 +25,28 @@ class MySQLChoiceRepository implements ChoiceRepositoryInterface
     }
 
 
+    public function insertBatch(array $choices): void
+    {
+        $query = "INSERT INTO choices (id, question_id, choice_text, is_correct) VALUES ";
+        $types = '';
+        $params = [];
+        $placeholders = [];
+
+        foreach ($choices as $choice) {
+            $placeholders[] = "(?, ?, ?, ?)";
+            $types .= 'sssi';
+            $params[] = $choice->id;
+            $params[] = $choice->questionId;
+            $params[] = $choice->choiceText;
+            $params[] = $choice->isCorrect ? 1 : 0;
+        }
+
+        $query .= implode(", ", $placeholders);
+        $errorMessage = 'Choiceバッチ保存に失敗しました。';
+        $this->executeQuery($query, $types, $params, $errorMessage);
+    }
+
+
     public function findById(string $id): ?Choice
     {
         $query = "SELECT * FROM choices WHERE id = ?";

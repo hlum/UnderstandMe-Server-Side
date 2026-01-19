@@ -6,6 +6,11 @@ use Domain\Entities\Choice;
 interface ChoiceRepositoryInterface
 {
     public function insert(Choice $choice): void;
+
+    /**
+     * @param Choice[] $choices
+     */
+    public function insertBatch(array $choices): void;
     public function findById(string $id): ?Choice;
     
     /**
