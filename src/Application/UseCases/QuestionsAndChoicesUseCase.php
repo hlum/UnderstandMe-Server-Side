@@ -15,10 +15,13 @@ class QuestionsAndChoicesUseCase
     public function getQuestionsAndChoicesByHomeworkId(string $homeworkId, string $userID): array
     {
         $questionsAndChoices = $this->repository->getQuestionsAndChoicesByHomeworkId($homeworkId, $userID);
-        // Shuffle the choices arrange
-        foreach($questionsAndChoices as $qc) {
-            shuffle($qc->choices);
+
+        // Shuffle the choices in place
+        foreach($questionsAndChoices as &$qc) {
+            shuffle($qc['choices']);
         }
+
         return $questionsAndChoices;
     }
+
 }
