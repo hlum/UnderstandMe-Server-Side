@@ -17,29 +17,27 @@ use Infrastructure\Persistence\MySQLQuestionRepository;
 use Application\UseCases\AnswerUseCase;
 
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
-    Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
-}
-
-
-// API KEY Validation
-$headers = getallheaders();
-$clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-ApiKeyValidator::check($clientApiKey);
-
-
-$homeworkID = $_GET['homework_id'] ?? null;
-$userID = $_GET['user_id'] ?? null;
-
-
-
-
 try {
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(200);
+        exit();
+    }
+
+    if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
+        Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
+    }
+
+
+    // API KEY Validation
+    $headers = getallheaders();
+    $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
+    ApiKeyValidator::check($clientApiKey);
+
+
+    $homeworkID = $_GET['homework_id'] ?? null;
+    $userID = $_GET['user_id'] ?? null;
+
+
     if (!isset($homeworkID) || !isset($userID)) {
         throw new ValidationException('homework_id と user_id は必須です。');
     }

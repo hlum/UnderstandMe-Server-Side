@@ -17,25 +17,27 @@ header("Access-Control-Allow-Methods: DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-
-if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
-    Response::send('fail', 'Method Not Allowed. Use DELETE', 405, null, 'validation_error');
-}
-
-// API KEY Validation
-$headers = getallheaders();
-$clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-ApiKeyValidator::checkTeacherKey($clientApiKey);
-
-
-$id = $_GET['id'] ?? null;
 
 try {
+
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(200);
+        exit();
+    }
+
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
+        Response::send('fail', 'Method Not Allowed. Use DELETE', 405, null, 'validation_error');
+    }
+
+    // API KEY Validation
+    $headers = getallheaders();
+    $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
+    ApiKeyValidator::checkTeacherKey($clientApiKey);
+
+
+    $id = $_GET['id'] ?? null;
+
 
     if (!$id) {
         throw new ValidationException('idは必須です。');

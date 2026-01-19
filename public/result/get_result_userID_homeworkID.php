@@ -19,25 +19,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
-    Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
-}
-
-
-$headers = getallheaders();
-// API KEY Validation
-$headers = getallheaders();
-$clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-ApiKeyValidator::check($clientApiKey);
-
-$userID = $_GET['user_id'] ?? null;
-$homeworkID = $_GET['homework_id'] ?? null;
-
-if ($userID === null || $homeworkID === null) {
-    throw new ValidationException('user_idとhomework_idは必須です。');
-}
-
 try {
+
+
+    if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
+        Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
+    }
+
+
+    $headers = getallheaders();
+    // API KEY Validation
+    $headers = getallheaders();
+    $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
+    ApiKeyValidator::check($clientApiKey);
+
+    $userID = $_GET['user_id'] ?? null;
+    $homeworkID = $_GET['homework_id'] ?? null;
+
+    if ($userID === null || $homeworkID === null) {
+        throw new ValidationException('user_idとhomework_idは必須です。');
+    }
+
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $resultRepository = new MySQLResultRepository($connection);
     $resultUseCase = new ResultUseCase($resultRepository);

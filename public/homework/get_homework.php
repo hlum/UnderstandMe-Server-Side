@@ -21,28 +21,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
-    Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
-}
-
-// API KEY Validation
-$headers = getallheaders();
-$clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-ApiKeyValidator::check($clientApiKey);
-
-
-// Possible queries
-/*
-by homework_id
-by class_id (get all homeworks for a specific class)
-by teacher_id (get all homeworks assigned by a specific teacher)
-*/
-
-$homework_id = $_GET['id'] ?? null;
-$class_id = $_GET['class_id'] ?? null;
-$teacher_id = $_GET['teacher_id'] ?? null;
 
 try {
+    if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
+        Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
+    }
+
+    // API KEY Validation
+    $headers = getallheaders();
+    $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
+    ApiKeyValidator::check($clientApiKey);
+
+
+    // Possible queries
+    /*
+    by homework_id
+    by class_id (get all homeworks for a specific class)
+    by teacher_id (get all homeworks assigned by a specific teacher)
+    */
+
+    $homework_id = $_GET['id'] ?? null;
+    $class_id = $_GET['class_id'] ?? null;
+    $teacher_id = $_GET['teacher_id'] ?? null;
+
+    
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $homeworkRepository = new MySQLHomeworkRepository($connection);
     $userRepository = new MySQLUserRepository($connection);

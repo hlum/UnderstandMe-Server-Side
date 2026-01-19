@@ -40,26 +40,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if (!in_array($_SERVER['REQUEST_METHOD'], ['PATCH'])) {
-    Response::send('fail', 'Method not allowed. Use PATCH', 405, null, 'validation_error');
-}
-
-
-// API Key validation
-$headers = getallheaders();
-$clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-ApiKeyValidator::check($clientApiKey);
-
-
-/* Expected JSON structure
-{
-    user_id: String,
-    homework_id: String,
-    github_file_link: String
-}
-*/
 
 try {
+
+
+    if (!in_array($_SERVER['REQUEST_METHOD'], ['PATCH'])) {
+        Response::send('fail', 'Method not allowed. Use PATCH', 405, null, 'validation_error');
+    }
+
+
+    // API Key validation
+    $headers = getallheaders();
+    $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
+    ApiKeyValidator::check($clientApiKey);
+
+
+    /* Expected JSON structure
+    {
+        user_id: String,
+        homework_id: String,
+        github_file_link: String
+    }
+    */
     $input = json_decode(file_get_contents('php://input'), true);
     if (json_last_error() !== JSON_ERROR_NONE) {
         throw new ValidationException('無効なJSONデータです。');

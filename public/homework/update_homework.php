@@ -21,16 +21,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if (!in_array($_SERVER['REQUEST_METHOD'], ['UPDATE'])) {
-    Response::send('fail', 'Method not allowed. Use UPDATE', 405, null, 'validation_error');
-}
-
-$headers = getallheaders();
-$clientAPIKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-ApiKeyValidator::checkTeacherKey($clientAPIKey);
-
-
 try {
+
+    if (!in_array($_SERVER['REQUEST_METHOD'], ['UPDATE'])) {
+        Response::send('fail', 'Method not allowed. Use UPDATE', 405, null, 'validation_error');
+    }
+
+    $headers = getallheaders();
+    $clientAPIKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
+    ApiKeyValidator::checkTeacherKey($clientAPIKey);
+
+
     $input = json_decode(file_get_contents('php://input'), true);
       if (json_last_error() !== JSON_ERROR_NONE) {
         throw new ValidationException('無効なJSONデータです。');

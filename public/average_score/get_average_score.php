@@ -13,27 +13,27 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
-    Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
-}
-
-// API KEY Validation
-$headers = getallheaders();
-$clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-ApiKeyValidator::check($clientApiKey);
-
-
-$student_id = $_GET['student_id'] ?? null;
-if (!isset($student_id)) {
-    Response::send('fail', 'student_id は必須です。', 400, null, 'validation_error');
-}
 
 try {
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(200);
+        exit();
+    }
+
+    if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
+        Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
+    }
+
+    // API KEY Validation
+    $headers = getallheaders();
+    $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
+    ApiKeyValidator::check($clientApiKey);
+
+
+    $student_id = $_GET['student_id'] ?? null;
+    if (!isset($student_id)) {
+        Response::send('fail', 'student_id は必須です。', 400, null, 'validation_error');
+    }
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
     $averageScoreRepository = new MySQLAverageScoreRepository($connection);

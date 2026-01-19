@@ -31,24 +31,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
-    Response::send('fail', 'Method Not Allowed. Use DELETE', 405, null, 'validation_error');
-}
-
-
-// API KEY Validation
-$headers = getallheaders();
-$clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-ApiKeyValidator::check($clientApiKey);
-
-
-$input = json_decode(file_get_contents('php://input'), true);
-$userID = $_GET['user_id'] ?? $input['user_id'] ?? null;
-$homeworkID = $_GET['homework_id'] ?? $input['homework_id'] ?? null;
-
 
 $connection = null;
 try {
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
+        Response::send('fail', 'Method Not Allowed. Use DELETE', 405, null, 'validation_error');
+    }
+
+
+    // API KEY Validation
+    $headers = getallheaders();
+    $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
+    ApiKeyValidator::check($clientApiKey);
+
+
+    $input = json_decode(file_get_contents('php://input'), true);
+    $userID = $_GET['user_id'] ?? $input['user_id'] ?? null;
+    $homeworkID = $_GET['homework_id'] ?? $input['homework_id'] ?? null;
+
 
     if (!$userID || !$homeworkID) {
         throw new ValidationException('Missing parameters');

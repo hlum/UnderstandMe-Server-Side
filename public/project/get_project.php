@@ -17,27 +17,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
-    Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
-}
-
-
-// API KEY Validation
-$headers = getallheaders();
-$clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-ApiKeyValidator::check($clientApiKey);
-
-/* Possible queries
-by project_id
-by homework_id
-by user_id
-*/
-$project_id = $_GET['id'] ?? null;
-$homework_id = $_GET['homework_id'] ?? null;
-$user_id = $_GET['user_id'] ?? null;
-
 
 try {
+
+    if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
+        Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
+    }
+
+
+    // API KEY Validation
+    $headers = getallheaders();
+    $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
+    ApiKeyValidator::check($clientApiKey);
+
+    /* Possible queries
+    by project_id
+    by homework_id
+    by user_id
+    */
+    $project_id = $_GET['id'] ?? null;
+    $homework_id = $_GET['homework_id'] ?? null;
+    $user_id = $_GET['user_id'] ?? null;
+
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
     $projectRepository = new MySQLProjectRepository($connection);

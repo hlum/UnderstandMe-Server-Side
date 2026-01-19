@@ -21,24 +21,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
-    Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
-}
-
-// API KEY Validation
-$headers = getallheaders();
-$clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-ApiKeyValidator::check($clientApiKey);
-
-
-$homeworkID = $_GET['homework_id'] ?? null;
-
-if (!isset($homeworkID)) {
-    throw new ValidationException('homework_id は必須です。');
-}
 
 
 try {
+
+    if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
+        Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
+    }
+
+    // API KEY Validation
+    $headers = getallheaders();
+    $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
+    ApiKeyValidator::check($clientApiKey);
+
+
+    $homeworkID = $_GET['homework_id'] ?? null;
+
+    if (!isset($homeworkID)) {
+        throw new ValidationException('homework_id は必須です。');
+    }
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $homeworkRepository = new MySQLHomeworkRepository($connection);
     $userRepository = new MySQLUserRepository($connection);

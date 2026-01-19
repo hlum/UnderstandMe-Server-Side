@@ -14,41 +14,42 @@ use Application\UseCases\ClassUseCase;
 use Infrastructure\Persistence\MySQLStudentClassEnrollmentRepository;
 use Infrastructure\Persistence\MySQLUserRepository;
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
-    Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
-}
-
-
-$headers = getallheaders();
-// API KEY Validation
-$headers = getallheaders();
-$clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-ApiKeyValidator::check($clientApiKey);
-
-
-/* Possible queries
-by id
-by teacher_id
-by class_code
-by major_code and admission_year
-by student_id (get the class of a specific student)
-*/
-
-
-$id = $_GET['id'] ?? null;
-$teacher_id = $_GET['teacher_id'] ?? null;
-$major_code = $_GET['major_code'] ?? null;
-$admission_year = $_GET['admission_year'] ?? null;
-$student_id = $_GET['student_id'] ?? null;
-$class_code = $_GET['class_code'] ?? null;
 
 
 try {
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(200);
+        exit();
+    }
+
+    if (!in_array($_SERVER['REQUEST_METHOD'], ['GET'])) {
+        Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
+    }
+
+
+    $headers = getallheaders();
+    // API KEY Validation
+    $headers = getallheaders();
+    $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
+    ApiKeyValidator::check($clientApiKey);
+
+
+    /* Possible queries
+    by id
+    by teacher_id
+    by class_code
+    by major_code and admission_year
+    by student_id (get the class of a specific student)
+    */
+
+
+    $id = $_GET['id'] ?? null;
+    $teacher_id = $_GET['teacher_id'] ?? null;
+    $major_code = $_GET['major_code'] ?? null;
+    $admission_year = $_GET['admission_year'] ?? null;
+    $student_id = $_GET['student_id'] ?? null;
+    $class_code = $_GET['class_code'] ?? null;
+
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $classRepository = new MySQLClassRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
