@@ -2,6 +2,7 @@
 
 namespace Application\UseCases;
 
+use Application\CustomExceptions\NotFoundException;
 use Application\CustomExceptions\ValidationException;
 use Domain\Entities\Choice;
 use Domain\Repositories\ChoiceRepositoryInterface;
@@ -36,6 +37,21 @@ class ChoiceUseCase
             throw new ValidationException("指定されたIDの選択肢が存在しません。");
         }
         return $choice;
+    }
+
+    public function fetchCorrectChoiceByQuestionId(string $questionId): Choice
+    {
+        $questionExists = $this->questionRepository->findById($questionId);
+        if ($questionExists === null) {
+            throw new ValidationException("指定されたQuestionIDの質問が存在しません。");
+        }
+
+        $choices =  $this->choiceRepository->findCorrectChoiceByQuestionId($questionId);
+        if (count($choices) === 0) {
+            throw new NotFoundException("指定されたQuestionIDの正解の選択肢が存在しません。");
+        }
+
+        return $choices[0];
     }
 
 

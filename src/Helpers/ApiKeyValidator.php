@@ -54,14 +54,13 @@ class ApiKeyValidator
         }
     }
 
-    public static function checkTeacherKey(?string $teacherApiKey)
+    /**
+     * Validate teacher authentication using Firebase ID token
+     * This method is now identical to check() since all teachers authenticate via Firebase
+     */
+    public static function checkTeacherKey(?string $authToken)
     {
-        if (empty($teacherApiKey)) {
-            throw new ValidationException('APIキーが提供されていません。');
-        }
-
-        if (!hash_equals($teacherApiKey, TEACHER_API_KEY)) {
-            throw new ForbiddenException('アクセスが拒否されました。無効なAPIキーです。教師専用のAPIKEYが必要です。');
-        }
+        // Teacher authentication now uses Firebase ID tokens, same as regular users
+        return self::check($authToken);
     }
 }

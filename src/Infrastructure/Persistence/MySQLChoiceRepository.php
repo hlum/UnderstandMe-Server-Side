@@ -1,6 +1,8 @@
 <?php
 
 namespace Infrastructure\Persistence;
+
+use CuyZ\Valinor\Normalizer\ArrayNormalizer;
 use Domain\Entities\Choice;
 use Domain\Repositories\ChoiceRepositoryInterface;
 use mysqli;
@@ -81,6 +83,24 @@ class MySQLChoiceRepository implements ChoiceRepositoryInterface
 
         return $choices;
     }
+
+
+    public function findCorrectChoiceByQuestionId(string $questionId): array
+    {
+        $query = "SELECT * FROM choices WHERE is_correct = 1 AND question_id = ?";
+        $types = 's';
+        $params = [$questionId];
+        $errorMessage = 'QuestionIDによるChoice検索に失敗しました。';
+
+        $result = $this->executeQuery($query, $types, $params, $errorMessage);
+        $choices = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $choices[] = Choice::fromDBRow($row);
+        }
+
+        return $choices;   
+     }
 
 
     public function updateCorrectAnswer(string $newCorrectChoiceID, string $questionID)

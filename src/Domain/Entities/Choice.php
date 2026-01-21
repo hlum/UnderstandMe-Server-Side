@@ -52,7 +52,7 @@ class Choice implements JsonSerializable
     public function jsonSerialize(): array
     {
         return [
-            'id' => $this->id,
+            'choice_id' => $this->id,
             'question_id' => $this->questionId,
             'choice_text' => $this->choiceText,
             'is_correct' => $this->isCorrect,

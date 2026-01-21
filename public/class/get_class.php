@@ -56,6 +56,8 @@ try {
     $studentClassEnrollmentRepo = new MySQLStudentClassEnrollmentRepository($connection);
     $classUseCase = new ClassUseCase($classRepository, $userRepository, $studentClassEnrollmentRepo);
 
+}catch(AppException $e) {
+    Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
 } catch (Throwable $e) {
     error_log('サーバー内部エラー: ' . $e->getMessage());
     Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');

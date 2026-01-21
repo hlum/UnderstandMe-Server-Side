@@ -18,6 +18,12 @@ interface ChoiceRepositoryInterface
      */
     public function findByQuestionId(string $questionId): array;
 
+
+    /**
+     * @return Choice[]
+     */
+    public function findCorrectChoiceByQuestionId(string $questionId): array;
+
     /**
      * 正解の選択肢を変更する
      * @param string $newCorrectChoiceID

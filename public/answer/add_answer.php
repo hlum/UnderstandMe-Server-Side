@@ -77,10 +77,11 @@ try {
 
 
     // --- Check if correct ---
+    $correctChoice = null;
     $choiceIsCorrect = false;
     if (isset($selectedChoiceID)) {
-        $choice = $choiceUseCase->findById($selectedChoiceID);
-        $choiceIsCorrect = $choice->isCorrect;
+        $correctChoice = $choiceUseCase->fetchCorrectChoiceByQuestionId($questionID);
+        $choiceIsCorrect = ($selectedChoiceID === $correctChoice->id);
     }
 
     // --- Update or create result ---
@@ -99,8 +100,8 @@ try {
 
     // すべて成功した場合、トランザクションをコミット
     $connection->commit();
-
-    Response::send('success', 'Answer and result updated successfully.');
+    $correctChoiceID = $correctChoice ? $correctChoice->id : null;
+    Response::send('success', 'Answer and result updated successfully.', 200, [['correct_choice_id' => $correctChoiceID]]);
 
 } catch (AppException $e) {
     Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());

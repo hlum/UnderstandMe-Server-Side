@@ -57,6 +57,45 @@ class MySQLQuestionsAndChoicesRepository implements QuestionsAndChoicesRepositor
     }
 
 
+    public function getQuestionsAndChoicesByHomeworkIdWithNoCorrectChoiceData(string $homeworkId, string $userID): array {
+        $query = "SELECT * FROM questions_with_choices WHERE user_id = ? AND homework_id = ? ORDER BY question_id, choice_id";
+        $types = 'ss';
+        $params = [$userID, $homeworkId];
+        $errorMessage = 'HomeworkIDとUserIDによるQuestionsAndChoices検索に失敗しました。';
+
+        $result = $this->executeQuery($query, $types, $params, $errorMessage);
+        $questionsAndChoices = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $questionId = $row['question_id'];
+
+            // Create new question entry if not already added
+            if (!isset($questionsAndChoices[$questionId])) {
+                $questionsAndChoices[$questionId] = [
+                    'question_id' => $row['question_id'],
+                    'job_id' => $row['job_id'],
+                    'project_id' => $row['project_id'],
+                    'homework_id' => $row['homework_id'],
+                    'user_id' => $row['user_id'],
+                    'question_text' => $row['question_text'],
+                    'created_at' => $row['created_at'],
+                    'choices' => [] // initialize choices array
+                ];
+            }
+
+            // Add choice if available
+            if (!empty($row['choice_id'])) {
+                $questionsAndChoices[$questionId]['choices'][] = [
+                    'choice_id' => $row['choice_id'],
+                    'choice_text' => $row['choice_text'],
+                ];
+            }
+        }
+
+        // Reindex array (convert associative to numeric)
+        return array_values($questionsAndChoices);
+    }
+
 
 
     private function executeQuery(
