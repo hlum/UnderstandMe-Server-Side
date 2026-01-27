@@ -13,3 +13,6 @@ curltest.txt
 /vendor/
 
 .vscode/
+
+.env
+.env

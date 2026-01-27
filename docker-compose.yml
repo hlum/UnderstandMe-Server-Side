@@ -26,10 +26,10 @@ services:
         image: mysql:8.0
         container_name: mysql_understand_me
         environment:
-            MYSQL_ROOT_PASSWORD: rootpassword
-            MYSQL_DATABASE: understand_me
-            MYSQL_USER: user
-            MYSQL_PASSWORD: password
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+            MYSQL_DATABASE: ${MYSQL_DATABASE}
+            MYSQL_USER: ${MYSQL_USER}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD}
             LANG: C.UTF-8
             LC_ALL: C.UTF-8
         ports:

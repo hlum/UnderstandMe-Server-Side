@@ -33,12 +33,6 @@ class ApiKeyValidator
             throw new ValidationException('認証トークンが提供されていません。');
         }
 
-        // Check if it's the old static API key (backward compatibility)
-        if (hash_equals(API_KEY, $authToken)) {
-            // Valid static API key - allow access
-            return null;
-        }
-
         // Try to validate as Firebase ID token
         try {
             $auth = self::getFirebaseAuth();
