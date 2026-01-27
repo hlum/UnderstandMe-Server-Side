@@ -12,7 +12,7 @@ CONFIG_EXAMPLE="$CONFIG_DIR/config.php.example"
 ENV_FILE=".env"
 ENV_EXAMPLE=".env.example"
 FIREBASE_SERVICE_ACCOUNT="$CONFIG_DIR/service-account.json"
-MYSQL_VOLUME_NAME="sotsusei_mysql_data"
+MYSQL_VOLUME_NAME="mysql_data"
 MYSQL_CONTAINER_NAME="mysql_understand_me"
 
 # グローバル変数：既存データを保持するかどうか
