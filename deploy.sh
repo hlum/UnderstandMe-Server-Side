@@ -208,25 +208,15 @@ handle_existing_data() {
     fi
 }
 
-# 既存環境をクリーンアップ
 cleanup_existing_environment() {
     print_header "既存環境のクリーンアップ"
 
     local compose_cmd=$(get_compose_command)
 
-    # コンテナを停止・削除
-    if check_existing_mysql_container || docker ps -a --format '{{.Names}}' | grep -q "php_apache_understand_me\|sotsusei-cron"; then
-        print_step "コンテナを停止・削除しています..."
-        $compose_cmd down 2>/dev/null || true
-        print_success "コンテナを削除しました"
-    fi
+    print_step "Docker環境（コンテナ・ネットワーク・ボリューム）を完全削除しています..."
+    $compose_cmd down -v --remove-orphans 2>/dev/null || true
 
-    # ボリュームを削除
-    if check_existing_mysql_volume; then
-        print_step "MySQLデータボリュームを削除しています..."
-        docker volume rm "$MYSQL_VOLUME_NAME" 2>/dev/null || true
-        print_success "データボリュームを削除しました"
-    fi
+    print_success "Dockerリソースを完全に削除しました"
 
     # .envファイルをバックアップして削除
     if [ -f "$ENV_FILE" ]; then
@@ -245,8 +235,9 @@ cleanup_existing_environment() {
     fi
 
     echo ""
-    print_success "クリーンアップが完了しました"
+    print_success "クリーンアップが完了しました（完全初期化）"
 }
+
 
 # OSに応じてDockerをインストール
 install_docker() {
