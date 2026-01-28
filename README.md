@@ -2,7 +2,7 @@
 
 ## 概要
 
-このガイドでは、新しい自動デプロイスクリプトを使用してUnderstand Me APIをセットアップおよびデプロイする方法を説明します。
+このガイドでは、自動デプロイスクリプト（`deploy.sh`）を使用してKnowYourCode APIを簡単にセットアップおよびデプロイする方法を説明します。スクリプトが全ての設定を対話形式で案内するため、事前の複雑な準備は不要です。
 
 ## 前提条件
 
@@ -19,11 +19,41 @@ git clone <repository-url>
 cd sotsusei
 ```
 
-### 2. Firebase Service Accountファイルの配置
+### 2. デプロイスクリプトの実行
 
-デプロイスクリプトを実行する前に、Firebase Service Accountファイルを準備してください。
+```bash
+./deploy.sh
+```
 
-#### Firebase Service Accountファイルの取得方法:
+**それだけです！** デプロイスクリプトが以下の処理を自動的に行います:
+
+1. ✅ 依存関係のチェック（Docker、Git、Composer）
+2. ✅ 既存データの確認と保持/削除の選択
+3. ✅ `.env`ファイルのセットアップ（対話形式）
+4. ✅ `config/config.php`の自動生成
+5. ✅ Firebase Service Accountファイルの確認と配置ガイド
+6. ✅ Composer依存関係のインストール
+7. ✅ Dockerコンテナのビルドと起動
+8. ✅ デプロイメントの検証
+
+### 3. セットアップの流れ
+
+スクリプトを実行すると、対話形式で以下の情報を求められます：
+
+#### データベース設定
+- **MYSQL_ROOT_PASSWORD**: MySQLのrootパスワード
+- **MYSQL_DATABASE**: データベース名（デフォルト: `understand_me`）
+- **MYSQL_USER**: データベースユーザー名（デフォルト: `user`）
+- **MYSQL_PASSWORD**: データベースユーザーのパスワード
+
+#### アプリケーション設定
+- **OLLAMA_ENDPOINT**: OllamaのAPIエンドポイント
+  - 例: `http://ollama.hlumaungphyo.site/api/generate`
+- **FIREBASE_PROJECT_ID**: FirebaseプロジェクトID
+  - 例: `understand-me-675da`
+
+#### Firebase Service Account
+スクリプトが `config/service-account.json` の存在を確認します。ファイルが見つからない場合、以下の手順が表示されます：
 
 1. [Firebase Console](https://console.firebase.google.com/)にアクセス
 2. プロジェクトを選択
@@ -38,38 +68,7 @@ mv ~/Downloads/understand-me-xxxxx.json ./config/service-account.json
 
 ⚠️ **セキュリティ警告**: このファイルには機密情報が含まれます。公開リポジトリにコミットしないでください。
 
-### 3. デプロイスクリプトの実行
-
-```bash
-./deploy.sh
-```
-
-デプロイスクリプトは以下の処理を自動的に行います:
-
-1. ✅ 依存関係のチェック（Docker、Git、Composer）
-2. ✅ `.env`ファイルのセットアップ（データベース認証情報）
-3. ✅ `config/config.php`の生成
-4. ✅ Firebase Service Accountファイルの検証
-5. ✅ Composer依存関係のインストール
-6. ✅ Dockerコンテナのビルドと起動
-
-### 4. セットアップ中に入力が必要な情報
-
-スクリプト実行中に、以下の情報の入力を求められます:
-
-#### データベース設定
-
-- **MYSQL_ROOT_PASSWORD**: MySQLのrootパスワード
-- **MYSQL_DATABASE**: データベース名（デフォルト: `understand_me`）
-- **MYSQL_USER**: データベースユーザー名（デフォルト: `user`）
-- **MYSQL_PASSWORD**: データベースユーザーのパスワード
-
-#### アプリケーション設定
-
-- **OLLAMA_ENDPOINT**: OllamaのAPIエンドポイント
-    - 例: `http://ollama.hlumaungphyo.site/api/generate`
-- **FIREBASE_PROJECT_ID**: FirebaseプロジェクトID
-    - 例: `understand-me-675da`
+スクリプトが全ての設定を案内してくれるので、事前準備は不要です。
 
 ## ファイル構成
 
@@ -128,25 +127,28 @@ Docker Desktopアプリを起動
 
 ### 既存の設定を変更したい
 
-#### データベース認証情報の変更
-
-1. `.env`ファイルを編集
-2. `config/config.php`を削除（または編集）
-3. `./deploy.sh`を再実行
-
-または、直接`.env`を編集して`docker-compose up -d`を実行:
+設定を変更する最も簡単な方法は、`deploy.sh`を再実行することです：
 
 ```bash
-vim .env
-docker-compose down
-docker-compose up -d
+./deploy.sh
 ```
 
-#### Firebase設定の変更
+スクリプトが既存のデータを検出し、以下の選択肢を提示します：
+- **既存データを保持**: 既存の設定とデータベースをそのまま使用
+- **新規セットアップ**: 全ての設定をやり直し（データは削除されます）
 
-1. `config/config.php`を編集
-2. 必要に応じて`config/service-account.json`を置き換え
-3. コンテナを再起動: `docker-compose restart`
+#### 手動で設定を変更する場合
+
+```bash
+# .envファイルを編集
+vim .env
+
+# config.phpを削除して再生成させる
+rm config/config.php
+
+# スクリプトを再実行
+./deploy.sh
+```
 
 ## デプロイ後の操作
 
@@ -255,11 +257,11 @@ git pull
 ./deploy.sh
 ```
 
-デプロイスクリプトが自動的に:
+デプロイスクリプトが既存データの保持/削除を確認した後、自動的に:
 
-- 最新のコードを取得
-- コンテナを再ビルド
+- 必要に応じてコンテナを再ビルド
 - 新しいコンテナを起動
+- 設定の検証を実行
 
 ### データベースのバックアップ
 
