@@ -1,5 +1,6 @@
 <?php
-
+// 教師用のapplicationからのリクエストのみ (全学生の課題の提出状況一覧を取得)
+// 教師しかアクセスできない
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -9,6 +10,7 @@ require __DIR__ . '/../../vendor/autoload.php';
 use Application\CustomExceptions\AppException;
 use Application\CustomExceptions\ValidationException;
 use Application\UseCases\HomeworkUseCase;
+use Application\UseCases\UserUseCase;
 use Helpers\ApiKeyValidator;
 use Helpers\Response;
 use Infrastructure\Persistence\MySQLHomeworkRepository;
@@ -32,7 +34,8 @@ try {
     // API KEY Validation
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::check($clientApiKey);
+    $userID = ApiKeyValidator::check($clientApiKey);
+
 
 
     $homeworkID = $_GET['homework_id'] ?? null;
@@ -43,6 +46,11 @@ try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $homeworkRepository = new MySQLHomeworkRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
+    
+    // 教師かどうか確認
+    $userUseCase = new UserUseCase($userRepository);
+    $userUseCase->verifyTeacher($userID);
+
     $classRepository = new MySQLClassRepository($connection);
 
     $homeworkUseCase = new HomeworkUseCase($homeworkRepository, $userRepository, $classRepository);

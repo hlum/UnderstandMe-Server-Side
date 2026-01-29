@@ -1,14 +1,16 @@
 <?php
+// 学生用のapplicationからのリクエストのみ
+
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: PATCH, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
 
 use Application\CustomExceptions\AppException;
 use Application\CustomExceptions\ValidationException;
 use Application\UseCases\JobUseCase;
 use Infrastructure\Persistence\MySQLJobRepository;
 use Infrastructure\Persistence\MySQLProjectRepository;
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: PATCH, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
-
 
 require __DIR__ . '/../../vendor/autoload.php';
 
@@ -32,7 +34,7 @@ try {
     // API KEY Validation
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::check($clientApiKey);
+    $userID = ApiKeyValidator::check($clientApiKey);
 
     $input = json_decode(file_get_contents('php://input'), true);
 
@@ -41,24 +43,39 @@ try {
     }
 
     $homeworkID = $input['homework_id'] ?? null;
-    $userID = $input['user_id'] ?? null;
+    $passedUserID = $input['user_id'] ?? null;
 
-    if (!isset($homeworkID) || !isset($userID)) {
+
+
+    if (!isset($homeworkID) || !isset($passedUserID)) {
         throw new ValidationException('homework_id と user_id は必須です。');
     }
 
+
+    if( $passedUserID !== null && $userID != $passedUserID) {
+        throw new ValidationException('トークンのユーザーIDと渡されたユーザーIDが一致しません。他のユーザーの情報を操作することはできません。');
+    }
+
+
+
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+    $connection->begin_transaction();
+
     $jobRepo = new MySQLJobRepository($connection);
     $projectRepo = new MySQLProjectRepository($connection);
     $jobUseCase = new JobUseCase($jobRepo, $projectRepo);
 
-    $jobUseCase->retryJob($homeworkID, $userID);
+    $jobUseCase->retryJob($homeworkID, $passedUserID);
+
+    $connection->commit();
 
     Response::send('success', 'リトライが完了しました。', 200);
 
 } catch(AppException $e) {
     Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
+    $connection->rollback();
 } catch (Throwable $e) {
     error_log('サーバー内部エラー: ' . $e->getMessage());
     Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
+    $connection->rollback();
 }

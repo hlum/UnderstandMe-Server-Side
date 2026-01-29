@@ -47,6 +47,30 @@ class UserUseCase
         return $user;
     }
 
+
+    public function verifyTeacher(string $user_id)
+    {
+        $user = $this->userRepository->findById($user_id);
+        if ($user === null) {
+            throw new NotFoundException(message: "指定されたユーザーIDのユーザーが存在しません");
+        }
+
+        if ($user->role->getValue() !== 'teacher') {
+            throw new ValidationException("指定されたユーザーは教師ではありません");
+        }
+    }
+
+
+    public function isTeacher(string $user_id): bool
+    {
+        $user = $this->userRepository->findById($user_id);
+        if ($user === null) {
+            throw new NotFoundException(message: "指定されたユーザーIDのユーザーが存在しません");
+        }
+
+        return $user->role->getValue() === 'teacher';
+    }
+
     public function findById(string $user_id): ?User
     {
         $user = $this->userRepository->findById($user_id);

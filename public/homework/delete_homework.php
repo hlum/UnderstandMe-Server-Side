@@ -3,6 +3,7 @@
 use Application\CustomExceptions\AppException;
 use Application\CustomExceptions\ValidationException;
 use Application\UseCases\HomeworkUseCase;
+use Application\UseCases\UserUseCase;
 use Helpers\ApiKeyValidator;
 use Helpers\Response;
 use Infrastructure\Persistence\MySQLClassRepository;
@@ -33,7 +34,7 @@ try {
     // API KEY Validation
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::checkTeacherKey($clientApiKey);
+    $teacherID = ApiKeyValidator::checkTeacherKey($clientApiKey);
 
 
     $id = $_GET['id'] ?? null;
@@ -43,9 +44,16 @@ try {
         throw new ValidationException('idは必須です。');
     }
 
+    
+
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $homeworkRepository = new MySQLHomeworkRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
+    $userUseCase = new UserUseCase($userRepository);
+
+    // 教師ユーザーの検証
+    $userUseCase->verifyTeacher($teacherID);
+
     $classRepository = new MySQLClassRepository($connection);
     $homeworkUseCase = new HomeworkUseCase($homeworkRepository, $userRepository, $classRepository);
 

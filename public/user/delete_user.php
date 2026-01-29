@@ -26,14 +26,17 @@ try {
     // API KEY Validation
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::check($clientApiKey);
+    $userID = ApiKeyValidator::check($clientApiKey);
 
 
-   $user_id = $_GET['id'] ?? null;
-    if (!isset($user_id)) {
+   $passedUserID = $_GET['id'] ?? null;
+    if (!isset($passedUserID)) {
         throw new ValidationException('ユーザーIDは必須です。');
     }
 
+    if($userID != $passedUserID) {
+        throw new ValidationException('トークンのユーザーIDと渡されたユーザーIDが一致しません。他のユーザーの情報を操作することはできません。');
+    }
 
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $userRepository = new MySQLUserRepository($connection);
@@ -46,7 +49,7 @@ try {
 }
 
 try {
-    $userUseCase->deleteUserByID($user_id);
+    $userUseCase->deleteUserByID($passedUserID);
     Response::send('success', 'ユーザーの取得に成功しました', 200, null);
 
 } catch(AppException $e) {

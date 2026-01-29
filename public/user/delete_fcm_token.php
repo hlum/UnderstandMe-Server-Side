@@ -1,9 +1,11 @@
 <?php
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 use Application\CustomExceptions\AppException;
 use Application\CustomExceptions\ValidationException;
 use Application\UseCases\FCMTokenUseCase;
-use Domain\Entities\FCMToken;
 use Helpers\ApiKeyValidator;
 use Helpers\Response;
 use Infrastructure\Persistence\MySQLFCMTokenRepository;
@@ -12,16 +14,10 @@ use Infrastructure\Persistence\MySQLUserRepository;
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
-
-
 
 try {
 
@@ -33,7 +29,7 @@ try {
     // API Key validation
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::check($clientApiKey);
+    $userID = ApiKeyValidator::check($clientApiKey);
 
     // Expected JSON structure
     // {
@@ -46,10 +42,15 @@ try {
         throw new ValidationException('無効なJSONデータです。');
     }
 
-    $userID = $input['user_id'] ?? null;
+    $passedUserID = $input['user_id'] ?? null;
     $deviceID = $input['device_id'] ?? null;
-    if (!isset($userID)) {
+
+    if (!isset($passedUserID)) {
         throw new ValidationException('ユーザーIDは必須です。');
+    }
+
+    if($userID != $passedUserID) {
+        throw new ValidationException('トークンのユーザーIDと渡されたユーザーIDが一致しません。他のユーザーの情報を操作することはできません。');
     }
 
     if (!isset($deviceID)) {
@@ -60,7 +61,7 @@ try {
     $userRepository = new MySQLUserRepository($connection);
     $fcmUseCase = new FCMTokenUseCase($fcmTokenRepository, $userRepository);
 
-    $fcmUseCase->deleteFCMToken($userID, $deviceID);
+    $fcmUseCase->deleteFCMToken($passedUserID, $deviceID);
 
     Response::send('success', 'FCMトークンが正常に削除されました。', 200);
 } catch (AppException $e) {

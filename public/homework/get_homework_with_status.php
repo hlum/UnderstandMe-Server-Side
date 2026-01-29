@@ -1,5 +1,5 @@
 <?php
-
+// 学生用のapplicationからのリクエストのみ
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 
 $homework_id = $_GET['id'] ?? null;
-$student_id = $_GET['student_id'] ?? null;
+$passedUserID = $_GET['student_id'] ?? null;
 $class_id = $_GET['class_id'] ?? null;
 
 
@@ -37,7 +37,10 @@ try {
     // API KEY Validation
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::check($clientApiKey);
+    $userID = ApiKeyValidator::check($clientApiKey);
+    if ($passedUserID !== null && $userID != $passedUserID) {
+        throw new ValidationException('トークンのユーザーIDと渡されたユーザーIDが一致しません。他のユーザーの情報を操作することはできません。');
+    }
 
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $homeworkRepository = new MySQLHomeworkRepository($connection);
@@ -55,11 +58,11 @@ try {
 try {
     $homeworksWithStatus = [];
     if (isset($homework_id)) {
-        $homeworksWithStatus = $homeworkUseCase->findByIDWithStatus($homework_id, $student_id);
-    } else if (isset($student_id) && isset($class_id)) {
-        $homeworksWithStatus = $homeworkUseCase->findByClassIDWithStatus($class_id, $student_id);
-    } else if (isset($student_id)) {
-        $homeworksWithStatus = $homeworkUseCase->findByStudentIDWithStatus($student_id);
+        $homeworksWithStatus = $homeworkUseCase->findByIDWithStatus($homework_id, $passedUserID);
+    } else if (isset($passedUserID) && isset($class_id)) {
+        $homeworksWithStatus = $homeworkUseCase->findByClassIDWithStatus($class_id, $passedUserID);
+    } else if (isset($passedUserID)) {
+        $homeworksWithStatus = $homeworkUseCase->findByStudentIDWithStatus($passedUserID);
     } else {
         throw new ValidationException('idかstudent_idとclass_idを指定してください');
     }

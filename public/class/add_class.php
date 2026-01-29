@@ -10,17 +10,12 @@ require __DIR__ . '/../../vendor/autoload.php';
 use Application\CustomExceptions\AppException;
 use Application\CustomExceptions\ValidationException;
 use Application\UseCases\ClassUseCase;
+use Application\UseCases\UserUseCase;
 use Domain\Entities\ClassEntity;
 use Helpers\Response;
 use Helpers\ApiKeyValidator;
 use Infrastructure\Persistence\MySQLClassRepository;
 use Infrastructure\Persistence\MySQLUserRepository;
-
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-
 
 
 try {
@@ -39,7 +34,7 @@ try {
     // API Key validation
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::checkTeacherKey($clientApiKey);
+    $teacherID = ApiKeyValidator::checkTeacherKey($clientApiKey);
 
     // Expected JSON structure
     // {
@@ -59,7 +54,7 @@ try {
     $name = $input['name'] ?? null;
     $admission_year = $input['admission_year'] ?? null;
     $major_code = $input['major_code'] ?? null;
-    $teacher_id = $input['teacher_id'] ?? null;
+    $passedTeacherID = $input['teacher_id'] ?? null;
     $class_code = $input['class_code'] ?? null;
 
     if (!isset($name)) {
@@ -69,11 +64,15 @@ try {
         throw new ValidationException('無効な学科名形式です。');
     }
 
-    if (!isset($teacher_id)) {
+    if (!isset($passedTeacherID)) {
         throw new ValidationException('教師IDは必須です。');
     }
 
-    if ($teacher_id == null || !is_string($teacher_id)) {
+    if($passedTeacherID !== $teacherID) {
+        throw new ValidationException('トークンの教師IDと渡された教師IDが一致しません。他のユーザーの情報を操作することはできません。');
+    }
+
+    if ($passedTeacherID == null || !is_string($passedTeacherID)) {
         throw new ValidationException('無効な教師ID形式です。');
     }
 
@@ -93,11 +92,16 @@ try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $classRepository = new MySQLClassRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
+
+    // 教師ユーザーの検証
+    $userUseCase = new UserUseCase($userRepository);
+    $userUseCase->verifyTeacher($teacherID);
+
     $studentClassEnrollmentRepo = new MySQLStudentClassEnrollmentRepository($connection);
     $classUseCase = new ClassUseCase($classRepository, $userRepository, $studentClassEnrollmentRepo);
     $newClass = ClassEntity::createNew(
         name: $name,
-        teacher_id: $teacher_id,
+        teacher_id: $passedTeacherID,
         admissionYear: $admission_year,
         majorCode: $major_code,
         classCode: $class_code

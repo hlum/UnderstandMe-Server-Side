@@ -1,5 +1,5 @@
 <?php
-
+// 学生用のapplicationからのリクエストのみ
 require __DIR__ . '/../../vendor/autoload.php';
 
 
@@ -27,23 +27,26 @@ try {
         Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
     }
 
-
-    $headers = getallheaders();
     // API KEY Validation
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::check($clientApiKey);
+    $userID = ApiKeyValidator::check($clientApiKey);
 
-    $userID = $_GET['user_id'] ?? null;
+    $passedUserID = $_GET['user_id'] ?? null;
 
 
-    if ($userID === null) {
+    if ($passedUserID === null) {
         throw new ValidationException('user_idは必須です。');
     }
+
+    if($userID != $passedUserID) {
+        throw new ValidationException('トークンのユーザーIDと渡されたユーザーIDが一致しません。他のユーザーの情報を操作することはできません。');
+    }
+    
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $resultRepository = new MySQLResultRepository($connection);
     $resultUseCase = new ResultUseCase($resultRepository);
-    $results = $resultUseCase->fetchResultsByUserID($userID);
+    $results = $resultUseCase->fetchResultsByUserID($passedUserID);
 
     Response::send('success', '結果の取得に成功しました。', 200, $results);
 } catch (Throwable $e) {

@@ -1,4 +1,6 @@
 <?php
+
+use Application\UseCases\UserUseCase;
 // 提出したProjectとJobを削除し、Homeworkの提出を取り消す
 
 
@@ -43,15 +45,15 @@ try {
     // API KEY Validation
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::check($clientApiKey);
+    $usesrID = ApiKeyValidator::check($clientApiKey);
 
 
     $input = json_decode(file_get_contents('php://input'), true);
-    $userID = $_GET['user_id'] ?? $input['user_id'] ?? null;
+    $passedUserID = $_GET['user_id'] ?? $input['user_id'] ?? null;
     $homeworkID = $_GET['homework_id'] ?? $input['homework_id'] ?? null;
 
 
-    if (!$userID || !$homeworkID) {
+    if (!$passedUserID || !$homeworkID) {
         throw new ValidationException('Missing parameters');
     }
 
@@ -63,6 +65,22 @@ try {
     $projectRepository = new MySQLProjectRepository($connection);
     $homeworkRepository = new MySQLHomeworkRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
+
+    // userID を検証
+    $userUseCase = new UserUseCase($userRepository);
+    // 学生の場合は、passedUserID と userID が一致するか確認
+    $isTeacher = $userUseCase->isTeacher($usesrID);
+    if (!$isTeacher) {
+        if ($passedUserID !== $usesrID) {
+            throw new ValidationException('トークンのユーザーIDと渡されたユーザーIDが一致しません。他のユーザーの情報を操作することはできません。');
+        }
+    } else {
+        // 教師の場合は、検証のみ行う
+        $userUseCase->verifyTeacher($usesrID);
+    }
+
+
+
     $resultRepository = new MySQLResultRepository($connection);
 
 
@@ -73,13 +91,13 @@ try {
     $projectUseCase = new ProjectUseCase($projectRepository, $userRepository, $homeworkRepository);
 
     // Jobを先に削除する
-    $jobUseCase->deleteByHomeworkID($homeworkID, $userID);
+    $jobUseCase->deleteByHomeworkID($homeworkID, $passedUserID);
 
 
     // 次にProjectを削除する
-    $projectUseCase->deleteByHomeworkID($homeworkID, $userID);
+    $projectUseCase->deleteByHomeworkID($homeworkID, $passedUserID);
     // 最後にResultを削除する
-    $resultUseCase->deleteResultByHomeworkIDAndUserID($homeworkID, $userID);
+    $resultUseCase->deleteResultByHomeworkIDAndUserID($homeworkID, $passedUserID);
     $connection->commit();
 
     Response::send('success', '提出された宿題を削除しました', 200);

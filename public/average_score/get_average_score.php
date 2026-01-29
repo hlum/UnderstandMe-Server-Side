@@ -27,18 +27,23 @@ try {
     // API KEY Validation
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::check($clientApiKey);
+    $userID = ApiKeyValidator::check($clientApiKey);
 
 
-    $student_id = $_GET['student_id'] ?? null;
-    if (!isset($student_id)) {
+    $passedUserID = $_GET['student_id'] ?? null;
+    if (!isset($passedUserID)) {
         Response::send('fail', 'student_id は必須です。', 400, null, 'validation_error');
     }
+    
+    if ($passedUserID !== $userID) {
+        Response::send('fail', 'トークンのユーザーIDと渡されたユーザーIDが一致しません。他のユーザーの情報を操作することはできません。', 403, null, 'validation_error');
+    }
+
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
     $averageScoreRepository = new MySQLAverageScoreRepository($connection);
     $averageScoreUseCase = new AverageScoreUseCase($averageScoreRepository);
-    $averageScores = $averageScoreUseCase->fetch($student_id);
+    $averageScores = $averageScoreUseCase->fetch($passedUserID);
 
     Response::send('success', '平均スコアの取得成功', 200, $averageScores);
 } catch (Exception $e) {

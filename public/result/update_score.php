@@ -1,14 +1,19 @@
 <?php
 
+use Application\UseCases\UserUseCase;
+use Infrastructure\Persistence\MySQLUserRepository;
+// 教師用のapplicationからのリクエストのみ
+
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: PATCH, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
 use Application\CustomExceptions\ValidationException;
 use Application\UseCases\ResultUseCase;
 use Helpers\ApiKeyValidator;
 use Helpers\Response;
 use Infrastructure\Persistence\MySQLResultRepository;
 
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: PATCH, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -26,7 +31,7 @@ try {
 
     $headers = getallheaders();
     $clientAPIKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::checkTeacherKey($clientAPIKey);
+    $userID = ApiKeyValidator::checkTeacherKey($clientAPIKey);
 
 
 
@@ -44,6 +49,13 @@ try {
     }
 
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+    
+    // 教師か検証
+    $userRepository = new MySQLUserRepository($connection);
+    $userUseCase = new UserUseCase($userRepository);
+    $userUseCase->verifyTeacher($userID);
+
+
     $resultRepository = new MySQLResultRepository($connection);
     $resultUseCase = new ResultUseCase($resultRepository);
 

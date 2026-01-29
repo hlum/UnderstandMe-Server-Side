@@ -1,5 +1,7 @@
 <?php
 
+use Application\UseCases\UserUseCase;
+// 教師側のみ利用するAPIエンドポイント
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -30,7 +32,7 @@ try {
     // API KEY Validation
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::check($clientApiKey);
+    $userID = ApiKeyValidator::check($clientApiKey);
 
 
     // Possible queries
@@ -42,12 +44,24 @@ try {
 
     $homework_id = $_GET['id'] ?? null;
     $class_id = $_GET['class_id'] ?? null;
-    $teacher_id = $_GET['teacher_id'] ?? null;
+    $passedTeacherUserID = $_GET['teacher_id'] ?? null;
+
+
+    if($passedTeacherUserID !== null && $userID != $passedTeacherUserID) {
+        throw new ValidationException('トークンのユーザーIDと渡されたユーザーIDが一致しません。他のユーザーの情報を操作することはできません。');
+    }
+
 
     
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $homeworkRepository = new MySQLHomeworkRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
+    $userUseCase = new UserUseCase($userRepository);
+    
+    // 教師かどうか確認
+    $userUseCase->verifyTeacher($userID);
+
+
     $classRepository = new MySQLClassRepository($connection);
 
     $homeworkUseCase = new HomeworkUseCase($homeworkRepository, $userRepository, $classRepository);
@@ -67,8 +81,8 @@ try {
         }
     } elseif (isset($class_id)) {
         $homeworks = $homeworkUseCase->findByClassId($class_id);
-    } elseif (isset($teacher_id)) {
-        $homeworks = $homeworkUseCase->findByTeacherId($teacher_id);
+    } elseif (isset($passedTeacherUserID)) {
+        $homeworks = $homeworkUseCase->findByTeacherId($passedTeacherUserID);
     } else {
         throw new ValidationException('少なくとも1つのクエリパラメータを指定する必要があります。');
     }

@@ -3,6 +3,7 @@
 use Application\CustomExceptions\AppException;
 use Application\CustomExceptions\ValidationException;
 use Application\UseCases\HomeworkUseCase;
+use Application\UseCases\UserUseCase;
 use Helpers\ApiKeyValidator;
 use Helpers\Response;
 use Infrastructure\Persistence\MySQLClassRepository;
@@ -29,7 +30,7 @@ try {
 
     $headers = getallheaders();
     $clientAPIKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::checkTeacherKey($clientAPIKey);
+    $userID = ApiKeyValidator::checkTeacherKey($clientAPIKey);
 
 
     $input = json_decode(file_get_contents('php://input'), true);
@@ -83,6 +84,12 @@ try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $homeworkRepository = new MySQLHomeworkRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
+    
+    // 教師かどうか確認
+    $userUseCase = new UserUseCase($userRepository);
+    $userUseCase->verifyTeacher($userID);
+
+
     $classRepository = new MySQLClassRepository($connection);
     $homeworkUseCase = new HomeworkUseCase($homeworkRepository, $userRepository, $classRepository);
     $homeworkUseCase->update($homework_id, $fieldsToUpdate);

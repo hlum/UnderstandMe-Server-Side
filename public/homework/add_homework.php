@@ -22,13 +22,6 @@ use Infrastructure\Persistence\MySQLFCMTokenRepository;
 use Helpers\NotificationHandler;
 use Infrastructure\Persistence\MySQLStudentClassEnrollmentRepository;
 
-ini_set('display_errors', 0);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-
-
-
 try {
 
 
@@ -44,7 +37,7 @@ try {
     // API Key validation
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::checkTeacherKey($clientApiKey);
+    $teacherID = ApiKeyValidator::checkTeacherKey($clientApiKey);
 
     // Expected JSON structure
     // {
@@ -61,7 +54,7 @@ try {
         throw new ValidationException('無効なJSONデータです。');
     }
 
-    $teacher_id = $input['teacher_id'] ?? null;
+    $passedTeacherID = $input['teacher_id'] ?? null;
     $class_id = $input['class_id'] ?? null;
     $title = $input['title'] ?? null;
     $description = $input['description'] ?? null;
@@ -71,12 +64,17 @@ try {
         throw new ValidationException('class_idは必須です。');
     }
 
-    if (!isset($teacher_id)) {
+    if (!isset($passedTeacherID)) {
         throw new ValidationException('teacher_idは必須です。');
     }
-    if ($teacher_id == null || !is_string($teacher_id)) {
+
+    if ($passedTeacherID == null || !is_string($passedTeacherID)) {
         throw new ValidationException('無効なteacher_id形式です。');
     }
+    if($passedTeacherID !== $teacherID) {
+        throw new ValidationException('トークンの教師IDと渡された教師IDが一致しません。他のユーザーの情報を操作することはできません。');
+    }
+
     if (!isset($title)) {
         throw new ValidationException('titleは必須です。');
     }
@@ -97,6 +95,11 @@ try {
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $homeworkRepository = new MySQLHomeworkRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
+    $userUseCase = new UserUseCase($userRepository);
+    
+    // 教師ユーザーの検証
+    $userUseCase->verifyTeacher($teacherID);
+
     $classRepository = new MySQLClassRepository($connection);
     $fcmTokenRepository = new MySQLFCMTokenRepository($connection);
     $studentClassEnrollmentRepo = new MySQLStudentClassEnrollmentRepository($connection);
@@ -112,7 +115,7 @@ try {
 
 
     $newHomework = Homework::createNew(
-        $teacher_id,
+        $passedTeacherID,
         $class_id,
         $title,
         $description,

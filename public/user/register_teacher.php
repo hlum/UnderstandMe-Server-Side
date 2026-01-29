@@ -14,14 +14,6 @@ use Domain\Entities\Role;
 use Helpers\ApiKeyValidator;
 use Helpers\Response;
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-
-
-
-
 try {
 
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -36,7 +28,7 @@ try {
     // API Key validation
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::checkTeacherKey($clientApiKey);
+    $userID = ApiKeyValidator::checkTeacherKey($clientApiKey);
 
     // POSTされたJSONデータを取得
     $input = json_decode(file_get_contents('php://input'), true);
@@ -45,32 +37,21 @@ try {
         throw new ValidationException('無効なJSONデータです。');
     }
 
-
-
-
-    // Expected JSON structure
-    // {
-    // id: String,
-    // name: String,
-    // email: String,
-    // role: String('student' or 'teacher'),
-    // photo_url: String nullable (URL format)
-    // }
-
-
-
-
-    $user_id = $input['id'] ?? null;
+    $passedUserID = $input['id'] ?? null;
     $name = $input['name'] ?? null;
     $email = $input['email'] ?? null;
     $photo_url = $input['photo_url'] ?? null;
     $role = Role::from($input['role'] ?? 'teacher');
 
-    if (empty($user_id)) {
+    if (empty($passedUserID)) {
         throw new ValidationException('ユーザーIDは必須です。');
     }
 
-    if ($user_id == null || !is_string($user_id)) {
+    if($userID != $passedUserID) {
+        throw new ValidationException('トークンのユーザーIDと渡されたユーザーIDが一致しません。ログイン中のユーザーのみ登録可能です。');
+    }
+
+    if ($passedUserID == null || !is_string($passedUserID)) {
         throw new ValidationException('無効なユーザーID形式です。');
     }
 
@@ -97,7 +78,7 @@ try {
     $userRepository = new MySQLUserRepository($connection);
     $userUseCase = new UserUseCase($userRepository);
 
-    $userUseCase->registerUser($user_id, $name, $email, $role, $photo_url, null, null, null);
+    $userUseCase->registerUser($passedUserID, $name, $email, $role, $photo_url, null, null, null);
 
     Response::send('success', 'ユーザー登録が成功しました。', 200);
 } catch(AppException $e) {

@@ -31,16 +31,21 @@ try {
     // API KEY Validation
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::check($clientApiKey);
+    $userID = ApiKeyValidator::check($clientApiKey);
 
 
     $homeworkID = $_GET['homework_id'] ?? null;
-    $userID = $_GET['user_id'] ?? null;
+    $passedUserID = $_GET['user_id'] ?? null;
 
 
-    if (!isset($homeworkID) || !isset($userID)) {
+    if (!isset($homeworkID) || !isset($passedUserID)) {
         throw new ValidationException('homework_id と user_id は必須です。');
     }
+
+    if ($passedUserID !== $userID) {
+        throw new ValidationException('トークンのユーザーIDと渡されたユーザーIDが一致しません。他のユーザーの情報を操作することはできません。');
+    }
+
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
     $answerRepository = new MySQLAnswerRepository($connection);

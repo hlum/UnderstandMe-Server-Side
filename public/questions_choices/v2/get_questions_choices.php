@@ -1,4 +1,7 @@
 <?php
+
+use Application\UseCases\UserUseCase;
+use Infrastructure\Persistence\MySQLUserRepository;
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -26,25 +29,35 @@ try {
         Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
     }
 
-
-    $headers = getallheaders();
     // API KEY Validation
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::check($clientApiKey);
+    $userID = ApiKeyValidator::check($clientApiKey);
 
 
     $homeworkID = $_GET['homework_id'] ?? null;
-    $userID = $_GET['user_id'] ?? null;
+    $passedUserID = $_GET['user_id'] ?? null;
 
-    if (!isset($homeworkID) || !isset($userID)) {
+    if (!isset($homeworkID) || !isset($passedUserID)) {
         throw new ValidationException('homework_id と user_id は必須です。');
     }
 
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+
+    // Authorization: check if the user is teacher or student. If student, check if the student is requesting their own data.
+    $userRepository = new MySQLUserRepository($connection);
+    $userUseCase = new UserUseCase($userRepository);
+    $isTeacher = $userUseCase->isTeacher($userID);
+
+    if( !$isTeacher ) {
+        if($userID != $passedUserID) {
+            throw new ValidationException('トークンのユーザーIDと渡されたユーザーIDが一致しません。他のユーザーの情報を操作することはできません。');
+        }
+    }
+
     $questionsAndChoicesRepository = new MySQLQuestionsAndChoicesRepository($connection);
     $questionAndChoicesUseCase = new QuestionsAndChoicesUseCase($questionsAndChoicesRepository);
-    $questionsAndChoices = $questionAndChoicesUseCase->getQuestionsAndChoicesByHomeworkIdWithNoCorrectChoiceData($homeworkID, $userID);
+    $questionsAndChoices = $questionAndChoicesUseCase->getQuestionsAndChoicesByHomeworkIdWithNoCorrectChoiceData($homeworkID, $passedUserID);
 
     Response::send('success', '質問と選択肢の取得成功', 200, $questionsAndChoices);
 } catch (AppException $e) {

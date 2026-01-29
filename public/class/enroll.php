@@ -14,10 +14,6 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
-ini_set('display_errors', '1');
-error_reporting(E_ALL);
-
-
 
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -31,7 +27,7 @@ try {
 
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::check($clientApiKey);
+    $userID = ApiKeyValidator::check($clientApiKey);
 
     $input = json_decode(file_get_contents('php://input'), true);
     if (json_last_error() !== JSON_ERROR_NONE) {
@@ -39,12 +35,16 @@ try {
     }
 
 
-    $studentID = $input['student_id'] ?? null;
+    $passedUserID = $input['student_id'] ?? null;
     $classCode = $input['class_code'] ?? null;
 
 
-    if (empty($studentID)) {
+    if (empty($passedUserID)) {
         throw new ValidationException('student_idは必須です。');
+    }
+
+    if($passedUserID !== $userID) {
+        throw new ValidationException('トークンのユーザーIDと渡されたユーザーIDが一致しません。他のユーザーの情報を操作することはできません。');
     }
 
     if (empty($classCode)) {
@@ -58,7 +58,7 @@ try {
     $studentClassEnrollmentRepo = new MySQLStudentClassEnrollmentRepository($connection);
 
     $studentClassEnrollmentUseCase = new StudentClassEnrollmentUseCase($studentClassEnrollmentRepo, $userRepo, $classRepo);
-    $studentClassEnrollmentUseCase->enrollStudent($studentID, $classCode);
+    $studentClassEnrollmentUseCase->enrollStudent($passedUserID, $classCode);
 
     Response::send('success', '学生をクラスに正常に登録しました。');
 } catch (AppException $e) {

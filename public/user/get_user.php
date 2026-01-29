@@ -26,12 +26,12 @@ try {
     // API KEY Validation
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::check($clientApiKey);
+    $userID = ApiKeyValidator::check($clientApiKey);
 
 
     $major_code = $_GET['major_code'] ?? null;
     $admission_year = $_GET['admission_year'] ?? null;
-    $user_id = $_GET['id'] ?? null;
+    $passedUserID = $_GET['id'] ?? null;
     $email = $_GET['email'] ?? null;
     $student_code = $_GET['student_code'] ?? null;
 
@@ -49,8 +49,11 @@ try {
 try {
     $users = [];
 
-    if (isset($user_id)) {
-        $user = $userUseCase->findById($user_id);
+    if (isset($passedUserID)) {
+        if($userID != $passedUserID) {
+            throw new ValidationException('トークンのユーザーIDと渡されたユーザーIDが一致しません。他のユーザーの情報を操作することはできません。');
+        }
+        $user = $userUseCase->findById($passedUserID);
         if ($user !== null) {
             $users = [$user];
         }

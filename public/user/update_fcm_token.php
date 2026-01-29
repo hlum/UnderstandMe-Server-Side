@@ -1,4 +1,7 @@
 <?php
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 
 require __DIR__ . '/../../vendor/autoload.php';
@@ -10,11 +13,6 @@ use Infrastructure\Persistence\MySQLFCMTokenRepository;
 use Infrastructure\Persistence\MySQLUserRepository;
 use Helpers\ApiKeyValidator;
 use Helpers\Response;
-
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -31,15 +29,7 @@ try {
     // API Key validation
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::check($clientApiKey);
-
-    // Expected JSON structure
-    // {
-    // user_id: String,
-    // device_id: String,
-    // device_type: String,
-    // fcm_token: String nullable,
-    // }
+    $userID = ApiKeyValidator::check($clientApiKey);
 
     $input = json_decode(file_get_contents('php://input'), true);
 
@@ -47,16 +37,20 @@ try {
         throw new ValidationException('無効なJSONデータです。');
     }
 
-    $userID = $input['user_id'] ?? null;
+    $passedUserID = $input['user_id'] ?? null;
     $fcmToken = $input['fcm_token'] ?? null;
     $deviceID = $input['device_id'] ?? null;
     $deviceType = $input['device_type'] ?? null;
 
-    if (!isset($userID)) {
+    if (!isset($passedUserID)) {
         throw new ValidationException('ユーザーIDは必須です。');
     }
 
-    if ($userID == null || !is_string($userID)) {
+    if($userID != $passedUserID) {
+        throw new ValidationException('トークンのユーザーIDと渡されたユーザーIDが一致しません。他のユーザーの情報を操作することはできません。');
+    }
+
+    if ($passedUserID == null || !is_string($passedUserID)) {
         throw new ValidationException('無効なユーザーID形式です。');
     }
 
@@ -77,7 +71,7 @@ try {
     $fcmRepository = new MySQLFCMTokenRepository($connection);
 
     $fcmUseCase = new FCMTokenUseCase($fcmRepository, $userRepository);
-    $fcmUseCase->registerOrUpdateFCMToken($userID, $deviceID, $deviceType, $fcmToken);
+    $fcmUseCase->registerOrUpdateFCMToken($passedUserID, $deviceID, $deviceType, $fcmToken);
 
     Response::send('success', 'FCMトークンの更新が成功しました。', 200);
 

@@ -2,10 +2,12 @@
 
 use Application\CustomExceptions\ValidationException;
 use Application\UseCases\ChoiceUseCase;
+use Application\UseCases\UserUseCase;
 use Helpers\ApiKeyValidator;
 use Helpers\Response;
 use Infrastructure\Persistence\MySQLChoiceRepository;
 use Infrastructure\Persistence\MySQLQuestionRepository;
+use Infrastructure\Persistence\MySQLUserRepository;
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: PATCH, OPTIONS");
@@ -29,7 +31,7 @@ try {
 
     $headers = getallheaders();
     $clientAPIKEY = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::checkTeacherKey($clientAPIKEY);
+    $teacherUserID = ApiKeyValidator::checkTeacherKey($clientAPIKEY);
 
     $input = json_decode(file_get_contents('php://input'), true);
     if (json_last_error() !== JSON_ERROR_NONE) {
@@ -46,9 +48,15 @@ try {
 
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
+    // 教師ユーザーの検証
+    $userRepository = new MySQLUserRepository($connection);
+    $userUseCase = new UserUseCase($userRepository);
+    $userUseCase->verifyTeacher($teacherUserID);
+
     // データの一貫性を保つためにトランザクションを開始
     $connection->begin_transaction();
 
+    // 正しい選択肢の更新
     $choiceRepository = new MySQLChoiceRepository($connection);
     $questionRepository = new MySQLQuestionRepository($connection);
     $choiceUseCase = new ChoiceUseCase($choiceRepository, $questionRepository);

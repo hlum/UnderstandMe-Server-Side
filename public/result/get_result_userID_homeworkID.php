@@ -1,5 +1,5 @@
 <?php
-
+// 学生用のapplicationからのリクエストのみ
 require __DIR__ . '/../../vendor/autoload.php';
 
 header("Access-Control-Allow-Origin: *");
@@ -26,24 +26,26 @@ try {
         Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
     }
 
-
-    $headers = getallheaders();
     // API KEY Validation
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::check($clientApiKey);
+    $userID = ApiKeyValidator::check($clientApiKey);
 
-    $userID = $_GET['user_id'] ?? null;
+    $passedUserID = $_GET['user_id'] ?? null;
     $homeworkID = $_GET['homework_id'] ?? null;
 
-    if ($userID === null || $homeworkID === null) {
+    if ($passedUserID === null || $homeworkID === null) {
         throw new ValidationException('user_idとhomework_idは必須です。');
+    }
+
+    if($userID != $passedUserID) {
+        throw new ValidationException('トークンのユーザーIDと渡されたユーザーIDが一致しません。他のユーザーの情報を操作することはできません。');
     }
 
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $resultRepository = new MySQLResultRepository($connection);
     $resultUseCase = new ResultUseCase($resultRepository);
-    $resultFetched = $resultUseCase->fetchResultWithHomeworkIDAndUserID($homeworkID, $userID);
+    $resultFetched = $resultUseCase->fetchResultWithHomeworkIDAndUserID($homeworkID, $passedUserID);
 
     if ($resultFetched === null) {
         Response::send('success', "指定されたユーザーIDと宿題IDの結果が見つかりません。", 200, data: []);

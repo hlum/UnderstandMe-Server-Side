@@ -6,8 +6,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 
 use Helpers\RepoLinkValidator;
-ignore_user_abort(true); // continue even if user closes the connection
-
 
 require __DIR__ . '/../../vendor/autoload.php';
 
@@ -29,12 +27,6 @@ use Infrastructure\Persistence\MySQLHomeworkRepository;
 use Domain\Entities\Job;
 use Domain\Entities\Status;
 
-
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
@@ -52,7 +44,7 @@ try {
     // API Key validation
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::check($clientApiKey);
+    $userID = ApiKeyValidator::check($clientApiKey);
 
 
     /* Expected JSON structure
@@ -67,15 +59,19 @@ try {
         throw new ValidationException('無効なJSONデータです。');
     }
 
-    $user_id = $input['user_id'] ?? null;
+    $passedUserID = $input['user_id'] ?? null;
     $homework_id = $input['homework_id'] ?? null;
     $github_file_link = $input['github_file_link'] ?? null;
 
-    if (!isset($user_id)) {
+    if (!isset($passedUserID)) {
         throw new ValidationException('ユーザーIDは必須です。');
     }
-    if ($user_id == null || !is_string($user_id)) {
+    if ($passedUserID == null || !is_string($passedUserID)) {
         throw new ValidationException('無効なユーザーID形式です。');
+    }
+
+    if($userID != $passedUserID) {
+        throw new ValidationException('トークンのユーザーIDと渡されたユーザーIDが一致しません。他のユーザーの情報を操作することはできません。');
     }
 
     if (!isset($homework_id)) {
@@ -94,6 +90,7 @@ try {
 
 
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+    $connection->begin_transaction();
 
     $projectRepository = new MySQLProjectRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
@@ -113,7 +110,7 @@ try {
         $homeworkRepository
     );
 
-    $project = Project::createNew($user_id, $homework_id, $github_file_link);
+    $project = Project::createNew($passedUserID, $homework_id, $github_file_link);
     $projectUseCase->add($project);
 
 
@@ -121,10 +118,13 @@ try {
 
     $job = Job::createNew($project->id, Status::from('pending'));
     $jobUseCase->add($job);
+    $connection->commit();
     Response::send('success', 'プロジェクトが正常に追加され、ジョブがキューに登録されました。', 200);
 } catch(AppException $e) {
     Response::send('fail', $e->getMessage(), $e->getStatusCode(), null, $e->getErrorType());
+    $connection->rollback();
 } catch (Throwable $e) {
     error_log('サーバー内部エラー: ' . $e->getMessage());
     Response::send('error', 'サーバー内部エラーが発生しました。', 500, null, 'server_error');
+    $connection->rollback();
 }

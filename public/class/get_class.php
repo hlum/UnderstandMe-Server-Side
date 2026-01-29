@@ -26,12 +26,10 @@ try {
         Response::send('fail', 'Method not allowed. Use GET', 405, null, 'validation_error');
     }
 
-
-    $headers = getallheaders();
     // API KEY Validation
     $headers = getallheaders();
     $clientApiKey = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-    ApiKeyValidator::check($clientApiKey);
+    $userID = ApiKeyValidator::check($clientApiKey);
 
 
     /* Possible queries
@@ -47,8 +45,14 @@ try {
     $teacher_id = $_GET['teacher_id'] ?? null;
     $major_code = $_GET['major_code'] ?? null;
     $admission_year = $_GET['admission_year'] ?? null;
-    $student_id = $_GET['student_id'] ?? null;
+    $passedUserID = $_GET['student_id'] ?? null;
     $class_code = $_GET['class_code'] ?? null;
+
+    if($passedUserID !== null ) {
+        if($passedUserID !== $userID) {
+            throw new ValidationException('トークンのユーザーIDと渡されたユーザーIDが一致しません。他のユーザーの情報を操作することはできません。');
+        }
+    }
 
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     $classRepository = new MySQLClassRepository($connection);
@@ -88,12 +92,12 @@ try {
         }
         $classes = $classUseCase->getClassesByTeacherId($teacher_id);
 
-    } elseif (isset(($student_id))) {
-        if (!is_string($student_id)) {
+    } elseif (isset(($passedUserID))) {
+        if (!is_string($passedUserID)) {
             throw new ValidationException('無効な学生ID形式です。');
         }
 
-        $classes = $classUseCase->getClassesByStudentId($student_id);
+        $classes = $classUseCase->getClassesByStudentId($passedUserID);
 
     } elseif (isset($class_code)) {
         $class = $classUseCase->findByClassCode($class_code);
