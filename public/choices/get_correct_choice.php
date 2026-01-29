@@ -39,10 +39,6 @@ try {
     $homeworkID = $_GET['homework_id'] ?? null;
     $passedUserID = $_GET['user_id'] ?? null;
 
-    if(!isset($passedUserID)) {
-        throw new ValidationException('user_id は必須です。');
-    }
-
 
     if ($passedUserID !== $userID) {
         throw new ValidationException('トークンのユーザーIDと渡されたユーザーIDが一致しません。他のユーザーの情報を操作することはできません。');
