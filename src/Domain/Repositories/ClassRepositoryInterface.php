@@ -21,6 +21,8 @@ interface ClassRepositoryInterface
      */
     public function findByTeacherId(string $teacherId): array;
 
+    public function deleteById(string $id): void;
+
     /**
      * @return ClassEntity[]
      */

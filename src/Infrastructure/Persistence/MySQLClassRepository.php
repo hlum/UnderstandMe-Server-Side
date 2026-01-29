@@ -45,6 +45,17 @@ class MySQLClassRepository implements ClassRepositoryInterface
     }
 
 
+    public function deleteById(string $id): void
+    {
+        $query = "DELETE FROM classes WHERE id = ?";
+        $types = 's';
+        $params = [$id];
+        $errorMessage = "IDによる科目削除に失敗しました。";
+
+        $result = $this->executeQuery($query, $types, $params, $errorMessage);
+    }
+
+
     public function findByIds(array $ids): array
     {
         if (empty($ids)) {

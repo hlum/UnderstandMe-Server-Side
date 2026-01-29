@@ -119,6 +119,22 @@ class ClassUseCase
     }
 
 
+    public function deleteClass(string $teacherId, string $classID): void {
+        $existingClass = $this->classRepository->findById($classID);
+
+        if ($existingClass === null) {
+            throw new NotFoundException("指定されたIDのクラスが存在しません。");
+        }
+
+        if($existingClass->teacher_id !== $teacherId) {
+            throw new UnAuthorizedException("このクラスを削除する権限がありません。");
+        }
+
+        // Delete the class
+        $this->classRepository->deleteById($classID);
+    }
+
+
     public function findByClassCode(string $classCode): ?ClassEntity
     {
         return $this->classRepository->findByClassCode($classCode);
