@@ -1,4 +1,7 @@
 <?php
+// 教師も学生もアクセス可能
+// 教師の場合は、該当課題の全学生の回答を取得
+// 学生の場合は、自分の回答のみ取得
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, OPTIONS");
@@ -15,7 +18,7 @@ use Infrastructure\Persistence\MySQLAnswerRepository;
 use Infrastructure\Persistence\MySQLUserRepository;
 use Infrastructure\Persistence\MySQLQuestionRepository;
 use Application\UseCases\AnswerUseCase;
-
+use Application\UseCases\UserUseCase;
 
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -42,14 +45,21 @@ try {
         throw new ValidationException('homework_id と user_id は必須です。');
     }
 
-    if ($passedUserID !== $userID) {
-        throw new ValidationException('トークンのユーザーIDと渡されたユーザーIDが一致しません。他のユーザーの情報を操作することはできません。');
-    }
-
     $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
     $answerRepository = new MySQLAnswerRepository($connection);
     $userRepository = new MySQLUserRepository($connection);
+
+    // Authorization: check if the user is teacher or student. If student, check if the student is requesting their own data.
+    $userUseCase = new UserUseCase($userRepository);
+    $isTeacher = $userUseCase->isTeacher($userID);
+
+    if( !$isTeacher ) {
+        if($userID != $passedUserID) {
+            throw new ValidationException('トークンのユーザーIDと渡されたユーザーIDが一致しません。他のユーザーの情報を操作することはできません。');
+        }
+    }
+
     $questionRepository = new MySQLQuestionRepository($connection);
 
     $answerUseCase = new AnswerUseCase(
@@ -58,7 +68,7 @@ try {
         $questionRepository
     );
 
-    $answers = $answerUseCase->findAnswersForHomework($homeworkID, $userID);
+    $answers = $answerUseCase->findAnswersForHomework($homeworkID, $passedUserID);
 
     Response::send('success', '回答の取得成功', 200, $answers);
 } catch (AppException $e) {
