@@ -40,8 +40,10 @@ try {
     $passedUserID = $_GET['user_id'] ?? null;
 
 
-    if ($passedUserID !== $userID) {
-        throw new ValidationException('トークンのユーザーIDと渡されたユーザーIDが一致しません。他のユーザーの情報を操作することはできません。');
+    if(isset($passedUserID) ) {
+        if ($passedUserID !== $userID) {
+            throw new ValidationException('トークンのユーザーIDと渡されたユーザーIDが一致しません。他のユーザーの情報を操作することはできません。');
+        }
     }
 
     if (!isset($questionID)) {
