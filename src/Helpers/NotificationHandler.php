@@ -96,7 +96,7 @@ class NotificationHandler
 
 
         if ($response === false) {
-            throw new \Exception("❌ CURL error: " . curl_error($ch));
+            throw new Exception("❌ CURL error: " . curl_error($ch));
         }
 
 
@@ -138,7 +138,6 @@ class NotificationHandler
             }
 
             $success = openssl_sign($data, $signature, $privateKey, OPENSSL_ALGO_SHA256);
-            openssl_free_key($privateKey);
 
             if (!$success) {
                 throw new Exception('JWT signing failed: ' . openssl_error_string());
@@ -164,7 +163,7 @@ class NotificationHandler
         curl_close($ch);
 
         if (empty($data['access_token'])) {
-            throw new \Exception("❌ Failed to obtain access token. Response: " . json_encode($data));
+            throw new Exception("❌ Failed to obtain access token. Response: " . json_encode($data));
         }
         return $data['access_token'];
     }
