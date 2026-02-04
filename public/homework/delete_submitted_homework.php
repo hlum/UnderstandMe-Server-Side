@@ -91,13 +91,13 @@ try {
     $projectUseCase = new ProjectUseCase($projectRepository, $userRepository, $homeworkRepository);
 
     // Jobを先に削除する
-    $jobUseCase->deleteByHomeworkID($homeworkID, $passedUserID);
+    // $jobUseCase->deleteByHomeworkID($homeworkID, $passedUserID);
 
 
     // 次にProjectを削除する
     $projectUseCase->deleteByHomeworkID($homeworkID, $passedUserID);
     // 最後にResultを削除する
-    $resultUseCase->deleteResultByHomeworkIDAndUserID($homeworkID, $passedUserID);
+    // $resultUseCase->deleteResultByHomeworkIDAndUserID($homeworkID, $passedUserID);
     $connection->commit();
 
     Response::send('success', '提出された宿題を削除しました', 200);
