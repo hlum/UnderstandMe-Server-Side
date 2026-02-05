@@ -94,7 +94,7 @@ class HomeworkWithStatus implements JsonSerializable
             'user_email' => $this->userEmail,
             'user_student_id' => $this->userStudentID,
             'score' => $this->score,
-            'submitted_at' => $this->submittedAt?->format('Y-m-d'),
+            'submitted_at' => $this->submittedAt?->format('Y-m-d H:i:s'),
             'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
         ];
     }
