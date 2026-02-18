@@ -424,28 +424,28 @@ private const CODE_EXTENSIONS = [
 
         // Skip ignored files
         if (in_array($basename, self::IGNORE_FILES, true)) {
-            echo "無視されたファイル: {$basename}\n";
+            // echo "無視されたファイル: {$basename}\n";
             return false;
         }
 
         // Skip ignored directories
         foreach (self::IGNORE_DIRS as $ignoreDir) {
             if (str_contains($filePath, DIRECTORY_SEPARATOR . $ignoreDir . DIRECTORY_SEPARATOR)) {
-                echo "無視されたディレクトリ内のファイル: {$filePath}\n";
+                // echo "無視されたディレクトリ内のファイル: {$filePath}\n";
                 return false;
             }
         }
 
         // Skip test/spec files
         if (preg_match('/\b(?:test|spec|__tests__|\.test\.|\.spec\.)\b/i', $basename)) {
-            echo "テストファイルを無視: {$basename}\n";
+            // echo "テストファイルを無視: {$basename}\n";
             return false;
         }
 
         // Skip ignored extensions
         $extension = strtolower($file->getExtension());
         if (in_array($extension, self::IGNORE_EXTENSIONS, true)) {
-            echo "無視された拡張子のファイル: {$filePath}\n";
+            // echo "無視された拡張子のファイル: {$filePath}\n";
             return false;
         }
 
