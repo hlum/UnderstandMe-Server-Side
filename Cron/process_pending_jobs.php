@@ -111,6 +111,13 @@ function logFailedDevices(array $failedDeviceFCMTokens): void
 $currentRetry = 0;
 
 while ($currentRetry < MAX_RETRY_COUNT) {
+
+    $currentProcessingJobs = $jobUseCase->getJobsByStatus(Status::from('processing'));
+    if (!empty($currentProcessingJobs)) {
+        echo "処理中のJobが見つかりました。処理を中断します。\n";
+        exit(0);
+    }
+
     $job = getNextJob($jobUseCase);
     
     if ($job === null) {
