@@ -39,7 +39,7 @@ class MySQLFCMTokenRepository implements FCMTokenRepositoryInterface
     {
         $query = "UPDATE fcm_tokens SET fcm_token = ? WHERE user_id = ? AND device_id = ?";
         $types = "sss";
-        $params = [$newFCMToken, $deviceID, $userID];
+        $params = [$newFCMToken, $userID, $deviceID];
         $error_message = "FCMトークンの更新に失敗しました。";
 
         $this->executeQuery($query, $types, $params, $error_message);
